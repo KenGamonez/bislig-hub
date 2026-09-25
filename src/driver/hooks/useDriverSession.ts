@@ -12,6 +12,8 @@ export type DriverIdentity = {
   rating_average: number | null;
   can_accept_pakyawan: boolean;
   can_accept_deliveries: boolean;
+  username: string | null;
+  email: string | null;
 };
 
 export type DriverSessionState =
@@ -44,7 +46,7 @@ export function useDriverSession() {
     const { data: driver } = await supabase
       .from("drivers")
       .select(
-        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries"
+        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries, username, email"
       )
       .eq("auth_user_id", user.id)
       .maybeSingle();

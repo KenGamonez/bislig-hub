@@ -37,6 +37,11 @@ const DriverActive = lazy(() =>
 const DriverYou = lazy(() =>
   import("./driver/pages/YouPage").then((m) => ({ default: m.YouPage }))
 );
+const DriverHistory = lazy(() =>
+  import("./driver/pages/DriverHistoryPage").then((m) => ({
+    default: m.DriverHistoryPage,
+  }))
+);
 const DriverShell = lazy(() =>
   import("./driver/DriverShell").then((m) => ({ default: m.DriverShell }))
 );
@@ -61,7 +66,7 @@ function LegacyFallback() {
  */
 const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
 const DRIVER_PREFIXES = ["/driver"];
-const NEW_DRIVER_PREFIXES = ["/driver/jobs", "/driver/active", "/driver/you"];
+const NEW_DRIVER_PREFIXES = ["/driver/jobs", "/driver/active", "/driver/you", "/driver/history"];
 const ADMIN_PREFIXES = ["/admin"];
 
 function matchPrefixes(pathname: string, prefixes: string[]): boolean {
@@ -89,6 +94,7 @@ export default function App() {
                 <Route path="/driver/jobs" element={<DriverJobs />} />
                 <Route path="/driver/active" element={<DriverActive />} />
                 <Route path="/driver/you" element={<DriverYou />} />
+                <Route path="/driver/history" element={<DriverHistory />} />
               </Routes>
             </DriverShell>
           </Suspense>

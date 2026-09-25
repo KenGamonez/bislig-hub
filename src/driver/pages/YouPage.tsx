@@ -3,14 +3,16 @@ import { DriverPage } from "../components/DriverPage";
 import { EmptyState } from "../components/EmptyState";
 import { LoadingState } from "../components/LoadingState";
 import { useDriverSession } from "../hooks/useDriverSession";
+import { useDriverReputation } from "../hooks/useDriverReputation";
+import { DriverIdentityCard } from "../components/DriverIdentityCard";
+import { DriverStats } from "../components/DriverStats";
+import { DriverVehicleCard } from "../components/DriverVehicleCard";
+import { DriverAccountActions } from "../components/DriverAccountActions";
 
-/**
- * You shell (foundation). Real identity/vehicle rows from the existing
- * driver record; account actions stay minimal — password/history live in
- * the classic view until later phases.
- */
 export function YouPage() {
   const session = useDriverSession();
+  const driverId = session.status === "active" ? session.driver.id : null;
+  const { reputation, loading: reputationLoading } = useDriverReputation(driverId);
 
   if (session.status === "loading") {
     return (
@@ -47,42 +49,59 @@ export function YouPage() {
 
   return (
     <DriverPage title="You" kicker="Driver">
-      <div className="hub-driver__card">
-        <p className="hub-driver__card-title">{driver.full_name}</p>
-        <p className="hub-driver__card-sub">
-          {[vehicle || null, driver.plate_number]
-            .filter(Boolean)
-            .join(" · ") || "Driver"}
-        </p>
-        <dl className="hub-driver__facts">
-          <div>
-            <dt>Capacity</dt>
-            <dd>
-              {driver.vehicle_capacity != null
-                ? `${driver.vehicle_capacity}`
-                : "—"}
-            </dd>
+      <DriverIdentityCard
+        name={driver.full_name}
+        vehicle={vehicle || "Driver"}
+        plateNumber={driver.plate_number}
+        capacity={driver.vehicle_capacity}
+        rating={driver.rating_average}
+        status={driver.status}
+        username={driver.username}
+        email={driver.email}
+        canAcceptPakyawan={driver.can_accept_pakyawan}
+        canAcceptDeliveries={driver.can_accept_deliveries}
+        online={false}
+      />
+
+      {reputation ? (
+        <DriverStats
+          completedRides={reputation.completedRides}
+          averageStars={reputation.averageStars}
+          totalRatings={reputation.totalRatings}
+          cancelledRides={reputation.cancelledRides}
+          cancellationRate={reputation.cancellationRate}
+        />
+      ) : reputationLoading ? (
+        <div className="hub-driver__card hub-driver__stats hub-driver__stats--loading">
+          <div className="hub-driver__stat-tile">
+            <span className="hub-driver__stat-label">Completed rides</span>
+            <strong className="hub-driver__stat-value">—</strong>
           </div>
-          <div>
-            <dt>Rating</dt>
-            <dd>
-              {driver.rating_average != null
-                ? Number(driver.rating_average).toFixed(1)
-                : "New"}
-            </dd>
+          <div className="hub-driver__stat-tile">
+            <span className="hub-driver__stat-label">Rating</span>
+            <strong className="hub-driver__stat-value">—</strong>
           </div>
-        </dl>
-        <Link to="/driver" className="btn btn--ghost btn--block">
-          History, password & more
-        </Link>
-        <button
-          type="button"
-          className="btn btn--ghost btn--block"
-          onClick={() => void session.signOut()}
-        >
-          Log out
-        </button>
-      </div>
+          <div className="hub-driver__stat-tile">
+            <span className="hub-driver__stat-label">Cancellations</span>
+            <strong className="hub-driver__stat-value">—</strong>
+          </div>
+        </div>
+      ) : null}
+
+      <DriverVehicleCard
+        vehicleType={driver.vehicle_type}
+        vehicleModel={driver.vehicle_model}
+        plateNumber={driver.plate_number}
+        capacity={driver.vehicle_capacity}
+        canAcceptPakyawan={driver.can_accept_pakyawan}
+        canAcceptDeliveries={driver.can_accept_deliveries}
+      />
+
+      <DriverAccountActions onCloseChangePassword={() => {}} />
+
+      <Link to="/driver/history" className="btn btn--primary btn--block hub-driver__history-link">
+        View Trip History
+      </Link>
     </DriverPage>
   );
 }
