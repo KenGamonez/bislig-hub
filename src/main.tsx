@@ -15,3 +15,13 @@ createRoot(document.getElementById("root")!).render(
     </LanguageProvider>
   </StrictMode>,
 );
+
+// Minimal service-worker registration for installability only (see public/sw.js).
+// Network-only worker: no caching, no impact on realtime/auth/dispatch.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Installability enhancement only — the app works fully without it.
+    });
+  });
+}

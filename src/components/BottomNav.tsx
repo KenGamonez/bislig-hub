@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../legacy/lib/i18n";
 
 type NavItem = {
   label: string;
@@ -47,14 +48,14 @@ function DriverIcon() {
   );
 }
 
-const items: NavItem[] = [
-  { label: "Home", to: "/", icon: <HomeIcon /> },
-  { label: "Rides", to: "/ride", icon: <RidesIcon /> },
-  { label: "Activity", to: "/history", icon: <ActivityIcon /> },
-  { label: "Driver", to: "/driver", icon: <DriverIcon /> },
-];
-
 export function BottomNav() {
+  const { t } = useLanguage();
+  const items: NavItem[] = [
+    { label: t("nav.home"), to: "/", icon: <HomeIcon /> },
+    { label: t("hub.rides"), to: "/ride", icon: <RidesIcon /> },
+    { label: t("hub.activity"), to: "/history", icon: <ActivityIcon /> },
+    { label: t("hub.driver"), to: "/driver", icon: <DriverIcon /> },
+  ];
   return (
     <nav className="bottom-nav" aria-label="Primary">
       <div className="bottom-nav__inner">

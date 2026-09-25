@@ -32,26 +32,3 @@ export function ServiceCard({ title, description, to, accent, icon, badge }: Ser
     </Link>
   );
 }
-
-export function ComingSoonCard({
-  title,
-  description,
-  icon,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="coming-soon-card" aria-disabled="true">
-      <div className="coming-soon-card__icon" aria-hidden="true">
-        {icon}
-      </div>
-      <div className="coming-soon-card__body">
-        <h3 className="coming-soon-card__title">{title}</h3>
-        <p className="coming-soon-card__desc">{description}</p>
-      </div>
-      <span className="coming-soon-card__tag">Soon</span>
-    </div>
-  );
-}

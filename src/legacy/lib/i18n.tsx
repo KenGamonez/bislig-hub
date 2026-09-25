@@ -672,6 +672,26 @@ const en = {
   'contact.formNote':
     'By submitting this form, you agree that Bislig Hub may use the information you provide to respond to your inquiry.',
   'contact.submitFailed': 'We could not send your message right now. Please try again.',
+  /* Bislig Hub home dashboard */
+  'hub.tagline': 'Your city. Connected.',
+  'hub.subtitle': 'Choose a service to get started — fast, local, and reliable.',
+  'hub.transportKicker': 'Move around the city',
+  'hub.transportTitle': 'Transport',
+  'hub.transportSubtitle': 'Available now in Bislig City',
+  'hub.rideNowDesc': 'Get a ride around Bislig — quick pickup, fair fare.',
+  'hub.pakyawanDesc': 'Book a vehicle for longer trips or private use.',
+  'hub.deliveryTitle': 'Delivery',
+  'hub.deliveryDesc': 'Send food & parcels across Bislig City.',
+  'hub.driveKicker': 'For drivers',
+  'hub.driveTitle': 'Drive with Hub',
+  'hub.driveSubtitle': 'Earn on your own schedule',
+  'hub.becomeDesc': 'Apply once, drive for rides, pakyawan & delivery.',
+  'hub.driverLoginDesc': 'Already driving? Open your dashboard.',
+  'hub.footer':
+    'Bislig Hub is the consumer platform for the city. Rides, pakyawan and delivery run on one shared operations backend.',
+  'hub.rides': 'Rides',
+  'hub.activity': 'Activity',
+  'hub.driver': 'Driver',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -1337,6 +1357,26 @@ const bi: Record<TranslationKey, string> = {
   'contact.formNote':
     'Pinaagi sa pag-submit niining form, mouyon ka nga gamiton sa Bislig Hub ang imong impormasyon aron makatubag sa imong pangutana.',
   'contact.submitFailed': 'Dili maipadala karon ang imong mensahe. Palihog sulayi og balik.',
+  /* Bislig Hub home dashboard */
+  'hub.tagline': 'Imong syudad. Konektado.',
+  'hub.subtitle': 'Pilia ang serbisyo nga imong kinahanglan — paspas, lokal, ug kasaligan.',
+  'hub.transportKicker': 'Paglibot sa syudad',
+  'hub.transportTitle': 'Transport',
+  'hub.transportSubtitle': 'Andam na sa Bislig City',
+  'hub.rideNowDesc': 'Sakay libot sa Bislig — dali nga pickup, saktong plite.',
+  'hub.pakyawanDesc': 'Pag-book og sakyanan para sa layo nga byahe o pribadong gamit.',
+  'hub.deliveryTitle': 'Delivery',
+  'hub.deliveryDesc': 'Pagpadala og pagkaon ug mga parcel sa Bislig City.',
+  'hub.driveKicker': 'Para sa mga driver',
+  'hub.driveTitle': 'Drive with Hub',
+  'hub.driveSubtitle': 'Kita sa imong kaugalingong oras',
+  'hub.becomeDesc': 'Apply kausa, pag-drive para sa rides, pakyawan ug delivery.',
+  'hub.driverLoginDesc': 'Driver na? Ablihi ang imong dashboard.',
+  'hub.footer':
+    'Ang Bislig Hub mao ang consumer platform sa syudad. Ang rides, pakyawan ug delivery nagdagan sa usa ka shared operations backend.',
+  'hub.rides': 'Mga Sakay',
+  'hub.activity': 'Kalihokan',
+  'hub.driver': 'Driver',
 }
 
 type LanguageContextValue = {

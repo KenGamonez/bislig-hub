@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { ServiceCard } from "../components/ServiceCard";
+import { InstallAction } from "../components/InstallAction";
+import { LanguageToggle } from "../legacy/components/LanguageToggle";
+import { useLanguage } from "../legacy/lib/i18n";
 
 function RideIcon() {
   return (
@@ -33,40 +35,49 @@ function DeliveryIcon() {
 }
 
 export function Home() {
+  const { t } = useLanguage();
   return (
     <div className="home">
       {/* Hero */}
       <div className="container">
         <section className="hero" aria-labelledby="home-title">
-          <p className="hero__eyebrow">Your city. Connected.</p>
+          <p className="hero__eyebrow">{t("hub.tagline")}</p>
           <h1 id="home-title" className="hero__title">
-            What do you need today?
+            {t("dash.title1")} {t("dash.title2")}
           </h1>
-          <p className="hero__subtitle">Choose a service to get started — fast, local, and reliable.</p>
+          <p className="hero__subtitle">{t("hub.subtitle")}</p>
+          <div className="home-utils">
+            <LanguageToggle />
+            <InstallAction />
+          </div>
         </section>
 
         {/* Transport */}
         <section className="stack" aria-labelledby="transport-heading">
-          <SectionHeader title="Transport" subtitle="Available now in Bislig City" kicker="Move around the city" />
+          <SectionHeader
+            title={t("hub.transportTitle")}
+            subtitle={t("hub.transportSubtitle")}
+            kicker={t("hub.transportKicker")}
+          />
 
           <div className="card-grid" id="transport-heading">
             <ServiceCard
-              title="Ride Now"
-              description="Get a ride around Bislig — quick pickup, fair fare."
+              title={t("dash.rideNow")}
+              description={t("hub.rideNowDesc")}
               to="/ride"
               accent
               badge="Fastest"
               icon={<RideIcon />}
             />
             <ServiceCard
-              title="Pakyawan"
-              description="Book a vehicle for longer trips or private use."
+              title={t("dash.pakyawan")}
+              description={t("hub.pakyawanDesc")}
               to="/pakyawan"
               icon={<PakyawanIcon />}
             />
             <ServiceCard
-              title="Delivery"
-              description="Send food & parcels across Bislig City."
+              title={t("hub.deliveryTitle")}
+              description={t("hub.deliveryDesc")}
               to="/delivery"
               icon={<DeliveryIcon />}
             />
@@ -75,17 +86,21 @@ export function Home() {
 
         {/* Driver entry */}
         <section className="stack stack--muted" aria-labelledby="drive-heading">
-          <SectionHeader title="Drive with Hub" subtitle="Earn on your own schedule" kicker="For drivers" />
+          <SectionHeader
+            title={t("hub.driveTitle")}
+            subtitle={t("hub.driveSubtitle")}
+            kicker={t("hub.driveKicker")}
+          />
           <div className="card-grid" id="drive-heading">
             <ServiceCard
-              title="Become a driver"
-              description="Apply once, drive for rides, pakyawan & delivery."
+              title={t("nav.becomeDriver")}
+              description={t("hub.becomeDesc")}
               to="/become-a-driver"
               icon={<RideIcon />}
             />
             <ServiceCard
-              title="Driver login"
-              description="Already driving? Open your dashboard."
+              title={t("nav.driverLogin")}
+              description={t("hub.driverLoginDesc")}
               to="/driver"
               icon={<PakyawanIcon />}
             />
@@ -93,15 +108,7 @@ export function Home() {
         </section>
 
         <footer className="home-foot">
-          <p className="home-foot__text">
-            Bislig Hub is the consumer platform for the city. Rides, pakyawan
-            and delivery run on one shared operations backend.
-          </p>
-          <p className="home-foot__text">
-            <Link to="/admin" className="home-foot__admin">
-              Admin
-            </Link>
-          </p>
+          <p className="home-foot__text">{t("hub.footer")}</p>
         </footer>
       </div>
     </div>

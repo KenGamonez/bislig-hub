@@ -371,6 +371,93 @@
   font-weight: 600;
 }
 
+/* Phase 1 consolidation — home utilities: language + install */
+
+.home-utils {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.home-utils .language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+}
+
+.home-utils .language-option {
+  min-width: 44px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.home-utils .language-option.is-active {
+  background: var(--brand-slate-deep);
+  color: #fff;
+}
+
+.btn--compact {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+.install-action {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.install-note {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.install-help {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: grid;
+  gap: 8px;
+  box-shadow: var(--shadow-card);
+}
+
+.install-help__title {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.install-help__steps {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.install-help__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 /* Placeholder pages */
 .placeholder {
   padding-top: 14px;
