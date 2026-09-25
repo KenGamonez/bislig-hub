@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AppHeader } from "./components/AppHeader";
 import { BottomNav } from "./components/BottomNav";
 import { Home } from "./pages/Home";
@@ -65,8 +65,8 @@ function LegacyFallback() {
  * - /admin: untouched legacy shell (separate controlled phase)
  */
 const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
-const DRIVER_PREFIXES = ["/driver"];
-const NEW_DRIVER_PREFIXES = ["/driver/jobs", "/driver/active", "/driver/you", "/driver/history"];
+const DRIVER_PREFIXES = ["/driver/reset-password"];
+const NEW_DRIVER_PREFIXES = ["/driver", "/driver/jobs", "/driver/active", "/driver/you", "/driver/history"];
 const ADMIN_PREFIXES = ["/admin"];
 
 function matchPrefixes(pathname: string, prefixes: string[]): boolean {
@@ -91,6 +91,7 @@ export default function App() {
           <Suspense fallback={<LegacyFallback />}>
             <DriverShell>
               <Routes>
+                <Route path="/driver" element={<Navigate to="/driver/jobs" replace />} />
                 <Route path="/driver/jobs" element={<DriverJobs />} />
                 <Route path="/driver/active" element={<DriverActive />} />
                 <Route path="/driver/you" element={<DriverYou />} />
