@@ -5,8 +5,9 @@ import { LegacyShell, useLegacyViewChange } from "../components/LegacyShell";
 export function BecomeDriver() {
   const onViewChange = useLegacyViewChange();
   return (
-    <LegacyShell>
+    <LegacyShell tone="driver">
       <BecomeDriverExperience onHome={() => onViewChange("Rider")} />
     </LegacyShell>
   );
 }
+

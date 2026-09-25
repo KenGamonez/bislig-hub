@@ -1,0 +1,131 @@
+/* ============================================================
+   BISLIG HUB — DRIVER SKIN (Phase 6B)
+   Targeted presentation overrides for driver-facing routes.
+   Loaded AFTER ride-legacy.css, ONLY on driver routes
+   (/driver, /driver/reset-password, /become-a-driver) via
+   LegacyShell tone="driver" (-> .driver-hub wrapper).
+
+   Rules:
+   - Brand greens -> Hub orange/slate. Nothing else changes.
+   - Semantic greens/reds (online dots, status pills, completed
+     badges, errors) are INTENTIONALLY untouched.
+   - Class names are never renamed (logic depends on them).
+   - No layout/flow changes, only color/brand treatment.
+   ============================================================ */
+
+/* ---- Driver mini-navigation: Hub active state ---- */
+.driver-hub .mini-nav-item.is-active {
+  border-color: rgba(255, 138, 0, 0.45);
+  background: var(--brand-orange-soft);
+  color: var(--brand-slate-deep);
+}
+
+.driver-hub .mini-nav-badge {
+  background: var(--brand-orange);
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Online status chip: Hub surface, green dot stays semantic ---- */
+.driver-hub .driver-status-chip.is-online {
+  background: var(--bg-surface);
+  border-color: var(--brand-slate);
+}
+
+.driver-hub .driver-status-chip.is-online:hover {
+  border-color: var(--brand-orange);
+}
+
+.driver-hub .presence-control .secondary-action.is-active {
+  border-color: rgba(255, 138, 0, 0.45);
+  background: var(--brand-orange-soft);
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Primary actions: Hub orange CTA ---- */
+.driver-hub .primary-action {
+  background: var(--brand-orange);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(255, 138, 0, 0.22);
+}
+
+.driver-hub .primary-action:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 8px 18px rgba(255, 138, 0, 0.26);
+}
+
+/* ---- Chat: Hub send button + header ---- */
+.driver-hub .ride-chat-input-row button {
+  background: var(--brand-orange);
+  color: #ffffff;
+}
+
+.driver-hub .ride-chat-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.driver-hub .ride-chat-header strong {
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* ---- Offer pricing: Hub slate emphasis (was ride green) ---- */
+.driver-hub .pak-req-price strong {
+  color: var(--brand-slate-deep);
+}
+
+.driver-hub .pad-proof-box .field-label {
+  color: var(--text-secondary);
+}
+
+/* ---- Fare highlight module: Hub surface ---- */
+.driver-hub .fare-highlight {
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border);
+}
+
+.driver-hub .fare-highlight strong {
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Notification bell + badges: Hub orange ---- */
+.driver-hub .notification-badge,
+.driver-hub .chat-unread-badge {
+  background: var(--brand-orange);
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Driver login / reset / approval: Hub surfaces ---- */
+.driver-hub .auth-shell.driver-auth-shell {
+  background: var(--bg-page);
+}
+
+.driver-hub .auth-card.driver-auth-card {
+  background: var(--brand-slate-deep);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.driver-hub .auth-card.driver-auth-card::before {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 138, 0, 0.14) 0%,
+    rgba(255, 138, 0, 0) 62%
+  );
+}
+
+/* ---- Kickers / eyebrows: Hub typography ---- */
+.driver-hub .driver-kicker,
+.driver-hub .eyebrow {
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+/* ---- Focus rings: Hub accent (width/offset preserved) ---- */
+.driver-hub *:focus-visible {
+  outline-color: var(--brand-orange);
+}
+
+/* ---- Driver shell rhythm: Hub spacing ---- */
+.driver-hub .driver-shell {
+  gap: 16px;
+}

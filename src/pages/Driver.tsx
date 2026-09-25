@@ -65,7 +65,7 @@ export function Driver() {
 
   if (checking) {
     return (
-      <LegacyShell>
+      <LegacyShell tone="driver">
         <div className="container">
           <div className="loading-block" aria-live="polite">
             <span className="spinner" aria-hidden="true" />
@@ -78,7 +78,7 @@ export function Driver() {
 
   if (blocked) {
     return (
-      <LegacyShell>
+      <LegacyShell tone="driver">
         <div className="container">
           <div className="notice-card" role="alert">
             <h1 className="notice-card__title">Driver access paused</h1>
@@ -97,7 +97,7 @@ export function Driver() {
 
   if (!driverId) {
     return (
-      <LegacyShell>
+      <LegacyShell tone="driver">
         <DriverLogin
           onLogin={(id) => setDriverId(id)}
           onBack={() => onViewChange("Rider")}
@@ -107,8 +107,9 @@ export function Driver() {
   }
 
   return (
-    <LegacyShell>
+    <LegacyShell tone="driver">
       <DriverExperience onBack={() => onViewChange("Rider")} />
     </LegacyShell>
   );
 }
+
