@@ -1,53 +1,51 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DriverPage } from "../components/DriverPage";
 import { EmptyState } from "../components/EmptyState";
 import { LoadingState } from "../components/LoadingState";
-import { StatusPill } from "../components/StatusPill";
-import { useDriverSession } from "../hooks/useDriverSession";
-import { fetchAssignedRidesForDriver } from "../../legacy/lib/rides";
-import type { Ride } from "../../legacy/types/ride";
+import { ActiveJobActions } from "../components/ActiveJobActions";
+import { ActiveJobCancel } from "../components/ActiveJobCancel";
+import { ActiveJobCustomer } from "../components/ActiveJobCustomer";
+import { ActiveJobHeader } from "../components/ActiveJobHeader";
+import { ActiveJobRoute } from "../components/ActiveJobRoute";
+import { JourneySteps } from "../components/JourneySteps";
+import { RatingForm } from "../components/RatingForm";
+import { RideChat } from "../../legacy/components/RideChat";
+import { updateRideStatus } from "../../legacy/lib/rides";
 import { formatCentavos } from "../../legacy/lib/fare";
+import { useActiveJob } from "../hooks/useActiveJob";
+import { useDriverSession } from "../hooks/useDriverSession";
 
-const STATUS_LABEL: Record<string, string> = {
-  accepted: "Accepted",
-  arrived: "Arrived",
-  in_progress: "On trip",
+const NEXT_ACTION: Record<string, { label: string; next: "arrived" | "in_progress" | "completed" }> = {
+  accepted: { label: "Arrived", next: "arrived" },
+  arrived: { label: "Start ride", next: "in_progress" },
+  in_progress: { label: "Complete ride", next: "completed" },
 };
 
+function friendlyError(error: unknown): string {
+  if (import.meta.env.DEV) console.error("[active-job]", error);
+  const message = error instanceof Error ? error.message : "";
+  if (/cancel/i.test(message) && /cannot/i.test(message)) {
+    return "This ride can no longer change status.";
+  }
+  return "Couldn't update this job. Check your connection and try again.";
+}
+
 /**
- * Active-job shell (foundation). Read-only detection of the driver's
- * current assigned ride via the existing engine query — no lifecycle
- * buttons yet (6D-3). Actions stay in the classic view for now.
+ * Hub-native active-job workspace (Ride Now). Presentation only: every
+ * mutation delegates to existing engine helpers; backend stays source
+ * of truth via useActiveJob (realtime + polling + refresh recovery).
  */
 export function ActiveJobPage() {
   const session = useDriverSession();
-  const [ride, setRide] = useState<Ride | null>(null);
-  const [loading, setLoading] = useState(true);
+  const driverId = session.status === "active" ? session.driver.id : null;
+  const job = useActiveJob(driverId);
+  const [advancing, setAdvancing] = useState(false);
+  const [advanceError, setAdvanceError] = useState("");
+  const [showChat, setShowChat] = useState(false);
+  const [rated, setRated] = useState(false);
 
-  useEffect(() => {
-    if (session.status !== "active") {
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    fetchAssignedRidesForDriver(session.driver.id)
-      .then((items) => {
-        if (!cancelled) setRide(items[0] ?? null);
-      })
-      .catch(() => {
-        if (!cancelled) setRide(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [session]);
-
-  if (session.status === "loading" || loading) {
+  if (session.status === "loading" || job.status === "loading") {
     return (
       <DriverPage title="Active" kicker="Current job">
         <LoadingState label="Checking for an active job…" />
@@ -55,15 +53,15 @@ export function ActiveJobPage() {
     );
   }
 
-  if (session.status !== "active") {
+  if (session.status !== "active" || !driverId) {
     return (
       <DriverPage title="Active" kicker="Current job">
         <EmptyState
           title="Nothing active"
-          body="New bookings will appear here when you accept a job."
+          body="You'll see your current job here."
           action={
-            <Link to="/driver" className="btn btn--primary btn--block">
-              Go to driver sign in
+            <Link to="/driver/jobs" className="btn btn--primary btn--block">
+              View jobs
             </Link>
           }
         />
@@ -71,38 +69,152 @@ export function ActiveJobPage() {
     );
   }
 
-  if (!ride) {
+  if (job.status === "error") {
+    return (
+      <DriverPage title="Active" kicker="Current job">
+        <div className="hub-driver__card" role="alert">
+          <p className="hub-driver__card-title">Couldn't load this job</p>
+          <p className="hub-driver__card-sub">{job.error}</p>
+          <button
+            type="button"
+            className="btn btn--ghost btn--block"
+            onClick={() => job.retry()}
+          >
+            Retry
+          </button>
+        </div>
+      </DriverPage>
+    );
+  }
+
+  if (job.status === "empty") {
     return (
       <DriverPage title="Active" kicker="Current job">
         <EmptyState
-          title="Nothing active"
-          body="New bookings will appear here when you accept a job."
+          title={job.cancelled ? "Ride cancelled" : "Nothing active"}
+          body={
+            job.cancelled
+              ? "This ride was cancelled. Head back to Jobs for new work."
+              : "You'll see your current job here."
+          }
+          action={
+            <Link to="/driver/jobs" className="btn btn--primary btn--block">
+              View jobs
+            </Link>
+          }
         />
       </DriverPage>
     );
   }
 
+  const ride = job.ride;
+  const action = NEXT_ACTION[ride.status];
+
+  const advance = async () => {
+    if (!action || advancing) return;
+    setAdvancing(true);
+    setAdvanceError("");
+    try {
+      await updateRideStatus(ride.id, action.next);
+      await job.refresh();
+    } catch (err) {
+      setAdvanceError(friendlyError(err));
+    } finally {
+      setAdvancing(false);
+    }
+  };
+
   return (
     <DriverPage title="Active" kicker="Current job">
-      <div className="hub-driver__card">
-        <div className="hub-driver__presence-row">
-          <p className="hub-driver__card-title">
-            {ride.pickup_address} → {ride.destination_address}
-          </p>
-          <StatusPill tone="active">
-            {STATUS_LABEL[ride.status] ?? ride.status}
-          </StatusPill>
-        </div>
-        <p className="hub-driver__card-sub">
-          {ride.customer_name}
-          {typeof ride.fare_cents === "number"
-            ? ` · ₱${formatCentavos(ride.fare_cents)}`
-            : ""}
+      {job.error ? (
+        <p className="form-error-message" role="alert">
+          {job.error}{" "}
+          <button
+            type="button"
+            className="link-button"
+            onClick={() => job.retry()}
+          >
+            Retry
+          </button>
         </p>
-        <Link to="/driver" className="btn btn--primary btn--block">
-          Open job actions
-        </Link>
+      ) : null}
+
+      <div className="hub-driver__card">
+        <ActiveJobHeader status={ride.status} />
+        <JourneySteps status={ride.status} />
+        <ActiveJobRoute
+          pickup={ride.pickup_address}
+          destination={ride.destination_address}
+        />
+        <ActiveJobCustomer
+          name={ride.customer_name}
+          phone={ride.customer_phone}
+        />
+        <p className="hub-driver__fare">
+          {typeof ride.fare_cents === "number"
+            ? `₱${formatCentavos(ride.fare_cents)}`
+            : "Fare settled with passenger"}
+        </p>
+
+        <div className="hub-driver__mapslot" aria-label="Map coming in the next update">
+          <p>Live map arrives with GPS in the next update.</p>
+        </div>
+
+        {action ? (
+          <ActiveJobActions
+            primaryLabel={action.label}
+            onPrimary={() => void advance()}
+            busy={advancing}
+          >
+            <button
+              type="button"
+              className="hub-driver__linkbtn"
+              onClick={() => setShowChat((open) => !open)}
+            >
+              {showChat ? "Hide chat" : "Chat"}
+            </button>
+            <ActiveJobCancel
+              rideId={ride.id}
+              driverId={driverId}
+              onCancelled={() => void job.refresh()}
+            />
+          </ActiveJobActions>
+        ) : null}
+
+        {advanceError ? (
+          <p className="form-error-message" role="alert">
+            {advanceError}
+          </p>
+        ) : null}
+
+        {ride.status === "completed" && !rated ? (
+          <RatingForm
+            rideId={ride.id}
+            driverId={driverId}
+            onDone={() => setRated(true)}
+          />
+        ) : null}
+
+        {(ride.status === "completed" && rated) ||
+        ride.status === "cancelled" ? (
+          <Link to="/driver/jobs" className="btn btn--primary btn--block">
+            Back to jobs
+          </Link>
+        ) : null}
       </div>
+
+      {showChat && action ? (
+        <div className="hub-legacy">
+          <RideChat
+            rideId={ride.id}
+            otherPartyName={ride.customer_name}
+            currentRole="driver"
+            currentDriverId={driverId}
+            driverAuthId={session.authUserId}
+            onClose={() => setShowChat(false)}
+          />
+        </div>
+      ) : null}
     </DriverPage>
   );
 }

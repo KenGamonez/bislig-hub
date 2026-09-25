@@ -15,10 +15,10 @@ export type DriverIdentity = {
 };
 
 export type DriverSessionState =
-  | { status: "loading"; driver: null }
-  | { status: "logged-out"; driver: null }
-  | { status: "blocked"; driver: null }
-  | { status: "active"; driver: DriverIdentity };
+  | { status: "loading"; driver: null; authUserId: null }
+  | { status: "logged-out"; driver: null; authUserId: null }
+  | { status: "blocked"; driver: null; authUserId: string | null }
+  | { status: "active"; driver: DriverIdentity; authUserId: string };
 
 /**
  * Thin adapter over the existing driver auth model (Supabase Auth +
@@ -29,6 +29,7 @@ export function useDriverSession() {
   const [state, setState] = useState<DriverSessionState>({
     status: "loading",
     driver: null,
+    authUserId: null,
   });
 
   const refresh = useCallback(async () => {
@@ -36,7 +37,7 @@ export function useDriverSession() {
     const user = data.session?.user;
 
     if (!user) {
-      setState({ status: "logged-out", driver: null });
+      setState({ status: "logged-out", driver: null, authUserId: null });
       return;
     }
 
@@ -49,7 +50,7 @@ export function useDriverSession() {
       .maybeSingle();
 
     if (!driver) {
-      setState({ status: "logged-out", driver: null });
+      setState({ status: "logged-out", driver: null, authUserId: null });
       return;
     }
 
@@ -58,11 +59,11 @@ export function useDriverSession() {
     identity.can_accept_deliveries = Boolean(identity.can_accept_deliveries);
 
     if (identity.status === "inactive") {
-      setState({ status: "blocked", driver: null });
+      setState({ status: "blocked", driver: null, authUserId: user.id });
       return;
     }
 
-    setState({ status: "active", driver: identity });
+    setState({ status: "active", driver: identity, authUserId: user.id });
   }, []);
 
   useEffect(() => {

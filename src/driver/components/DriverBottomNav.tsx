@@ -34,7 +34,11 @@ const items = [
   },
 ];
 
-export function DriverBottomNav() {
+export function DriverBottomNav({
+  hasActiveJob = false,
+}: {
+  hasActiveJob?: boolean;
+}) {
   return (
     <nav className="hub-driver__nav" aria-label="Driver">
       <div className="hub-driver__nav-inner">
@@ -46,7 +50,15 @@ export function DriverBottomNav() {
               `hub-driver__nav-item${isActive ? " is-active" : ""}`
             }
           >
-            <span className="hub-driver__nav-icon">{item.icon}</span>
+            <span className="hub-driver__nav-icon">
+              {item.icon}
+              {item.to === "/driver/active" && hasActiveJob ? (
+                <span
+                  className="hub-driver__nav-dot"
+                  aria-label="Active job"
+                />
+              ) : null}
+            </span>
             <span className="hub-driver__nav-label">{item.label}</span>
           </NavLink>
         ))}
