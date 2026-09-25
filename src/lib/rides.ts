@@ -37,6 +37,8 @@ export type Ride = {
   fare_cents: number | null;
   fare_source: FareSource | null;
   status: RideStatus;
+  rating: number | null;
+  rating_comment: string | null;
   created_at: string;
 };
 
@@ -93,6 +95,15 @@ export function friendlyRideError(error: unknown, fallback: string): string {
     }
     if (/cannot be cancelled/i.test(message)) {
       return "This ride can no longer be cancelled.";
+    }
+    if (/already rated|Ratings can only/i.test(message)) {
+      return "You already rated this ride.";
+    }
+    if (/Rating must be between/i.test(message)) {
+      return "Please choose 1 to 5 stars.";
+    }
+    if (/only be rated|eligible for rating|can't be rated/i.test(message)) {
+      return "Only completed rides can be rated.";
     }
   }
   return fallback;
@@ -197,6 +208,80 @@ export async function fetchDriverProfile(
 
   if (error) throw error;
   return (data as DriverProfile | null) ?? null;
+}
+
+/** Own ride history — same identity, RLS-scoped read, newest first. */
+export async function fetchCustomerRideHistory(): Promise<Ride[]> {
+  const client = requireSupabase();
+  const customerAuthId = await getCustomerAuthId();
+
+  const { data, error } = await client
+    .from("rides")
+    .select("*")
+    .eq("customer_auth_id", customerAuthId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) throw error;
+  return (data ?? []) as Ride[];
+}
+
+/** Whether this customer already rated a ride (prevents duplicate prompts). */
+export async function hasRatedRide(
+  rideId: string,
+  raterId: string
+): Promise<boolean> {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from("ride_ratings")
+    .select("id")
+    .eq("ride_id", rideId)
+    .eq("rater_id", raterId)
+    .maybeSingle();
+
+  if (error) return false;
+  return Boolean(data);
+}
+
+/**
+ * Submit a 1–5 passenger rating via the existing save_ride_rating RPC.
+ * Backend enforces: completed ride, owner-only. Client pre-checks mirror
+ * Bislig Ride so failures stay friendly and duplicate submits are blocked.
+ */
+export async function submitRideRating(
+  rideId: string,
+  stars: number,
+  comment?: string
+): Promise<Ride> {
+  if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+    throw new Error("Please choose 1 to 5 stars.");
+  }
+  const client = requireSupabase();
+  const currentAuthId = await getCustomerAuthId();
+  const ride = await fetchRideById(rideId);
+
+  if (
+    !ride ||
+    ride.status !== "completed" ||
+    !ride.driver_id ||
+    ride.customer_auth_id !== currentAuthId
+  ) {
+    throw new Error("This ride can't be rated.");
+  }
+  if (await hasRatedRide(rideId, currentAuthId)) {
+    throw new Error("You already rated this ride.");
+  }
+
+  const { data, error } = await client
+    .rpc("save_ride_rating", {
+      p_ride_id: rideId,
+      p_stars: stars,
+      p_comment: comment?.trim() || null,
+    })
+    .single();
+
+  if (error) throw error;
+  return data as Ride;
 }
 
 /** Realtime ride-status observer with caller-managed polling fallback. */

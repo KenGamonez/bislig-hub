@@ -50,7 +50,7 @@ function AccountIcon() {
 const items: NavItem[] = [
   { label: "Home", to: "/", icon: <HomeIcon /> },
   { label: "Rides", to: "/ride", icon: <RidesIcon /> },
-  { label: "Activity", to: "/activity", icon: <ActivityIcon />, disabled: true },
+  { label: "Activity", to: "/history", icon: <ActivityIcon /> },
   { label: "Account", to: "/account", icon: <AccountIcon />, disabled: true },
 ];
 

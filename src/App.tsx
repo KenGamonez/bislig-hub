@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { AppHeader } from "./components/AppHeader";
 import { BottomNav } from "./components/BottomNav";
+import { History } from "./pages/History";
 import { Home } from "./pages/Home";
 import { Pakyawan } from "./pages/Pakyawan";
 import { RideNow } from "./pages/RideNow";
@@ -15,6 +16,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/ride" element={<RideNow />} />
             <Route path="/pakyawan" element={<Pakyawan />} />
+            <Route path="/history" element={<History />} />
             <Route
               path="*"
               element={

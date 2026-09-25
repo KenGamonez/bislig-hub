@@ -8,6 +8,8 @@ import {
   fetchDriverProfile,
   fetchRideById,
   friendlyRideError,
+  hasRatedRide,
+  submitRideRating,
   subscribeToRideStatus,
   type DriverProfile,
   type Ride,
@@ -41,6 +43,17 @@ const CANCELLABLE: RideStatus[] = [
   "accepted",
   "arrived",
   "in_progress",
+];
+
+// Restorable on reload: still actionable. Completed/cancelled are terminal —
+// the stored key is cleared when they are observed so old journeys never
+// reappear as active.
+const RESTORABLE: RideStatus[] = [
+  "requested",
+  "accepted",
+  "arrived",
+  "in_progress",
+  "no_driver",
 ];
 
 function statusToPhase(status: RideStatus): Phase {
@@ -191,6 +204,12 @@ export function RideNow() {
   const [restoring, setRestoring] = useState(true);
   const [restored, setRestored] = useState(false);
   const [formStep, setFormStep] = useState(1);
+  const [stars, setStars] = useState(0);
+  const [ratingComment, setRatingComment] = useState("");
+  const [ratingState, setRatingState] = useState<
+    "idle" | "checking" | "ready" | "sending" | "sent" | "already"
+  >("idle");
+  const [ratingError, setRatingError] = useState("");
   const pollRef = useRef<number | null>(null);
 
   const fareQuote = useMemo(() => {
@@ -219,6 +238,10 @@ export function RideNow() {
     setPhase("form");
     setFormStep(1);
     setRestored(false);
+    setStars(0);
+    setRatingComment("");
+    setRatingState("idle");
+    setRatingError("");
     setSubmitError("");
     setConfirmingCancel(false);
   }, [stopPolling]);
@@ -234,6 +257,8 @@ export function RideNow() {
         setRide(latest);
         setPhase(statusToPhase(latest.status));
         if (latest.status === "cancelled" || latest.status === "completed") {
+          // Terminal: keep the in-session view, but stop resurrecting it.
+          writeStoredRideId(null);
           stopPolling();
         }
       } catch (err) {
@@ -255,7 +280,8 @@ export function RideNow() {
       try {
         const latest = await fetchRideById(stored);
         if (cancelled) return;
-        if (!latest) {
+        if (!latest || !RESTORABLE.includes(latest.status)) {
+          // Terminal or missing: never resurrect as an active journey.
           writeStoredRideId(null);
         } else {
           setRide(latest);
@@ -309,6 +335,36 @@ export function RideNow() {
       cancelled = true;
     };
   }, [ride?.driver_id]);
+
+  // Determine rating prompt state once a ride completes.
+  useEffect(() => {
+    if (!ride || ride.status !== "completed" || !ride.driver_id) return;
+    if (
+      typeof ride.rating === "number" &&
+      ride.rating >= 1 &&
+      ride.rating <= 5
+    ) {
+      setRatingState("already");
+      return;
+    }
+    let cancelled = false;
+    setRatingState("checking");
+    (async () => {
+      try {
+        const authId = await getCustomerAuthId();
+        if (cancelled) return;
+        setRatingState(
+          (await hasRatedRide(ride.id, authId)) ? "already" : "ready"
+        );
+      } catch {
+        // Rating is optional: a failed check must never block the screen.
+        if (!cancelled) setRatingState("ready");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ride?.id, ride?.status]);
 
   const useMyLocation = () => {
     if (!("geolocation" in navigator)) {
@@ -437,6 +493,29 @@ export function RideNow() {
     }
   };
 
+  const handleSubmitRating = async () => {
+    if (!ride || ratingState !== "ready" || stars < 1 || stars > 5) return;
+    setRatingState("sending");
+    setRatingError("");
+    try {
+      const updated = await submitRideRating(
+        ride.id,
+        stars,
+        ratingComment.trim() || undefined
+      );
+      setRide(updated);
+      setRatingState("sent");
+    } catch (err) {
+      setRatingState("ready");
+      setRatingError(
+        friendlyRideError(
+          err,
+          "Your rating couldn't be submitted. Please try again."
+        )
+      );
+    }
+  };
+
   const handleCancel = async () => {
     if (!ride || cancelling) return;
     // cancel_ride rejects no_driver — Close is the only path there.
@@ -555,6 +634,77 @@ export function RideNow() {
                   {driver.plate_number ? ` · ${driver.plate_number}` : ""}
                 </p>
               </div>
+            </div>
+          )}
+
+          {phase === "completed" && ride.driver_id && (
+            <div className="rating-card" aria-live="polite">
+              {ratingState === "sent" && (
+                <p className="rating-card__thanks">
+                  Thanks for rating — ride safe!
+                </p>
+              )}
+              {ratingState === "already" && (
+                <p className="rating-card__thanks">
+                  You already rated this ride. Thanks!
+                </p>
+              )}
+              {(ratingState === "ready" || ratingState === "sending") && (
+                <>
+                  <p className="rating-card__title">How was your ride?</p>
+                  <div
+                    className="star-row"
+                    role="group"
+                    aria-label="Rate from 1 to 5 stars"
+                  >
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        className={`star${value <= stars ? " is-on" : ""}`}
+                        aria-label={`${value} star${value === 1 ? "" : "s"}`}
+                        aria-pressed={value === stars}
+                        onClick={() => setStars(value)}
+                        disabled={ratingState === "sending"}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                  <label className="field-block">
+                    <span className="field-label">
+                      Comment{" "}
+                      <span className="optional-tag">(optional)</span>
+                    </span>
+                    <input
+                      className="input-field"
+                      type="text"
+                      placeholder="Anything to add?"
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                      maxLength={200}
+                      disabled={ratingState === "sending"}
+                    />
+                  </label>
+                  {ratingError && (
+                    <p className="form-error-message" role="alert">
+                      {ratingError}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn--primary btn--block"
+                    onClick={() => void handleSubmitRating()}
+                    disabled={
+                      ratingState === "sending" || stars < 1 || stars > 5
+                    }
+                  >
+                    {ratingState === "sending"
+                      ? "Sending…"
+                      : "Submit rating"}
+                  </button>
+                </>
+              )}
             </div>
           )}
 

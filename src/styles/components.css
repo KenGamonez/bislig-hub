@@ -1054,6 +1054,103 @@ select.input-field {
   color: var(--brand-orange);
 }
 
+/* Phase 6 — history list + rating */
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.history-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+  box-shadow: var(--shadow-xs);
+}
+
+.history-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.history-card__date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.history-card__route {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.history-card__meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.rating-card {
+  display: grid;
+  gap: 10px;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.rating-card__title {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.rating-card__thanks {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 4px 0;
+}
+
+.star-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.star {
+  width: var(--touch-comfort);
+  height: var(--touch-comfort);
+  border: 0;
+  background: none;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--border-strong);
+  cursor: pointer;
+  padding: 0;
+}
+
+.star.is-on {
+  color: var(--brand-orange);
+}
+
+.star:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
 /* Phase 5 — journey tracker, activity pill, restore banner */
 
 .journey {
