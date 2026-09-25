@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { PakyawanChat } from "../legacy/components/PakyawanChat";
 import { JourneySteps } from "../components/JourneySteps";
 import {
   confirmPakyawanBooking,
@@ -170,6 +171,7 @@ export function Pakyawan() {
   const [confirmError, setConfirmError] = useState("");
   const [restoring, setRestoring] = useState(true);
   const [restored, setRestored] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const pollRef = useRef<number | null>(null);
 
   const stopPolling = useCallback(() => {
@@ -387,6 +389,7 @@ export function Pakyawan() {
     setBooking(null);
     setStep(1);
     setRestored(false);
+    setShowChat(false);
     setSubmitError("");
     setConfirmError("");
     setTrackingError("");
@@ -520,6 +523,28 @@ export function Pakyawan() {
                 </button>
               </div>
             </>
+          )}
+
+          {booking.driver_id && !showChat && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--block"
+              onClick={() => setShowChat(true)}
+            >
+              Chat with driver
+            </button>
+          )}
+
+          {booking.driver_id && showChat && (
+            <div className="hub-legacy">
+              <PakyawanChat
+                bookingId={booking.id}
+                senderRole="passenger"
+                accessToken={identity.token}
+                otherPartyName="Driver"
+                onClose={() => setShowChat(false)}
+              />
+            </div>
           )}
 
           {trackingError && (

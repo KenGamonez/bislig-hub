@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { JourneySteps } from "../components/JourneySteps";
+import { MapView } from "../legacy/components/MapView";
+import { RideChat } from "../legacy/components/RideChat";
+import {
+  startRideLocationWatch,
+  subscribeToRideLocation,
+} from "../legacy/lib/rideLocation";
+import { subscribeToRideCancellations } from "../legacy/lib/rideCancellations";
 import {
   cancelRide,
   createRide,
@@ -22,10 +29,28 @@ import {
   formatCentavos,
   type PassengerType,
 } from "../lib/fare";
-import { getCustomerAuthId, isSupabaseConfigured } from "../lib/supabase";
+import {
+  getCustomerAuthId,
+  isSupabaseConfigured,
+  requireSupabase,
+} from "../lib/supabase";
 
 const HUB_RIDE_KEY = "bislig-hub-last-ride-id";
+const HUB_SHARE_KEY = "bislig-hub-share-";
 const POLL_MS = 5000;
+const REDISPATCH_MS = 20000;
+const REDISPATCH_MAX = 10;
+
+const ACTIVE_TRACK_STATUSES: RideStatus[] = [
+  "accepted",
+  "arrived",
+  "in_progress",
+];
+
+type CancelNotice = {
+  cancelled_by_role: string;
+  reason: string;
+};
 
 type Phase =
   | "form"
@@ -210,7 +235,25 @@ export function RideNow() {
     "idle" | "checking" | "ready" | "sending" | "sent" | "already"
   >("idle");
   const [ratingError, setRatingError] = useState("");
+  const [customerAuthId, setCustomerAuthId] = useState<string | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
+  const [driverLocation, setDriverLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [sharingLocation, setSharingLocation] = useState(false);
+  const [livePassengerLoc, setLivePassengerLoc] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [shareError, setShareError] = useState("");
+  const [cancelNotice, setCancelNotice] = useState<CancelNotice | null>(null);
   const pollRef = useRef<number | null>(null);
+  const redispatchRef = useRef<number | null>(null);
+  const redispatchAttemptsRef = useRef(0);
+  const redispatchBusyRef = useRef(false);
+  const handledChatIdsRef = useRef<Set<string>>(new Set());
 
   const fareQuote = useMemo(() => {
     if (!destination.trim()) return null;
@@ -230,8 +273,17 @@ export function RideNow() {
     }
   }, []);
 
+  const stopRedispatch = useCallback(() => {
+    if (redispatchRef.current !== null) {
+      window.clearInterval(redispatchRef.current);
+      redispatchRef.current = null;
+    }
+    redispatchBusyRef.current = false;
+  }, []);
+
   const clearLocalRide = useCallback(() => {
     stopPolling();
+    stopRedispatch();
     writeStoredRideId(null);
     setRide(null);
     setDriver(null);
@@ -244,7 +296,16 @@ export function RideNow() {
     setRatingError("");
     setSubmitError("");
     setConfirmingCancel(false);
-  }, [stopPolling]);
+    setShowChat(false);
+    setChatUnread(0);
+    setDriverLocation(null);
+    setSharingLocation(false);
+    setLivePassengerLoc(null);
+    setShareError("");
+    setCancelNotice(null);
+    handledChatIdsRef.current = new Set();
+    redispatchAttemptsRef.current = 0;
+  }, [stopPolling, stopRedispatch]);
 
   const syncRide = useCallback(
     async (rideId: string) => {
@@ -288,6 +349,17 @@ export function RideNow() {
           setPhase(statusToPhase(latest.status));
           // Resumed from this device: orient the customer explicitly.
           setRestored(true);
+          try {
+            setCustomerAuthId(await getCustomerAuthId());
+            if (
+              window.localStorage.getItem(`${HUB_SHARE_KEY}${latest.id}`) ===
+              "1"
+            ) {
+              setSharingLocation(true);
+            }
+          } catch {
+            // Session/share restore is best-effort only.
+          }
         }
       } catch {
         // Offline or expired session — stay on the form.
@@ -335,6 +407,139 @@ export function RideNow() {
       cancelled = true;
     };
   }, [ride?.driver_id]);
+
+  // Live driver GPS while the trip is active (broadcast channel).
+  useEffect(() => {
+    if (
+      !ride?.id ||
+      !ride.driver_id ||
+      !customerAuthId ||
+      !ACTIVE_TRACK_STATUSES.includes(ride.status)
+    ) {
+      setDriverLocation(null);
+      return;
+    }
+    return subscribeToRideLocation(ride.id, (message) => {
+      if (message.user === customerAuthId) return;
+      setDriverLocation({
+        lat: message.latitude,
+        lng: message.longitude,
+      });
+    });
+  }, [ride?.id, ride?.driver_id, ride?.status, customerAuthId]);
+
+  // Passenger live-location broadcast (opt-in per ride, persisted).
+  useEffect(() => {
+    if (
+      !ride?.id ||
+      !customerAuthId ||
+      !sharingLocation ||
+      !ACTIVE_TRACK_STATUSES.includes(ride.status)
+    ) {
+      return;
+    }
+    return startRideLocationWatch(ride.id, {
+      user: customerAuthId,
+      onLocation: (latitude, longitude) => {
+        setLivePassengerLoc({ lat: latitude, lng: longitude });
+        setShareError("");
+      },
+      onError: () => {
+        setShareError("Live location is off. Your driver sees only your pickup point.");
+      },
+    });
+  }, [ride?.id, ride?.status, customerAuthId, sharingLocation]);
+
+  // Chat unread badge (driver messages only, deduped).
+  useEffect(() => {
+    if (!ride?.id || !ride.driver_id || !ACTIVE_TRACK_STATUSES.includes(ride.status)) {
+      return;
+    }
+    const client = requireSupabase();
+    const channel = client
+      .channel(`hub-ride-chat-${ride.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "ride_messages",
+          filter: `ride_id=eq.${ride.id}`,
+        },
+        (payload: { new: { id?: string; sender_role?: string } }) => {
+          const incoming = payload.new;
+          if (
+            !incoming?.id ||
+            incoming.sender_role !== "driver" ||
+            handledChatIdsRef.current.has(incoming.id)
+          ) {
+            return;
+          }
+          handledChatIdsRef.current.add(incoming.id);
+          if (!showChat) setChatUnread((current) => current + 1);
+        }
+      )
+      .subscribe();
+    return () => {
+      void client.removeChannel(channel);
+    };
+  }, [ride?.id, ride?.driver_id, ride?.status, showChat]);
+
+  // Counterparty cancellation notice (reason + realtime, beyond polling).
+  useEffect(() => {
+    if (
+      !ride?.id ||
+      !["requested", "accepted", "arrived", "in_progress"].includes(ride.status)
+    ) {
+      return;
+    }
+    return subscribeToRideCancellations(ride.id, (incoming) => {
+      if (incoming.cancelled_by === customerAuthId) return;
+      setCancelNotice({
+        cancelled_by_role: incoming.cancelled_by_role,
+        reason: incoming.reason,
+      });
+      void syncRide(ride.id);
+    });
+  }, [ride?.id, ride?.status, customerAuthId, syncRide]);
+
+  // Keep searching: bounded auto-redispatch while requested (mirrors the
+  // proven dispatch-keepalive; manual Try Again remains available).
+  useEffect(() => {
+    if (phase !== "searching" || !ride || ride.status !== "requested") {
+      stopRedispatch();
+      return;
+    }
+    redispatchAttemptsRef.current = 0;
+    stopRedispatch();
+    redispatchRef.current = window.setInterval(() => {
+      if (
+        redispatchBusyRef.current ||
+        redispatchAttemptsRef.current >= REDISPATCH_MAX
+      ) {
+        if (redispatchAttemptsRef.current >= REDISPATCH_MAX) stopRedispatch();
+        return;
+      }
+      redispatchBusyRef.current = true;
+      redispatchAttemptsRef.current += 1;
+      dispatchRide(ride.id)
+        .then((result) => {
+          if (result.ride_status === "no_driver") {
+            setPhase("no_driver");
+            stopRedispatch();
+          } else {
+            void syncRide(ride.id);
+          }
+        })
+        .catch(() => {
+          // Silent: polling + manual retry still cover the journey.
+        })
+        .finally(() => {
+          redispatchBusyRef.current = false;
+        });
+    }, REDISPATCH_MS);
+    return stopRedispatch;
+  }, [phase, ride?.id, ride?.status, syncRide, stopRedispatch]);
 
   // Determine rating prompt state once a ride completes.
   useEffect(() => {
@@ -435,6 +640,7 @@ export function RideNow() {
     setPhase("submitting");
 
     try {
+      setCustomerAuthId(await getCustomerAuthId());
       const created = await createRide({
         customer_name: name.trim(),
         customer_phone: phone.trim(),
@@ -471,6 +677,32 @@ export function RideNow() {
         friendlyRideError(err, "Could not request your ride. Please try again.")
       );
     }
+  };
+
+  const handleShareLocation = () => {
+    if (!ride?.id) return;
+    if (sharingLocation) {
+      setSharingLocation(false);
+      setLivePassengerLoc(null);
+      try {
+        window.localStorage.removeItem(`${HUB_SHARE_KEY}${ride.id}`);
+      } catch {
+        // ignore
+      }
+      return;
+    }
+    setShareError("");
+    setSharingLocation(true);
+    try {
+      window.localStorage.setItem(`${HUB_SHARE_KEY}${ride.id}`, "1");
+    } catch {
+      // Private browsing — sharing lasts for this session only.
+    }
+  };
+
+  const handleOpenChat = () => {
+    setChatUnread(0);
+    setShowChat(true);
   };
 
   const handleRetry = async () => {
@@ -569,6 +801,8 @@ export function RideNow() {
     const copy = PHASE_COPY[phase];
     const cancellable = CANCELLABLE.includes(ride.status);
     const activity = activityState(phase);
+    const tripActive = ACTIVE_TRACK_STATUSES.includes(ride.status);
+    const chatAvailable = Boolean(tripActive && ride.driver_id);
     const showJourney =
       phase === "searching" ||
       phase === "accepted" ||
@@ -634,6 +868,72 @@ export function RideNow() {
                   {driver.plate_number ? ` · ${driver.plate_number}` : ""}
                 </p>
               </div>
+            </div>
+          )}
+
+          {cancelNotice && (
+            <p className="form-error-message" role="alert">
+              {cancelNotice.cancelled_by_role === "driver"
+                ? "Your driver cancelled this ride."
+                : "This ride was cancelled."}{" "}
+              {cancelNotice.reason ? `Reason: ${cancelNotice.reason}` : ""}
+            </p>
+          )}
+
+          {tripActive && (
+            <div className="trip-live">
+              <MapView
+                className="trip-map"
+                height={220}
+                driverLatitude={driverLocation?.lat ?? null}
+                driverLongitude={driverLocation?.lng ?? null}
+                pickupLatitude={livePassengerLoc?.lat ?? ride.pickup_lat}
+                pickupLongitude={livePassengerLoc?.lng ?? ride.pickup_lng}
+              />
+              {shareError ? (
+                <p className="field-note field-note--error">{shareError}</p>
+              ) : sharingLocation ? (
+                <p className="field-note">Sharing your live location with your driver.</p>
+              ) : (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={handleShareLocation}
+                >
+                  Share my live location with the driver
+                </button>
+              )}
+              {sharingLocation && !shareError && (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={handleShareLocation}
+                >
+                  Stop sharing
+                </button>
+              )}
+            </div>
+          )}
+
+          {chatAvailable && !showChat && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--block"
+              onClick={handleOpenChat}
+            >
+              Chat with driver
+              {chatUnread > 0 ? ` (${chatUnread} new)` : ""}
+            </button>
+          )}
+
+          {chatAvailable && showChat && (
+            <div className="hub-legacy">
+              <RideChat
+                rideId={ride.id}
+                otherPartyName={driver?.full_name ?? "Driver"}
+                currentRole="Rider"
+                onClose={() => setShowChat(false)}
+              />
             </div>
           )}
 

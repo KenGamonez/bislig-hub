@@ -1025,6 +1025,20 @@ select.input-field {
   color: var(--text-primary);
 }
 
+/* Phase 5 — live trip blocks (map, location sharing, chat entry) */
+
+.trip-live {
+  display: grid;
+  gap: 8px;
+}
+
+.trip-map {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface-soft);
+}
+
 .notice-card {
   margin-top: 32px;
   background: var(--bg-surface);
