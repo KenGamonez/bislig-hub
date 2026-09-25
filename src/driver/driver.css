@@ -314,3 +314,81 @@
 .hub-driver__nav-label {
   line-height: 1.25;
 }
+
+/* ---- Job cards ---- */
+.hub-driver__job {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.hub-driver__job-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hub-driver__jobtype {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-slate-deep);
+  color: var(--text-on-dark);
+}
+
+.hub-driver__jobtype--ride {
+  background: var(--brand-orange);
+  color: var(--brand-slate-deep);
+}
+
+.hub-driver__job-route {
+  font-size: var(--text-md);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  display: grid;
+  gap: 2px;
+  overflow-wrap: break-word;
+}
+
+.hub-driver__job-arrow {
+  color: var(--text-faint);
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.hub-driver__job-fare {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--brand-slate-deep);
+}
+
+.hub-driver__job-fare--tbd {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.hub-driver__countdown {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--brand-slate-deep);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hub-driver__job-actions {
+  display: grid;
+  gap: 8px;
+}

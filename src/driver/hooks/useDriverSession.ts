@@ -10,6 +10,8 @@ export type DriverIdentity = {
   vehicle_capacity: number | null;
   status: string;
   rating_average: number | null;
+  can_accept_pakyawan: boolean;
+  can_accept_deliveries: boolean;
 };
 
 export type DriverSessionState =
@@ -41,7 +43,7 @@ export function useDriverSession() {
     const { data: driver } = await supabase
       .from("drivers")
       .select(
-        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average"
+        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries"
       )
       .eq("auth_user_id", user.id)
       .maybeSingle();
@@ -51,12 +53,16 @@ export function useDriverSession() {
       return;
     }
 
-    if (driver.status === "inactive") {
+    const identity = driver as DriverIdentity;
+    identity.can_accept_pakyawan = Boolean(identity.can_accept_pakyawan);
+    identity.can_accept_deliveries = Boolean(identity.can_accept_deliveries);
+
+    if (identity.status === "inactive") {
       setState({ status: "blocked", driver: null });
       return;
     }
 
-    setState({ status: "active", driver: driver as DriverIdentity });
+    setState({ status: "active", driver: identity });
   }, []);
 
   useEffect(() => {
