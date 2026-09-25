@@ -28,7 +28,7 @@ export function JobCountdown({
     }
     const timer = window.setTimeout(() => setNow(Date.now()), 1000);
     return () => window.clearTimeout(timer);
-  });
+  }, [left, onExpire]);
 
   if (left <= 0) return null;
 

@@ -112,23 +112,7 @@ export function ActiveJobPage() {
     return null;
   }
 
-  const activeRideId = job.job?.service === "ride" ? job.job.ride.id : null;
-  const authUid = session.status === "active" ? session.authUserId : null;
-  const trackable =
-    job.job?.service === "ride" &&
-    ["accepted", "arrived", "in_progress"].includes(job.job.ride.status);
-  const gps = useDriverGps({
-    rideId: activeRideId,
-    authUserId: authUid,
-    tracking: trackable,
-  });
-  const chatBadge = useRideChatUnread({
-    rideId: activeRideId,
-    chatOpen: showChat,
-  });
-
-  // Pakyawan + delivery render in their dedicated Hub-native views.
-  // Ride Now continues below. Backend remains authoritative in all cases.
+  // Early return for non-ride services so we can safely access ride properties below
   if (job.job.service === "pakyawan") {
     return (
       <DriverPage title="Active" kicker="Current job">
@@ -175,7 +159,24 @@ export function ActiveJobPage() {
     );
   }
 
+  // From here on, job.job.service === "ride" is guaranteed
   const ride = job.job.ride;
+  const activeRideId = ride.id;
+  const authUid = session.status === "active" ? session.authUserId : null;
+  const trackable =
+    ["accepted", "arrived", "in_progress"].includes(ride.status);
+
+  // Hooks called unconditionally here (after early returns for other services)
+  const gps = useDriverGps({
+    rideId: activeRideId,
+    authUserId: authUid,
+    tracking: trackable,
+  });
+  const chatBadge = useRideChatUnread({
+    rideId: activeRideId,
+    chatOpen: showChat,
+  });
+
   const action = NEXT_ACTION[ride.status];
 
   const advance = async () => {
@@ -278,7 +279,8 @@ export function ActiveJobPage() {
         ) : null}
       </div>
 
-      {showChat && action ? (
+      {/* Chat should be accessible even on completed/cancelled rides */}
+      {showChat ? (
         <div className="hub-legacy">
           <RideChat
             rideId={ride.id}

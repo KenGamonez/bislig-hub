@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { DriverHeader } from "./components/DriverHeader";
 import { DriverBottomNav } from "./components/DriverBottomNav";
 import { useDriverSession } from "./hooks/useDriverSession";
+import { useDriverPresenceContext } from "./hooks/useDriverPresenceContext";
 import { fetchAssignedRidesForDriver } from "../legacy/lib/rides";
 import { fetchDriverPakyawanBookings } from "../legacy/lib/scheduledBookings";
 import { fetchDriverDeliveries } from "../legacy/lib/deliveries";
@@ -19,6 +20,7 @@ export function DriverShell({ children }: { children: ReactNode }) {
   const session = useDriverSession();
   const location = useLocation();
   const [hasActiveJob, setHasActiveJob] = useState(false);
+  const { online } = useDriverPresenceContext();
 
   const name =
     session.status === "active" ? session.driver.full_name : null;
@@ -51,7 +53,7 @@ export function DriverShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="hub-driver">
-      <DriverHeader name={name} online={false} />
+      <DriverHeader name={name} online={online} />
       <main className="hub-driver__main" id="driver-main">
         {children}
       </main>

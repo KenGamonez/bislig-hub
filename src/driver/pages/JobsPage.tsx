@@ -5,7 +5,7 @@ import { JobCard } from "../components/JobCard";
 import { LoadingState } from "../components/LoadingState";
 import { StatusPill } from "../components/StatusPill";
 import { useDriverJobs } from "../hooks/useDriverJobs";
-import { useDriverPresence } from "../hooks/useDriverPresence";
+import { useDriverPresenceContext } from "../hooks/useDriverPresenceContext";
 import { useDriverSession } from "../hooks/useDriverSession";
 
 /**
@@ -15,7 +15,7 @@ import { useDriverSession } from "../hooks/useDriverSession";
  */
 export function JobsPage() {
   const session = useDriverSession();
-  const presence = useDriverPresence();
+  const presence = useDriverPresenceContext();
 
   const driverId = session.status === "active" ? session.driver.id : null;
   const jobs = useDriverJobs({

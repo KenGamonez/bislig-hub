@@ -3,6 +3,7 @@ import { DriverPage } from "../components/DriverPage";
 import { EmptyState } from "../components/EmptyState";
 import { LoadingState } from "../components/LoadingState";
 import { useDriverSession } from "../hooks/useDriverSession";
+import { useDriverPresenceContext } from "../hooks/useDriverPresenceContext";
 import { useDriverReputation } from "../hooks/useDriverReputation";
 import { DriverIdentityCard } from "../components/DriverIdentityCard";
 import { DriverStats } from "../components/DriverStats";
@@ -11,6 +12,7 @@ import { DriverAccountActions } from "../components/DriverAccountActions";
 
 export function YouPage() {
   const session = useDriverSession();
+  const { online } = useDriverPresenceContext();
   const driverId = session.status === "active" ? session.driver.id : null;
   const { reputation, loading: reputationLoading } = useDriverReputation(driverId);
 
@@ -60,7 +62,7 @@ export function YouPage() {
         email={driver.email}
         canAcceptPakyawan={driver.can_accept_pakyawan}
         canAcceptDeliveries={driver.can_accept_deliveries}
-        online={false}
+        online={online}
       />
 
       {reputation ? (
