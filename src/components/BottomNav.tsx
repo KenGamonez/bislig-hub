@@ -38,10 +38,10 @@ function ActivityIcon() {
   );
 }
 
-function AccountIcon() {
+function DriverIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="1.6" />
+      <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />
       <path d="M5.5 19a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
@@ -51,7 +51,7 @@ const items: NavItem[] = [
   { label: "Home", to: "/", icon: <HomeIcon /> },
   { label: "Rides", to: "/ride", icon: <RidesIcon /> },
   { label: "Activity", to: "/history", icon: <ActivityIcon /> },
-  { label: "Account", to: "/account", icon: <AccountIcon />, disabled: true },
+  { label: "Driver", to: "/driver", icon: <DriverIcon /> },
 ];
 
 export function BottomNav() {

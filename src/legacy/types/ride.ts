@@ -1,0 +1,56 @@
+export type RequestedVehicleType = 'motorcycle' | 'umbak' | 'tricycle'
+
+export type RideStatus =
+  | 'requested'
+  | 'accepted'
+  | 'arrived'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_driver'
+
+export type Ride = {
+  id: string
+  customer_auth_id: string | null
+  customer_name: string
+  customer_phone: string
+  pickup_address: string
+  pickup_lat: number | null
+  pickup_lng: number | null
+  destination_address: string
+  destination_lat: number | null
+  destination_lng: number | null
+  driver_id: string | null
+  passenger_count: number
+  passenger_type: string
+  destination_mode: 'same' | 'multiple'
+  destination_stops: string[] | null
+  vehicle_type: RequestedVehicleType | null
+  fare_cents: number | null
+  fare_source: 'matrix' | 'distance' | null
+  status: RideStatus
+  rating?: number | null
+  rating_comment?: string | null
+  created_at: string
+}
+
+export type CancelledByRole = 'customer' | 'driver'
+
+export type RideCancellation = {
+  id: string
+  ride_id: string
+  cancelled_by: string
+  cancelled_by_role: CancelledByRole
+  reason: string
+  created_at: string
+}
+
+export type RideRating = {
+  id: string
+  ride_id: string
+  rater_id: string
+  rated_user_id: string
+  stars: number
+  comment: string | null
+  created_at: string
+}

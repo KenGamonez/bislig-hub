@@ -1,0 +1,172 @@
+import { useEffect, useRef, useState } from 'react'
+import * as maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+
+type MapViewProps = {
+  driverLatitude?: number | null
+  driverLongitude?: number | null
+  pickupLatitude?: number | null
+  pickupLongitude?: number | null
+  className?: string
+  height?: number
+}
+
+export function MapView({
+  driverLatitude = null,
+  driverLongitude = null,
+  pickupLatitude = null,
+  pickupLongitude = null,
+  className,
+  height = 400,
+}: MapViewProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const driverMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const pickupMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const pickupCameraLocationRef = useRef<string | null>(null)
+  const [mapReady, setMapReady] = useState(false)
+
+  useEffect(() => {
+    const container = containerRef.current
+
+    if (!container || mapRef.current) {
+      return
+    }
+
+    const map = new maplibregl.Map({
+      container,
+      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      center: [126.327, 8.188],
+      zoom: 12,
+      attributionControl: { compact: true },
+    })
+
+    mapRef.current = map
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right')
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left')
+
+    map.on('load', () => {
+      map.resize()
+      setMapReady(true)
+    })
+
+    return () => {
+      driverMarkerRef.current?.remove()
+      driverMarkerRef.current = null
+      pickupMarkerRef.current?.remove()
+      pickupMarkerRef.current = null
+      pickupCameraLocationRef.current = null
+      setMapReady(false)
+      map.remove()
+      mapRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const hasDriverLocation =
+      typeof driverLatitude === 'number' &&
+      Number.isFinite(driverLatitude) &&
+      typeof driverLongitude === 'number' &&
+      Number.isFinite(driverLongitude)
+
+    if (!mapReady || !map) {
+      return
+    }
+
+    if (!hasDriverLocation) {
+      driverMarkerRef.current?.remove()
+      driverMarkerRef.current = null
+      return
+    }
+
+    if (driverMarkerRef.current) {
+      driverMarkerRef.current.setLngLat([driverLongitude, driverLatitude])
+      return
+    }
+
+    const markerElement = document.createElement('div')
+    markerElement.setAttribute('aria-label', 'Driver location')
+    markerElement.style.width = '18px'
+    markerElement.style.height = '18px'
+    markerElement.style.borderRadius = '50%'
+    markerElement.style.backgroundColor = '#00E88A'
+    markerElement.style.border = '2px solid #071012'
+    markerElement.style.boxShadow = '0 0 0 2px rgba(0, 232, 138, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4)'
+
+    driverMarkerRef.current = new maplibregl.Marker({ element: markerElement }).setLngLat([
+      driverLongitude,
+      driverLatitude,
+    ]).addTo(map)
+  }, [driverLatitude, driverLongitude, mapReady])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const hasPickupLocation =
+      typeof pickupLatitude === 'number' &&
+      Number.isFinite(pickupLatitude) &&
+      typeof pickupLongitude === 'number' &&
+      Number.isFinite(pickupLongitude)
+
+    if (!mapReady || !map) {
+      return
+    }
+
+    if (!hasPickupLocation) {
+      pickupMarkerRef.current?.remove()
+      pickupMarkerRef.current = null
+      pickupCameraLocationRef.current = null
+      return
+    }
+
+    const pickupLocationKey = `${pickupLatitude}:${pickupLongitude}`
+    const isNewPickupLocation = pickupCameraLocationRef.current !== pickupLocationKey
+
+    if (!pickupMarkerRef.current) {
+      const markerElement = document.createElement('div')
+      markerElement.setAttribute('aria-label', 'Pickup location')
+      markerElement.style.width = '18px'
+      markerElement.style.height = '18px'
+      markerElement.style.borderRadius = '50%'
+      markerElement.style.backgroundColor = '#F7F9FA'
+      markerElement.style.border = '2px solid #00E88A'
+      markerElement.style.boxShadow = '0 0 0 3px rgba(0, 232, 138, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4)'
+
+      pickupMarkerRef.current = new maplibregl.Marker({ element: markerElement }).setLngLat([
+        pickupLongitude,
+        pickupLatitude,
+      ]).addTo(map)
+    } else {
+      pickupMarkerRef.current.setLngLat([pickupLongitude, pickupLatitude])
+    }
+
+    if (isNewPickupLocation) {
+      const previous = pickupCameraLocationRef.current?.split(':').map(Number)
+      const jumped =
+        !previous ||
+        Math.abs(previous[0] - pickupLatitude) > 0.005 ||
+        Math.abs(previous[1] - pickupLongitude) > 0.005
+
+      if (jumped) {
+        map.flyTo({ center: [pickupLongitude, pickupLatitude], essential: false })
+      }
+
+      pickupCameraLocationRef.current = pickupLocationKey
+    }
+  }, [pickupLatitude, pickupLongitude, mapReady])
+
+  return (
+    <div
+      ref={containerRef}
+      className={className}
+      aria-label="Bislig City map"
+      style={{
+        position: 'relative',
+        width: '100%',
+        height,
+        minHeight: height,
+      }}
+    />
+  )
+}

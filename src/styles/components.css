@@ -429,6 +429,13 @@
   color: var(--text-faint);
 }
 
+.home-foot__admin {
+  color: var(--text-faint);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 600;
+}
+
 /* Placeholder pages */
 .placeholder {
   padding-top: 14px;

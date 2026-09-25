@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
 import { ComingSoonCard, ServiceCard } from "../components/ServiceCard";
 
@@ -85,6 +86,12 @@ export function Home() {
               to="/pakyawan"
               icon={<PakyawanIcon />}
             />
+            <ServiceCard
+              title="Delivery"
+              description="Send food & parcels across Bislig City."
+              to="/delivery"
+              icon={<DeliveryIcon />}
+            />
           </div>
         </section>
 
@@ -92,16 +99,40 @@ export function Home() {
         <section className="stack stack--muted" aria-labelledby="soon-heading">
           <SectionHeader title="Coming Soon" subtitle="More local services on the way" kicker="Next up" />
           <div className="card-grid card-grid--soon" id="soon-heading">
-            <ComingSoonCard title="Delivery" description="Food & parcel delivery from local shops." icon={<DeliveryIcon />} />
             <ComingSoonCard title="Car Rental" description="Self-drive rentals via GoDrive." icon={<CarIcon />} />
             <ComingSoonCard title="Services" description="Local businesses and everyday services." icon={<ServicesIcon />} />
           </div>
-          <p className="soon-note">Delivery, Car Rental and Services are preview items only — workflows will launch after Transport is stable.</p>
+          <p className="soon-note">Car Rental and Services are preview items only — they will launch when ready.</p>
+        </section>
+
+        {/* Driver entry */}
+        <section className="stack stack--muted" aria-labelledby="drive-heading">
+          <SectionHeader title="Drive with Hub" subtitle="Earn on your own schedule" kicker="For drivers" />
+          <div className="card-grid" id="drive-heading">
+            <ServiceCard
+              title="Become a driver"
+              description="Apply once, drive for rides, pakyawan & delivery."
+              to="/become-a-driver"
+              icon={<RideIcon />}
+            />
+            <ServiceCard
+              title="Driver login"
+              description="Already driving? Open your dashboard."
+              to="/driver"
+              icon={<PakyawanIcon />}
+            />
+          </div>
         </section>
 
         <footer className="home-foot">
           <p className="home-foot__text">
-            Bislig Hub is the consumer platform for the city. Transport runs on the existing Bislig Ride system — no duplicate backend.
+            Bislig Hub is the consumer platform for the city. Rides, pakyawan
+            and delivery run on one shared operations backend.
+          </p>
+          <p className="home-foot__text">
+            <Link to="/admin" className="home-foot__admin">
+              Admin
+            </Link>
           </p>
         </footer>
       </div>
