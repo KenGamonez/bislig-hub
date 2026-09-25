@@ -383,6 +383,47 @@ button.bottom-nav__item {
 }
 
 
+/* Phase 3B — Hub admin chrome (login wall + operations header) */
+
+.hub-admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hub-admin-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hub-admin-logo {
+  height: 34px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.hub-auth-logo {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 380px) {
+  .hub-admin-logo {
+    height: 28px;
+  }
+
+  .hub-admin-identity {
+    gap: 10px;
+  }
+}
+
 /* Phase 1 consolidation — home utilities: language + install */
 
 .home-utils {

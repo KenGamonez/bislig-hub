@@ -9,11 +9,7 @@ export function Admin() {
   const onViewChange = useLegacyViewChange();
   return (
     <LegacyShell>
-      <AdminExperience
-        view="admin"
-        onViewChange={onViewChange}
-        onBack={() => onViewChange("Rider")}
-      />
+      <AdminExperience onBack={() => onViewChange("Rider")} />
     </LegacyShell>
   );
 }

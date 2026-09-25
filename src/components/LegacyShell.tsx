@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/ride-legacy.css";
-import type { AppViewMode } from "../legacy/components/AppHeader";
+
+/** Legacy view names (mirrors the removed legacy AppHeader contract). */
+export type AppViewMode = "Rider" | "driver" | "admin";
 
 /**
  * Shell for ported Bislig Ride screens.

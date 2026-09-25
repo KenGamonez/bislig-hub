@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import sanjayPhoto from '../assets/Sanjay Monteroso.jpg'
-import { AppHeader } from '../components/AppHeader'
 import { AdminLogin } from '../components/AdminLogin'
 import { MapView } from '../components/MapView'
 import { type AdminDriver, type AdminRide, type DriverAvailability, type DriverStatus } from '../lib/adminDemoData'
@@ -271,12 +270,8 @@ const rideOfferStatusLabels: Record<string, string> = {
 
 export function AdminExperience({
   onBack,
-  view,
-  onViewChange,
 }: {
   onBack?: () => void
-  view: 'Rider' | 'driver' | 'admin'
-  onViewChange: (view: 'Rider' | 'driver' | 'admin') => void
 }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activeTab, setActiveTab] = useState<AdminTab>('overview')
@@ -1779,31 +1774,27 @@ useEffect(() => {
   }
 
   if (!isLoggedIn) {
-    return <AdminLogin onBack={onBack} view={view} onViewChange={onViewChange} />
+    return <AdminLogin onBack={onBack} />
   }
 
   return (
     <>
-      <AppHeader
-        view={view}
-        onViewChange={onViewChange}
-        primaryLabel="My Rides"
-        onPrimaryAction={() => onViewChange('Rider')}
-      />
-
     <div className="admin-shell">
       <button type="button" className="secondary-action compact-button admin-back-button" onClick={onBack}>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M19 12H5" />
           <path d="m12 19-7-7 7-7" />
         </svg>
-        Back to Ride Booking
+        Back to Home
       </button>
 
-      <header className="admin-header">
-        <div>
-          <p className="section-label">Admin</p>
-          <h2>Operations Center</h2>
+      <header className="admin-header hub-admin-header">
+        <div className="hub-admin-identity">
+          <img src="/assets/bislig-hub-logo.png" alt="Bislig Hub" className="hub-admin-logo" />
+          <div>
+            <p className="section-label">Bislig Hub · Admin</p>
+            <h2>Operations Center</h2>
+          </div>
         </div>
         <button type="button" className="secondary-action compact-button" onClick={() => void handleLogout()} disabled={isLoggingOut}>
           {isLoggingOut ? 'Signing out...' : 'Logout'}

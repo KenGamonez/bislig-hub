@@ -1,15 +1,12 @@
 import { useState } from 'react'
-import { AppHeader } from './AppHeader'
 import { supabase } from '../lib/supabase'
 
 type AdminLoginProps = {
   onLogin?: () => void
   onBack?: () => void
-  view: 'Rider' | 'driver' | 'admin'
-  onViewChange: (view: 'Rider' | 'driver' | 'admin') => void
 }
 
-export function AdminLogin({ onLogin, onBack, view, onViewChange }: AdminLoginProps) {
+export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -58,12 +55,6 @@ export function AdminLogin({ onLogin, onBack, view, onViewChange }: AdminLoginPr
 
   return (
     <>
-      <AppHeader
-        view={view}
-        onViewChange={onViewChange}
-        primaryLabel="My Rides"
-        onPrimaryAction={() => onViewChange('Rider')}
-      />
       <div className="auth-shell">
       <div className="auth-card">
         <button type="button" className="secondary-action compact-button auth-back" onClick={onBack}>
@@ -71,10 +62,11 @@ export function AdminLogin({ onLogin, onBack, view, onViewChange }: AdminLoginPr
             <path d="M19 12H5" />
             <path d="m12 19-7-7 7-7" />
           </svg>
-          Back to Rider
+          Back to Home
         </button>
 
         <div className="auth-header">
+          <img src="/assets/bislig-hub-logo.png" alt="Bislig Hub" className="hub-auth-logo" />
           <p className="eyebrow auth-eyebrow">Admin Access</p>
           <h2>Operations login</h2>
         </div>
