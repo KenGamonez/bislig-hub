@@ -25,6 +25,22 @@ const Admin = lazy(() =>
   import("./pages/Admin").then((m) => ({ default: m.Admin }))
 );
 
+// New Hub-native driver UI (Phase 6D; runs alongside the legacy workspace).
+const DriverJobs = lazy(() =>
+  import("./driver/pages/JobsPage").then((m) => ({ default: m.JobsPage }))
+);
+const DriverActive = lazy(() =>
+  import("./driver/pages/ActiveJobPage").then((m) => ({
+    default: m.ActiveJobPage,
+  }))
+);
+const DriverYou = lazy(() =>
+  import("./driver/pages/YouPage").then((m) => ({ default: m.YouPage }))
+);
+const DriverShell = lazy(() =>
+  import("./driver/DriverShell").then((m) => ({ default: m.DriverShell }))
+);
+
 function LegacyFallback() {
   return (
     <div className="container">
@@ -45,6 +61,7 @@ function LegacyFallback() {
  */
 const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
 const DRIVER_PREFIXES = ["/driver"];
+const NEW_DRIVER_PREFIXES = ["/driver/jobs", "/driver/active", "/driver/you"];
 const ADMIN_PREFIXES = ["/admin"];
 
 function matchPrefixes(pathname: string, prefixes: string[]): boolean {
@@ -57,7 +74,28 @@ export default function App() {
   const location = useLocation();
   const isPublicLegacy = matchPrefixes(location.pathname, PUBLIC_LEGACY_PREFIXES);
   const isDriverRoute = matchPrefixes(location.pathname, DRIVER_PREFIXES);
+  const isNewDriverRoute = matchPrefixes(location.pathname, NEW_DRIVER_PREFIXES);
   const isAdminRoute = matchPrefixes(location.pathname, ADMIN_PREFIXES);
+
+  // New Hub-native driver UI has its own shell/chrome.
+  // NOTE: check before isDriverRoute since these paths share the prefix.
+  if (isNewDriverRoute) {
+    return (
+      <div className="app-shell">
+        <div className="app-canvas">
+          <Suspense fallback={<LegacyFallback />}>
+            <DriverShell>
+              <Routes>
+                <Route path="/driver/jobs" element={<DriverJobs />} />
+                <Route path="/driver/active" element={<DriverActive />} />
+                <Route path="/driver/you" element={<DriverYou />} />
+              </Routes>
+            </DriverShell>
+          </Suspense>
+        </div>
+      </div>
+    );
+  }
 
   if (isAdminRoute) {
     return (

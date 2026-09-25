@@ -1,0 +1,316 @@
+/* ============================================================
+   BISLIG HUB — NEW DRIVER UI (Phase 6D-1 foundation)
+   Hub-native presentation layer. All rules scoped under
+   .hub-driver so nothing leaks into customer/admin UI.
+   Uses Hub design tokens (slate/orange/white, Inter, 44px+).
+   No legacy green. No business logic lives here.
+   ============================================================ */
+
+.hub-driver {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .hub-driver {
+    max-width: var(--container-max-desktop);
+    border-left: 1px solid var(--border-soft);
+    border-right: 1px solid var(--border-soft);
+  }
+}
+
+/* ---- Header: compact brand + identity + EN/BI ---- */
+.hub-driver__header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--header-height);
+  background: var(--brand-slate-deep);
+  color: var(--text-on-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 var(--content-padding);
+}
+
+.hub-driver__brand {
+  display: inline-flex;
+  line-height: 0;
+  border-radius: 8px;
+}
+
+.hub-driver__logo {
+  height: 28px;
+  width: auto;
+  object-fit: contain;
+}
+
+.hub-driver__header-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-driver__who {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-on-dark);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hub-driver__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.hub-driver__dot.is-on {
+  background: var(--success);
+}
+
+.hub-driver__header .language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-pill);
+  background: transparent;
+}
+
+.hub-driver__header .language-option {
+  min-width: 36px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.hub-driver__header .language-option.is-active {
+  background: var(--brand-orange);
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Page canvas ---- */
+.hub-driver__main {
+  flex: 1;
+  padding: 20px var(--content-padding) calc(var(--bottom-nav-height-safe) + 20px);
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.hub-driver__page {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.hub-driver__page-head {
+  display: grid;
+  gap: 2px;
+}
+
+.hub-driver__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-orange);
+}
+
+.hub-driver__title {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+/* ---- Cards ---- */
+.hub-driver__card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.hub-driver__card-title {
+  font-size: var(--text-md);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+}
+
+.hub-driver__card-sub {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.hub-driver__presence-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hub-driver__facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.hub-driver__facts dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.hub-driver__facts dd {
+  font-size: var(--text-md);
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+/* ---- Pills ---- */
+.hub-driver__pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--bg-surface-soft);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hub-driver__pill--active {
+  background: var(--brand-orange-soft);
+  border-color: rgba(255, 138, 0, 0.3);
+  color: var(--brand-slate-deep);
+}
+
+.hub-driver__pill--success {
+  background: rgba(13, 166, 116, 0.1);
+  border-color: rgba(13, 166, 116, 0.3);
+  color: #0a7a56;
+}
+
+.hub-driver__pill--warn {
+  background: rgba(224, 58, 62, 0.08);
+  border-color: rgba(224, 58, 62, 0.25);
+  color: var(--danger);
+}
+
+/* ---- Empty states ---- */
+.hub-driver__empty {
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+
+.hub-driver__empty-title {
+  font-size: var(--text-md);
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.hub-driver__empty-body {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 30ch;
+}
+
+/* ---- Bottom nav ---- */
+.hub-driver__nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--brand-slate-deep);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.hub-driver__nav-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 6px 10px calc(6px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .hub-driver__nav-inner {
+    max-width: var(--container-max-desktop);
+  }
+}
+
+.hub-driver__nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: var(--touch-min);
+  padding: 5px 6px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 10.5px;
+  font-weight: 600;
+  text-decoration: none;
+  user-select: none;
+}
+
+.hub-driver__nav-item.is-active {
+  color: var(--brand-orange);
+  background: rgba(255, 138, 0, 0.12);
+}
+
+.hub-driver__nav-icon {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.hub-driver__nav-label {
+  line-height: 1.25;
+}
