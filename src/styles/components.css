@@ -609,3 +609,448 @@
 .btn--primary:active {
   transform: translateY(0);
 }
+
+/* Phase 4 — booking forms, status, driver, notices */
+
+.form-header {
+  padding: 18px 0 4px;
+}
+
+.form-header__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-orange);
+  margin-bottom: 6px;
+}
+
+.form-header__title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--brand-slate-deep);
+}
+
+.form-header__subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 36ch;
+}
+
+.booking-form {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.field-block {
+  display: grid;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+}
+
+.optional-tag {
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.input-field {
+  width: 100%;
+  min-height: var(--touch-comfort);
+  padding: 0 14px;
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.input-field::placeholder {
+  color: var(--text-faint);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 3px var(--brand-orange-soft);
+}
+
+.input-field.has-error {
+  border-color: var(--danger);
+}
+
+select.input-field {
+  appearance: none;
+  padding-right: 36px;
+}
+
+.textarea-field {
+  min-height: 88px;
+  padding: 10px 14px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field-error {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.field-note {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.field-note--error {
+  color: var(--danger);
+}
+
+.form-error-message {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  background: rgba(224, 58, 62, 0.08);
+  border: 1px solid rgba(224, 58, 62, 0.2);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 359px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fare-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  display: grid;
+  gap: 2px;
+}
+
+.fare-box strong {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--brand-slate-deep);
+}
+
+.fare-box small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: var(--touch-comfort) 1fr var(--touch-comfort);
+  align-items: stretch;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: var(--touch-comfort);
+}
+
+.stepper button {
+  border: 0;
+  background: var(--bg-surface-soft);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--brand-slate-deep);
+  cursor: pointer;
+  min-height: var(--touch-comfort);
+}
+
+.stepper button:active {
+  background: var(--bg-surface-muted);
+}
+
+.stepper output {
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.link-button {
+  justify-self: start;
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  min-height: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-slate-soft);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.form-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin-top: 4px;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--ghost {
+  background: var(--bg-surface);
+  border-color: var(--border);
+  color: var(--brand-slate-deep);
+}
+
+.btn--ghost:hover {
+  border-color: var(--border-strong);
+}
+
+.btn--danger {
+  color: var(--danger);
+}
+
+.btn--danger-solid {
+  background: var(--danger);
+  color: #fff;
+}
+
+.form-footnote {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.status-card {
+  margin-top: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 20px 18px;
+  box-shadow: var(--shadow-card);
+  display: grid;
+  gap: 12px;
+}
+
+.status-card__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-orange);
+}
+
+.status-card__title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--brand-slate-deep);
+  line-height: 1.15;
+}
+
+.status-card__text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.status-card__route {
+  display: grid;
+  gap: 10px;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.status-card__route dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.status-card__route dd {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.driver-card {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.driver-card__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--brand-slate-deep);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.driver-card__name {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.driver-card__meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.status-card__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.cancel-confirm {
+  display: grid;
+  gap: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.cancel-confirm__title {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.notice-card {
+  margin-top: 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px 20px;
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  justify-items: center;
+}
+
+.notice-card__title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--brand-slate-deep);
+}
+
+.notice-card__text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.loading-block {
+  margin-top: 64px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 3px solid var(--border);
+  border-top-color: var(--brand-orange);
+  animation: hub-spin 0.9s linear infinite;
+}
+
+@keyframes hub-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.timing-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.timing-choice {
+  min-height: 52px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.timing-choice.is-active {
+  border-color: var(--brand-orange);
+  background: var(--brand-orange-soft);
+  color: var(--brand-slate-deep);
+}
+
+.flow-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.flow-progress-step {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-faint);
+}
+
+.flow-progress-step.is-current {
+  background: var(--brand-slate-deep);
+  border-color: var(--brand-slate-deep);
+  color: #fff;
+}
+
+.flow-progress-step.is-done {
+  background: var(--brand-orange-soft);
+  border-color: rgba(255, 138, 0, 0.3);
+  color: var(--brand-orange);
+}
