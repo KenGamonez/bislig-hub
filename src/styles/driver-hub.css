@@ -120,12 +120,263 @@
   letter-spacing: 0.08em;
 }
 
-/* ---- Focus rings: Hub accent (width/offset preserved) ---- */
-.driver-hub *:focus-visible {
+/* ---- Focus rings: Hub accent (width/offset preserved) ----
+   :is() keeps (0,2,1), beating legacy (0,2,0) focus rules. ---- */
+.driver-hub :is(button, a, input, select, textarea):focus-visible {
   outline-color: var(--brand-orange);
+}
+
+/* ---- Scheduled/application hero accents + eyebrows (0,4,0 beats 0,3,0) ---- */
+.driver-hub .scheduled-shell .scheduled-header .eyebrow,
+.driver-hub .application-shell .application-header .eyebrow,
+.driver-hub .application-card.application-success .eyebrow,
+.driver-hub .application-step-heading .eyebrow {
+  color: var(--text-muted);
+}
+
+.driver-hub .scheduled-shell .scheduled-header .hero-accent,
+.driver-hub .application-shell .application-header .hero-accent {
+  color: var(--brand-orange);
+}
+
+/* ---- Pakyawan route helper text ---- */
+.driver-hub .pakyawan-route small {
+  color: var(--text-secondary);
 }
 
 /* ---- Driver shell rhythm: Hub spacing ---- */
 .driver-hub .driver-shell {
   gap: 16px;
+}
+
+/* ============================================================
+   Phase 6B-fix: remaining brand-green leaks + responsive guards.
+   Every rule below targets a green declaration audited as BRAND
+   (not semantic) on driver-rendered surfaces, or a flex row that
+   can collide at 360px. Specificity meets/exceeds the legacy rule
+   it overrides; driver-hub.css loads last so ties resolve here.
+   ============================================================ */
+
+/* ---- Dominant Accept CTA (was solid green) ---- */
+.driver-hub .driver-dashboard .work-state .accept-cta,
+.driver-hub .driver-dashboard .work-state .accept-cta:hover,
+.driver-hub .driver-dashboard .work-state .accept-cta:focus-visible {
+  background: var(--brand-orange);
+  border-color: var(--brand-orange);
+  color: #ffffff;
+}
+
+.driver-hub .driver-dashboard .work-state .accept-cta:hover,
+.driver-hub .driver-dashboard .work-state .accept-cta:focus-visible {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+/* ---- Login submit (high-specificity green override) ---- */
+.driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action {
+  background: var(--brand-orange);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+/* ---- Form submit CTAs on scheduled/application shells ---- */
+.driver-hub .scheduled-shell .request-ride-action,
+.driver-hub .application-shell .request-ride-action {
+  background: var(--brand-orange);
+  border-color: transparent;
+  color: #ffffff;
+}
+
+.driver-hub .scheduled-shell .request-ride-action:hover,
+.driver-hub .scheduled-shell .request-ride-action:focus-visible,
+.driver-hub .application-shell .request-ride-action:hover,
+.driver-hub .application-shell .request-ride-action:focus-visible {
+  background: var(--accent-hover);
+  border-color: transparent;
+}
+
+/* ---- Auth inputs / toggles / links ---- */
+.driver-hub .auth-card .auth-eyebrow {
+  color: var(--text-muted);
+}
+
+.driver-hub .auth-card .input-field:focus {
+  border-color: var(--brand-orange);
+}
+
+.driver-hub .auth-card .password-visibility-toggle:hover,
+.driver-hub .auth-card .password-visibility-toggle:focus-visible {
+  color: var(--brand-orange);
+}
+
+.driver-hub .auth-card .link-button:hover {
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Dash header glow (was green radial) + avatar fallback ---- */
+.driver-hub .driver-dash-header {
+  background:
+    radial-gradient(900px 240px at 88% -40%, rgba(255, 138, 0, 0.14), transparent 60%),
+    var(--brand-slate-deep);
+}
+
+.driver-hub .driver-avatar .driver-photo.driver-photo-fallback {
+  color: var(--text-muted);
+}
+
+.driver-hub .driver-hero-copy .section-label {
+  color: var(--text-muted);
+}
+
+.driver-hub .driver-hero-rating .rating-stars-inline,
+.driver-hub .pad-rating-box .rating-star.selected,
+.driver-hub .pad-rating-box .rating-stars-inline {
+  color: var(--brand-orange);
+}
+
+/* ---- State badges (tinted brand -> Hub tint; text still states state) ---- */
+.driver-hub .online-badge,
+.driver-hub .live-badge,
+.driver-hub .progress-badge,
+.driver-hub .arrived-badge {
+  background: var(--brand-orange-soft);
+  color: var(--brand-slate-deep);
+}
+
+.driver-hub .driver-status-chip.is-online .status-chip-label {
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Pakyawan / delivery offer accents ---- */
+.driver-hub .pak-req-eyebrow {
+  color: var(--text-muted);
+}
+
+.driver-hub .pakyawan-route small,
+.driver-hub .pakyawan-badge,
+.driver-hub .pakyawan-accepted {
+  background: var(--brand-orange-soft);
+  color: var(--brand-slate-deep);
+}
+
+.driver-hub .presence-location-status.is-active {
+  color: var(--brand-slate-deep);
+}
+
+/* ---- Waiting / search indicators ---- */
+.driver-hub .waiting-box::before {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--brand-orange-soft),
+    transparent
+  );
+}
+
+.driver-hub .search-dots i {
+  background: var(--brand-orange);
+}
+
+/* ---- Active-ride accent bar ---- */
+.driver-hub .active-ride-state {
+  border-color: rgba(255, 138, 0, 0.3);
+}
+
+.driver-hub .active-ride-state::before {
+  background: var(--brand-orange);
+}
+
+/* ---- Chat toast + notification unread ---- */
+.driver-hub .chat-notification-toast {
+  border-left-color: var(--brand-orange);
+}
+
+.driver-hub .chat-notification-view:hover,
+.driver-hub .chat-notification-view:focus-visible {
+  background: var(--brand-orange);
+  color: #ffffff;
+}
+
+.driver-hub .notification-item.unread {
+  border-left-color: var(--brand-orange);
+}
+
+/* ---- Application stepper + upload accents (BecomeDriver) ---- */
+.driver-hub .application-steps-pill::before {
+  background: var(--brand-orange);
+}
+
+.driver-hub .application-progress-step.is-active .application-progress-marker {
+  border-color: var(--brand-orange);
+  color: var(--brand-orange);
+}
+
+.driver-hub .application-progress-step.is-complete .application-progress-marker {
+  border-color: var(--brand-orange);
+  background: var(--brand-orange);
+}
+
+.driver-hub .application-step-heading .eyebrow {
+  color: var(--text-muted);
+}
+
+.driver-hub .file-upload-field.has-file .file-upload-control {
+  border-color: var(--brand-orange);
+}
+
+.driver-hub .file-upload-field.has-file .file-upload-icon {
+  color: var(--brand-orange);
+  border-color: var(--brand-orange);
+}
+
+.driver-hub .file-upload-field.has-file .file-upload-title {
+  color: var(--brand-slate-deep);
+}
+
+.driver-hub .file-upload-input:focus-visible ~ .file-upload-label {
+  outline-color: var(--brand-orange);
+}
+
+/* ============================================================
+   Responsive composition guards (360-428px).
+   Flex rows wrap instead of colliding; children can shrink;
+   touch targets and type scale are untouched.
+   ============================================================ */
+.driver-hub .section-heading,
+.driver-hub .state-heading,
+.driver-hub .driver-dash-header {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+
+.driver-hub .section-heading > *,
+.driver-hub .state-heading > *,
+.driver-hub .driver-dash-copy,
+.driver-hub .driver-header-controls {
+  min-width: 0;
+}
+
+.driver-hub .driver-header-controls {
+  flex-wrap: wrap;
+}
+
+.driver-hub .history-list li,
+.driver-hub .history-main,
+.driver-hub .history-footer,
+.driver-hub .history-passenger,
+.driver-hub .mini-list li {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.driver-hub .history-main > *,
+.driver-hub .history-footer > *,
+.driver-hub .mini-list li > * {
+  min-width: 0;
+}
+
+@media (max-width: 380px) {
+  .driver-hub .pak-req-split {
+    grid-template-columns: 1fr;
+  }
 }
