@@ -14,7 +14,11 @@ import { RideChat } from "../../legacy/components/RideChat";
 import { updateRideStatus } from "../../legacy/lib/rides";
 import { formatCentavos } from "../../legacy/lib/fare";
 import { useActiveJob } from "../hooks/useActiveJob";
+import { useDriverGps } from "../hooks/useDriverGps";
 import { useDriverSession } from "../hooks/useDriverSession";
+import { useRideChatUnread } from "../hooks/useRideChatUnread";
+import { DriverMap } from "../components/DriverMap";
+import { GpsStatus } from "../components/GpsStatus";
 
 const NEXT_ACTION: Record<string, { label: string; next: "arrived" | "in_progress" | "completed" }> = {
   accepted: { label: "Arrived", next: "arrived" },
@@ -44,6 +48,21 @@ export function ActiveJobPage() {
   const [advanceError, setAdvanceError] = useState("");
   const [showChat, setShowChat] = useState(false);
   const [rated, setRated] = useState(false);
+
+  const activeRideId = job.status === "active" ? job.ride.id : null;
+  const authUid = session.status === "active" ? session.authUserId : null;
+  const trackable =
+    job.status === "active" &&
+    ["accepted", "arrived", "in_progress"].includes(job.ride.status);
+  const gps = useDriverGps({
+    rideId: activeRideId,
+    authUserId: authUid,
+    tracking: trackable,
+  });
+  const chatBadge = useRideChatUnread({
+    rideId: activeRideId,
+    chatOpen: showChat,
+  });
 
   if (session.status === "loading" || job.status === "loading") {
     return (
@@ -156,9 +175,13 @@ export function ActiveJobPage() {
             : "Fare settled with passenger"}
         </p>
 
-        <div className="hub-driver__mapslot" aria-label="Map coming in the next update">
-          <p>Live map arrives with GPS in the next update.</p>
-        </div>
+        <DriverMap
+          ownFix={gps.ownFix}
+          passengerFix={gps.passengerFix}
+          pickupLat={ride.pickup_lat}
+          pickupLng={ride.pickup_lng}
+        />
+        <GpsStatus state={trackable ? gps.gpsState : "idle"} note={gps.gpsNote} />
 
         {action ? (
           <ActiveJobActions
@@ -172,6 +195,9 @@ export function ActiveJobPage() {
               onClick={() => setShowChat((open) => !open)}
             >
               {showChat ? "Hide chat" : "Chat"}
+              {!showChat && chatBadge.unread > 0
+                ? ` (${chatBadge.unread} new)`
+                : ""}
             </button>
             <ActiveJobCancel
               rideId={ride.id}

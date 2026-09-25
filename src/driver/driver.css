@@ -601,6 +601,48 @@
   padding: 4px 0;
 }
 
+/* ---- Live map + GPS ---- */
+.hub-driver__mapwrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface-soft);
+}
+
+.hub-driver__mapwrap .hub-driver__map {
+  width: 100%;
+}
+
+.hub-driver__gps {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.hub-driver__gps-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--text-faint);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.hub-driver__gps-dot.is-on {
+  background: var(--success);
+}
+
+.hub-driver__gps-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hub-driver__gps-note {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
 /* ---- Job cards ---- */
 .hub-driver__job {
   background: var(--bg-surface);
