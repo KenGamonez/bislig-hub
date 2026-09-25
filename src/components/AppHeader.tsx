@@ -1,6 +1,7 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-export function AppHeader() {
+export function AppHeader({ trailing }: { trailing?: ReactNode }) {
   return (
     <header className="app-header" role="banner">
       <div className="app-header__inner">
@@ -15,8 +16,11 @@ export function AppHeader() {
           />
         </Link>
 
-        <div className="app-header__right" aria-hidden="true">
-          <span className="app-header__city">Bislig City</span>
+        <div className="app-header__right">
+          {trailing}
+          <span className="app-header__city" aria-hidden="true">
+            Bislig City
+          </span>
         </div>
       </div>
     </header>

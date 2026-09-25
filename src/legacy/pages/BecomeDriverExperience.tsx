@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import { AppHeader, type AppViewMode } from '../components/AppHeader'
 import { createDriverApplication } from '../lib/driverApplications'
 import {
   buildApplicationFilePaths,
@@ -93,12 +92,10 @@ const stepRequiredFields: Array<Array<keyof ApplicationForm>> = [
 const stepRequiredFiles: ApplicationFileField[][] = [['driver_photo'], ['drivers_license'], []]
 
 type BecomeDriverExperienceProps = {
-  view: AppViewMode
-  onViewChange: (view: AppViewMode) => void
   onHome: () => void
 }
 
-export function BecomeDriverExperience({ view, onViewChange, onHome }: BecomeDriverExperienceProps) {
+export function BecomeDriverExperience({ onHome }: BecomeDriverExperienceProps) {
   const [step, setStep] = useState(0)
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -369,17 +366,15 @@ export function BecomeDriverExperience({ view, onViewChange, onHome }: BecomeDri
     </section>
   )
 
-  const header = <AppHeader view={view} onViewChange={onViewChange} primaryLabel="My Rides" onPrimaryAction={() => onViewChange('Rider')} />
-
   if (submitted) {
-    return <>{header}<main className="application-shell"><section className="application-card application-success">
+    return <><main className="application-shell"><section className="application-card application-success">
       <p className="eyebrow">Application received</p><h1>Thank you for your interest in Bislig Hub!</h1>
       <p>We've received your application. Our team will review your information and contact you regarding the next steps.</p>
       <button type="button" className="primary-action" onClick={onHome}>Return to Bislig Hub</button>
     </section></main></>
   }
 
-  return <>{header}<main className="application-shell">
+  return <><main className="application-shell">
     <section className="section-header application-header">
       <p className="eyebrow">Driver partnership</p>
       <h1>Become a <span className="hero-accent">Bislig Hub Driver</span></h1>

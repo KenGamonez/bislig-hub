@@ -1,5 +1,4 @@
 ﻿import { useState } from 'react'
-import { AppHeader } from './AppHeader'
 import { supabase } from '../lib/supabase'
 import { sendDriverPasswordReset, signInDriverWithIdentifier } from '../lib/driverAuth'
 import { useLanguage } from '../lib/i18n'
@@ -7,13 +6,11 @@ import { useLanguage } from '../lib/i18n'
 type DriverLoginProps = {
   onLogin: (driverId: string) => void
   onBack?: () => void
-  view: 'Rider' | 'driver' | 'admin'
-  onViewChange: (view: 'Rider' | 'driver' | 'admin') => void
 }
 
 type DriverLoginMode = 'login' | 'forgot' | 'sent'
 
-export function DriverLogin({ onLogin, onBack, view, onViewChange }: DriverLoginProps) {
+export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
   const { t } = useLanguage()
   const [mode, setMode] = useState<DriverLoginMode>('login')
   const [identifier, setIdentifier] = useState('')
@@ -101,12 +98,6 @@ export function DriverLogin({ onLogin, onBack, view, onViewChange }: DriverLogin
 
   return (
     <>
-      <AppHeader
-        view={view}
-        onViewChange={onViewChange}
-        primaryLabel={t('nav.myRides')}
-        onPrimaryAction={() => onViewChange('Rider')}
-      />
       <div className="auth-shell driver-auth-shell">
         <div className="auth-card driver-auth-card">
           <button type="button" className="secondary-action compact-button auth-back" onClick={onBack}>

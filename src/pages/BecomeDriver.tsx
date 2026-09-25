@@ -6,11 +6,7 @@ export function BecomeDriver() {
   const onViewChange = useLegacyViewChange();
   return (
     <LegacyShell>
-      <BecomeDriverExperience
-        view="Rider"
-        onViewChange={onViewChange}
-        onHome={() => onViewChange("Rider")}
-      />
+      <BecomeDriverExperience onHome={() => onViewChange("Rider")} />
     </LegacyShell>
   );
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { AppHeader } from '../components/AppHeader'
 import { PASSWORD_HELP_TEXT, validatePasswordStrength } from '../lib/driverAccounts'
 
 // Hub adaptation: the legacy sessionStorage view-handoff pointed at the old
@@ -120,12 +119,6 @@ export function DriverPasswordReset() {
 
   return (
     <>
-      <AppHeader
-        view="driver"
-        onViewChange={goToDriverLogin}
-        primaryLabel="My Rides"
-        onPrimaryAction={goToDriverLogin}
-      />
       <div className="auth-shell">
         <div className="auth-card">
           <button type="button" className="secondary-action compact-button auth-back" onClick={goToDriverLogin}>

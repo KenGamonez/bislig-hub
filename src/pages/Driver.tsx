@@ -99,8 +99,6 @@ export function Driver() {
     return (
       <LegacyShell>
         <DriverLogin
-          view="driver"
-          onViewChange={onViewChange}
           onLogin={(id) => setDriverId(id)}
           onBack={() => onViewChange("Rider")}
         />
@@ -110,11 +108,7 @@ export function Driver() {
 
   return (
     <LegacyShell>
-      <DriverExperience
-        view="driver"
-        onViewChange={onViewChange}
-        onBack={() => onViewChange("Rider")}
-      />
+      <DriverExperience onBack={() => onViewChange("Rider")} />
     </LegacyShell>
   );
 }

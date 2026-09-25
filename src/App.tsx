@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AppHeader } from "./components/AppHeader";
 import { BottomNav } from "./components/BottomNav";
+import { LanguageToggle } from "./legacy/components/LanguageToggle";
 import { Home } from "./pages/Home";
 import { Pakyawan } from "./pages/Pakyawan";
 import { RideNow } from "./pages/RideNow";
@@ -37,36 +38,60 @@ function LegacyFallback() {
 }
 
 /**
- * Ported Bislig Ride screens bring their own (Hub-branded) header, so the
- * Hub header + bottom nav are hidden on those routes to avoid doubled chrome.
+ * Ported screens render Hub chrome instead of the legacy Ride header:
+ * - public legacy pages (/delivery, /become-a-driver): Hub header + bottom nav
+ * - driver workspace (/driver, /driver/reset-password): Hub header only
+ *   (the dashboard keeps its own internal navigation)
+ * - /admin: untouched legacy shell (separate controlled phase)
  */
-const LEGACY_PREFIXES = ["/delivery", "/become-a-driver", "/driver", "/admin"];
+const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
+const DRIVER_PREFIXES = ["/driver"];
+const ADMIN_PREFIXES = ["/admin"];
 
-function isLegacyRoute(pathname: string): boolean {
-  return LEGACY_PREFIXES.some(
+function matchPrefixes(pathname: string, prefixes: string[]): boolean {
+  return prefixes.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
 }
 
 export default function App() {
   const location = useLocation();
-  const legacy = isLegacyRoute(location.pathname);
+  const isPublicLegacy = matchPrefixes(location.pathname, PUBLIC_LEGACY_PREFIXES);
+  const isDriverRoute = matchPrefixes(location.pathname, DRIVER_PREFIXES);
+  const isAdminRoute = matchPrefixes(location.pathname, ADMIN_PREFIXES);
 
-  if (legacy) {
+  if (isAdminRoute) {
     return (
       <div className="app-shell">
         <div className="app-canvas">
           <main id="main-content">
             <Suspense fallback={<LegacyFallback />}>
               <Routes>
-                <Route path="/delivery" element={<Delivery />} />
-                <Route path="/become-a-driver" element={<BecomeDriver />} />
-                <Route path="/driver" element={<Driver />} />
-                <Route path="/driver/reset-password" element={<DriverReset />} />
                 <Route path="/admin" element={<Admin />} />
               </Routes>
             </Suspense>
           </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPublicLegacy || isDriverRoute) {
+    return (
+      <div className="app-shell">
+        <div className="app-canvas">
+          <AppHeader trailing={<LanguageToggle />} />
+          <main className="page" id="main-content">
+            <Suspense fallback={<LegacyFallback />}>
+              <Routes>
+                <Route path="/delivery" element={<Delivery />} />
+                <Route path="/become-a-driver" element={<BecomeDriver />} />
+                <Route path="/driver" element={<Driver />} />
+                <Route path="/driver/reset-password" element={<DriverReset />} />
+              </Routes>
+            </Suspense>
+          </main>
+          {isPublicLegacy && <BottomNav />}
         </div>
       </div>
     );

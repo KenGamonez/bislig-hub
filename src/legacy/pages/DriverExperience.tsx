@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { AppHeader } from '../components/AppHeader'
 import { CancelRideModal } from '../components/CancelRideModal'
 import { MapView } from '../components/MapView'
 import { RideChat } from '../components/RideChat'
@@ -193,12 +192,8 @@ const renderRideStops = (ride: Ride | null) => {
 
 export function DriverExperience({
   onBack,
-  view,
-  onViewChange,
 }: {
   onBack?: () => void
-  view: 'Rider' | 'driver' | 'admin'
-  onViewChange: (view: 'Rider' | 'driver' | 'admin') => void
 }) {
   const [driverOnline, setDriverOnline] = useState(false)
   const [phase, setPhase] = useState<DriverPhase>('offline')
@@ -4526,12 +4521,6 @@ const renderOnlineState = () => (
   if (driverStatusBlocked) {
     return (
       <>
-        <AppHeader
-          view={view}
-          onViewChange={onViewChange}
-          primaryLabel="My Rides"
-          onPrimaryAction={() => onViewChange('Rider')}
-        />
         <div className="auth-shell">
           <div className="auth-card">
             <div className="auth-header">
@@ -4552,13 +4541,6 @@ const renderOnlineState = () => (
 
   return (
     <>
-      <AppHeader
-        view={view}
-        onViewChange={onViewChange}
-        primaryLabel="My Rides"
-        onPrimaryAction={() => onViewChange('Rider')}
-      />
-
     <div className="driver-shell driver-dashboard">
 {showChat && activeRide?.id && (
         <RideChat

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AppHeader, type AppViewMode } from '../components/AppHeader'
 import { PakyawanChatAlertPopup } from '../components/PakyawanChat'
 import { DeliveryChatSection } from '../components/DeliveryChatSection'
 import { DeliveryRating } from '../components/DeliveryRating'
@@ -10,15 +9,7 @@ import { formatCentavos } from '../lib/fare'
 import type { DeliveryBooking } from '../types/delivery'
 import { useLanguage } from '../lib/i18n'
 
-const routeToView = (nextView: AppViewMode) => {
-  try {
-    window.sessionStorage.setItem('bislig-ride-requested-view', nextView)
-  } catch {
-    // sessionStorage unavailable — the default view will be shown
-  }
-  window.history.pushState({}, '', '/')
-  window.location.reload()
-}
+
 
 type PaDeliverForm = {
   package_type: string
@@ -709,7 +700,6 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
     return (
       <>
-        <AppHeader view="Rider" onViewChange={routeToView} primaryLabel={t('nav.myRides')} onPrimaryAction={onBack} />
         <main className="scheduled-shell flow-shell">
           <section className="scheduled-card scheduled-success" id="pad-delivery-box">
             <p className="eyebrow">{status === 'quoted' ? t('pad.quoteReady') : status === 'confirmed' ? t('pad.trackConfirmed') : status === 'assigned' ? t('pad.trackAssigned') : status === 'driver_on_way' ? t('pad.trackOnWay') : status === 'driver_arrived' ? t('pad.trackArrived') : status === 'picked_up' ? t('pad.trackPickedUp') : status === 'in_transit' ? t('pad.trackInTransit') : status === 'delivered' ? t('pad.trackDelivered') : status === 'cancelled' ? t('pad.trackCancelled') : status === 'failed' ? t('pad.trackFailedStatus') : status === 'no_driver' ? t('pad.trackNoDriver') : status === 'pending' || status === 'dispatching' ? t('pad.trackFinding') : t('pad.receivedEyebrow')}</p>
@@ -908,7 +898,6 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
   return (
     <>
-      <AppHeader view="Rider" onViewChange={routeToView} primaryLabel={t('nav.myRides')} onPrimaryAction={onBack} />
       <main className="scheduled-shell flow-shell">
         <section className="section-header scheduled-header pad-hero">
           <p className="eyebrow">{t('pad.eyebrow')}</p>
