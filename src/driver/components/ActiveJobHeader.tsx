@@ -8,10 +8,16 @@ const STAGE_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
-export function ActiveJobHeader({ status }: { status: string }) {
+export function ActiveJobHeader({
+  status,
+  service = "Ride Now",
+}: {
+  status: string;
+  service?: string;
+}) {
   return (
     <div className="hub-driver__jobhead">
-      <span className="hub-driver__jobtype">Ride Now</span>
+      <span className="hub-driver__jobtype">{service}</span>
       <StatusPill tone={status === "cancelled" ? "warn" : "active"}>
         {STAGE_LABEL[status] ?? status}
       </StatusPill>

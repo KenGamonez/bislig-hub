@@ -9,15 +9,25 @@ const INDEX_BY_STATUS: Record<string, number> = {
 
 /**
  * Compact Hub-native journey indicator. Presentation only — progress is
- * derived from the backend ride status, never stored locally.
+ * derived from backend status, never stored locally. Callers may pass
+ * custom steps + index for non-ride lifecycles.
  */
-export function JourneySteps({ status }: { status: string }) {
-  const doneThrough = INDEX_BY_STATUS[status] ?? 0;
+export function JourneySteps({
+  status,
+  steps = STEPS,
+  currentIndex,
+}: {
+  status: string;
+  steps?: readonly string[];
+  currentIndex?: number;
+}) {
+  const doneThrough = currentIndex ?? INDEX_BY_STATUS[status] ?? 0;
+  const terminal = status === "completed" || status === "delivered";
   return (
     <ol className="hub-driver__steps" aria-label="Trip progress">
-      {STEPS.map((label, index) => {
+      {steps.map((label, index) => {
         const done = index < doneThrough;
-        const current = index === doneThrough && status !== "completed";
+        const current = index === doneThrough && !terminal;
         return (
           <li
             key={label}
@@ -25,7 +35,7 @@ export function JourneySteps({ status }: { status: string }) {
             aria-current={current ? "step" : undefined}
           >
             <span className="hub-driver__step-dot" aria-hidden="true">
-              {done || status === "completed" ? "✓" : ""}
+              {done || terminal ? "✓" : ""}
             </span>
             <span className="hub-driver__step-label">{label}</span>
           </li>

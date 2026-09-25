@@ -8,7 +8,9 @@ import { ActiveJobCancel } from "../components/ActiveJobCancel";
 import { ActiveJobCustomer } from "../components/ActiveJobCustomer";
 import { ActiveJobHeader } from "../components/ActiveJobHeader";
 import { ActiveJobRoute } from "../components/ActiveJobRoute";
+import { DeliveryActiveView } from "../components/DeliveryActiveView";
 import { JourneySteps } from "../components/JourneySteps";
+import { PakyawanActiveView } from "../components/PakyawanActiveView";
 import { RatingForm } from "../components/RatingForm";
 import { RideChat } from "../../legacy/components/RideChat";
 import { updateRideStatus } from "../../legacy/lib/rides";
@@ -35,11 +37,6 @@ function friendlyError(error: unknown): string {
   return "Couldn't update this job. Check your connection and try again.";
 }
 
-/**
- * Hub-native active-job workspace (Ride Now). Presentation only: every
- * mutation delegates to existing engine helpers; backend stays source
- * of truth via useActiveJob (realtime + polling + refresh recovery).
- */
 export function ActiveJobPage() {
   const session = useDriverSession();
   const driverId = session.status === "active" ? session.driver.id : null;
@@ -48,21 +45,6 @@ export function ActiveJobPage() {
   const [advanceError, setAdvanceError] = useState("");
   const [showChat, setShowChat] = useState(false);
   const [rated, setRated] = useState(false);
-
-  const activeRideId = job.status === "active" ? job.ride.id : null;
-  const authUid = session.status === "active" ? session.authUserId : null;
-  const trackable =
-    job.status === "active" &&
-    ["accepted", "arrived", "in_progress"].includes(job.ride.status);
-  const gps = useDriverGps({
-    rideId: activeRideId,
-    authUserId: authUid,
-    tracking: trackable,
-  });
-  const chatBadge = useRideChatUnread({
-    rideId: activeRideId,
-    chatOpen: showChat,
-  });
 
   if (session.status === "loading" || job.status === "loading") {
     return (
@@ -126,7 +108,74 @@ export function ActiveJobPage() {
     );
   }
 
-  const ride = job.ride;
+  if (job.status !== "active") {
+    return null;
+  }
+
+  const activeRideId = job.job?.service === "ride" ? job.job.ride.id : null;
+  const authUid = session.status === "active" ? session.authUserId : null;
+  const trackable =
+    job.job?.service === "ride" &&
+    ["accepted", "arrived", "in_progress"].includes(job.job.ride.status);
+  const gps = useDriverGps({
+    rideId: activeRideId,
+    authUserId: authUid,
+    tracking: trackable,
+  });
+  const chatBadge = useRideChatUnread({
+    rideId: activeRideId,
+    chatOpen: showChat,
+  });
+
+  // Pakyawan + delivery render in their dedicated Hub-native views.
+  // Ride Now continues below. Backend remains authoritative in all cases.
+  if (job.job.service === "pakyawan") {
+    return (
+      <DriverPage title="Active" kicker="Current job">
+        {job.error ? (
+          <p className="form-error-message" role="alert">
+            {job.error}{" "}
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => job.retry()}
+            >
+              Retry
+            </button>
+          </p>
+        ) : null}
+        <PakyawanActiveView
+          booking={job.job.booking}
+          onChanged={() => void job.refresh()}
+        />
+      </DriverPage>
+    );
+  }
+
+  if (job.job.service === "delivery") {
+    return (
+      <DriverPage title="Active" kicker="Current job">
+        {job.error ? (
+          <p className="form-error-message" role="alert">
+            {job.error}{" "}
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => job.retry()}
+            >
+              Retry
+            </button>
+          </p>
+        ) : null}
+        <DeliveryActiveView
+          booking={job.job.booking}
+          onChanged={() => void job.refresh()}
+        />
+      </DriverPage>
+    );
+  }
+
+  const ride = job.job.ride;
   const action = NEXT_ACTION[ride.status];
 
   const advance = async () => {

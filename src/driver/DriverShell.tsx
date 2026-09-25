@@ -4,6 +4,8 @@ import { DriverHeader } from "./components/DriverHeader";
 import { DriverBottomNav } from "./components/DriverBottomNav";
 import { useDriverSession } from "./hooks/useDriverSession";
 import { fetchAssignedRidesForDriver } from "../legacy/lib/rides";
+import { fetchDriverPakyawanBookings } from "../legacy/lib/scheduledBookings";
+import { fetchDriverDeliveries } from "../legacy/lib/deliveries";
 import "./driver.css";
 
 /**
@@ -27,9 +29,17 @@ export function DriverShell({ children }: { children: ReactNode }) {
       return;
     }
     let cancelled = false;
-    fetchAssignedRidesForDriver(session.driver.id)
-      .then((items) => {
-        if (!cancelled) setHasActiveJob(items.length > 0);
+    Promise.all([
+      fetchAssignedRidesForDriver(session.driver.id).catch(() => []),
+      fetchDriverPakyawanBookings(session.driver.id).catch(() => []),
+      fetchDriverDeliveries(session.driver.id).catch(() => []),
+    ])
+      .then(([rides, pakyawan, deliveries]) => {
+        if (!cancelled) {
+          setHasActiveJob(
+            rides.length > 0 || pakyawan.length > 0 || deliveries.length > 0
+          );
+        }
       })
       .catch(() => {
         if (!cancelled) setHasActiveJob(false);
