@@ -1,0 +1,92 @@
+/* Bislig Hub — Design Tokens
+   Derived from approved logo: slate #22343A / deep #071012 / orange #FF8A00 / light #FFB547
+*/
+
+:root {
+  /* Brand */
+  --brand-slate: #22343a;
+  --brand-slate-deep: #071012;
+  --brand-slate-soft: #2f4852;
+  --brand-orange: #ff8a00;
+  --brand-orange-light: #ffb547;
+  --brand-orange-soft: rgba(255, 138, 0, 0.1);
+  --brand-orange-soft-strong: rgba(255, 138, 0, 0.14);
+
+  /* Background / Surface */
+  --bg-page: #f6f7f8;
+  --bg-surface: #ffffff;
+  --bg-surface-soft: #f1f3f5;
+  --bg-surface-muted: #eef1f3;
+
+  /* Text */
+  --text-primary: #0f1f24;
+  --text-secondary: #3c4e56;
+  --text-muted: #6b7e87;
+  --text-faint: #8a9ca5;
+  --text-on-dark: #ffffff;
+
+  /* Borders */
+  --border: #e6eaed;
+  --border-strong: #dde3e6;
+  --border-soft: #eef1f3;
+
+  /* Semantic */
+  --accent: var(--brand-orange);
+  --accent-hover: #e67a00;
+  --success: #0da674;
+  --danger: #e03a3e;
+
+  /* Radii */
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Shadows — restrained */
+  --shadow-xs: 0 1px 2px rgba(7, 16, 18, 0.04);
+  --shadow-sm: 0 1px 6px rgba(7, 16, 18, 0.06);
+  --shadow-card: 0 4px 16px rgba(7, 16, 18, 0.06);
+  --shadow-elevated: 0 8px 24px rgba(7, 16, 18, 0.09);
+
+  /* Typography */
+  --font-sans: Inter, "Geist", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 26px;
+  --text-3xl: 32px;
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+
+  /* Touch / Layout */
+  --touch-min: 44px;
+  --touch-comfort: 48px;
+  --header-height: 56px;
+  --bottom-nav-height: 64px;
+  --bottom-nav-height-safe: calc(64px + env(safe-area-inset-bottom, 0px));
+  --container-max: 480px;
+  --container-max-desktop: 520px;
+  --content-padding: 20px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-normal: 220ms;
+}

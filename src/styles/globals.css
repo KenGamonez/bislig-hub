@@ -1,0 +1,155 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100%;
+  isolation: isolate;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-orange);
+  outline-offset: 2px;
+}
+
+/* App shell — centered canvas on desktop */
+.app-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-page);
+}
+
+.app-canvas {
+  flex: 1;
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  background: var(--bg-page);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .app-canvas {
+    max-width: var(--container-max-desktop);
+    border-left: 1px solid var(--border-soft);
+    border-right: 1px solid var(--border-soft);
+    background: var(--bg-page);
+    box-shadow: 0 0 0 1px rgba(7, 16, 18, 0.02);
+  }
+
+  body {
+    background: #eef1f3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-canvas {
+    max-width: 560px;
+  }
+}
+
+/* Page content — accounts for fixed bottom nav on mobile */
+.page {
+  flex: 1;
+  padding-bottom: calc(var(--bottom-nav-height-safe) + 16px);
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding-bottom: 32px;
+  }
+}
+
+.container {
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+}
+
+@media (min-width: 400px) {
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Scrollbar polish */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d6dde0;
+  border-radius: 999px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
