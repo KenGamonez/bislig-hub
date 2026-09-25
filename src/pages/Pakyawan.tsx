@@ -152,7 +152,6 @@ export function Pakyawan() {
   const [destination, setDestination] = useState("");
   const [passengers, setPassengers] = useState("1");
   const [tripType, setTripType] = useState<PakyawanTripType | "">("");
-  const [estimatedHours, setEstimatedHours] = useState("");
   const [specialRequests, setSpecialRequests] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -291,12 +290,6 @@ export function Pakyawan() {
       }
     }
     if (target === 3) {
-      if (
-        estimatedHours &&
-        (!/^\d+$/.test(estimatedHours) || Number(estimatedHours) < 1)
-      ) {
-        next.estimatedHours = "Enter valid hours.";
-      }
       if (!customerName.trim()) next.customerName = "Your name is required.";
       if (!customerPhone.trim())
         next.customerPhone = "Phone number is required.";
@@ -325,7 +318,9 @@ export function Pakyawan() {
         destination: destination.trim(),
         passengers: Number(passengers),
         trip_type: tripType as PakyawanTripType,
-        estimated_hours: estimatedHours ? Number(estimatedHours) : null,
+        // Estimated hours are intentionally not collected; the backend
+        // derives trip duration from the trip type when null.
+        estimated_hours: null,
         special_requests: specialRequests.trim() || null,
       });
       try {
@@ -349,7 +344,7 @@ export function Pakyawan() {
         destination: destination.trim(),
         passengers: Number(passengers),
         trip_type: tripType as PakyawanTripType,
-        estimated_hours: estimatedHours ? Number(estimatedHours) : null,
+        estimated_hours: null,
         special_requests: specialRequests.trim() || null,
         status: "pending",
         driver_id: null,
@@ -749,25 +744,6 @@ export function Pakyawan() {
 
         {step === 3 && (
           <>
-            <label className="field-block">
-              <span className="field-label">
-                Estimated hours <span className="optional-tag">(optional)</span>
-              </span>
-              <input
-                className={`input-field${errors.estimatedHours ? " has-error" : ""}`}
-                type="text"
-                inputMode="numeric"
-                placeholder="e.g. 4"
-                value={estimatedHours}
-                onChange={(e) => {
-                  setEstimatedHours(e.target.value.replace(/[^0-9]/g, ""));
-                  setErrors((c) => ({ ...c, estimatedHours: "" }));
-                }}
-              />
-              {errors.estimatedHours && (
-                <span className="field-error">{errors.estimatedHours}</span>
-              )}
-            </label>
             <label className="field-block">
               <span className="field-label">
                 Special requests <span className="optional-tag">(optional)</span>

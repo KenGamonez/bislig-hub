@@ -1,6 +1,8 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink } from "react-router-dom";
 import { useAppInstall } from "../legacy/lib/appInstall";
 import { useLanguage } from "../legacy/lib/i18n";
+import { InstallHelpDialog } from "./InstallAction";
 
 type NavItem = {
   label: string;
@@ -40,38 +42,35 @@ function AddHomeScreenIcon() {
   );
 }
 
-function DriverIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M5.5 19a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function BottomNav() {
   const { t } = useLanguage();
-  const navigate = useNavigate();
-  const { canInstall, promptInstall } = useAppInstall();
+  const { canInstall, isInstalled, promptInstall } = useAppInstall();
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
   const items: NavItem[] = [
     { label: t("nav.home"), to: "/", icon: <HomeIcon /> },
     { label: t("hub.rides"), to: "/ride", icon: <RidesIcon /> },
-    { label: t("hub.driver"), to: "/driver", icon: <DriverIcon /> },
   ];
 
   const handleAddHomeScreen = async () => {
-    // Same install flow as the Home InstallAction: native prompt when the
-    // browser exposes it, otherwise fall back to the Home guidance panel.
+    // Single shared install flow: native prompt when the browser exposes
+    // it, otherwise the guidance panel below. Installed state needs nothing.
+    if (isInstalled) return;
     if (canInstall) {
       await promptInstall();
       return;
     }
-    navigate("/#install-help");
+    setShowInstallHelp((current) => !current);
   };
 
   return (
-    <nav className="bottom-nav" aria-label="Primary">
-      <div className="bottom-nav__inner">
+    <>
+      {showInstallHelp && !canInstall && !isInstalled && (
+        <div className="install-popover" role="presentation">
+          <InstallHelpDialog onClose={() => setShowInstallHelp(false)} />
+        </div>
+      )}
+      <nav className="bottom-nav" aria-label="Primary">
+        <div className="bottom-nav__inner">
         {items.map((item) => (
           <NavLink
             key={item.label}
@@ -102,7 +101,8 @@ export function BottomNav() {
           </span>
           <span className="bottom-nav__label">{t("hub.addHomeScreen")}</span>
         </button>
-      </div>
-    </nav>
+        </div>
+      </nav>
+    </>
   );
 }

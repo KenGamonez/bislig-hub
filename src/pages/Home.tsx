@@ -1,6 +1,5 @@
 import { SectionHeader } from "../components/SectionHeader";
 import { ServiceCard } from "../components/ServiceCard";
-import { InstallAction } from "../components/InstallAction";
 import { useLanguage } from "../legacy/lib/i18n";
 
 function RideIcon() {
@@ -45,9 +44,6 @@ export function Home() {
             {t("dash.title1")} {t("dash.title2")}
           </h1>
           <p className="hero__subtitle">{t("hub.subtitle")}</p>
-          <div className="home-utils">
-            <InstallAction />
-          </div>
         </section>
 
         {/* Transport */}

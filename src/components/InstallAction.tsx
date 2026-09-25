@@ -1,81 +1,36 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useAppInstall } from "../legacy/lib/appInstall";
 import { useLanguage } from "../legacy/lib/i18n";
 
 /**
- * Real PWA install action for the Hub home dashboard.
- * - Chromium/desktop: captures beforeinstallprompt, invokes native prompt.
- * - iOS/Safari: shows Share → Add to Home Screen guidance.
- * - Already installed: shows a quiet note instead of the button.
- * - Unsupported: shows a graceful fallback note, never broken UI.
+ * Shared install guidance dialog (part of the single PWA install system:
+ * manifest + sw.js + useAppInstall). Rendered by the BottomNav
+ * "Add Home Screen" fallback when the browser exposes no native prompt.
+ * iOS/Safari gets Share → Add to Home Screen steps; other unsupported
+ * browsers get a graceful note. Never a fake button.
  */
-export function InstallAction() {
+export function InstallHelpDialog({ onClose }: { onClose: () => void }) {
   const { t } = useLanguage();
-  const { canInstall, isInstalled, isIOS, promptInstall } = useAppInstall();
-  const location = useLocation();
-  const [showHelp, setShowHelp] = useState(false);
-  const [busy, setBusy] = useState(false);
-
-  // Deep-link from the BottomNav "Add Home Screen" action: when the browser
-  // has no native prompt, open the guidance panel instead.
-  useEffect(() => {
-    if (location.hash === "#install-help" && !canInstall && !isInstalled) {
-      setShowHelp(true);
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, [location.hash, canInstall, isInstalled]);
-
-  if (isInstalled) {
-    return <p className="install-note">{t("install.installedNote")}</p>;
-  }
-
-  const handleTap = async () => {
-    if (canInstall) {
-      setBusy(true);
-      try {
-        await promptInstall();
-      } finally {
-        setBusy(false);
-      }
-      return;
-    }
-    setShowHelp((current) => !current);
-  };
+  const { isIOS } = useAppInstall();
 
   return (
-    <div className="install-action">
-      <button
-        type="button"
-        className="btn btn--ghost btn--compact"
-        onClick={() => void handleTap()}
-        disabled={busy}
-        aria-expanded={showHelp}
-      >
-        {busy ? "…" : `⬇ ${t("nav.install")}`}
-      </button>
-
-      {showHelp && !canInstall && (
-        <div className="install-help" role="dialog" aria-label={t("install.title")}>
-          <p className="install-help__title">{t("install.title")}</p>
-          {isIOS ? (
-            <ol className="install-help__steps">
-              <li>{t("install.iosStep1")}</li>
-              <li>{t("install.iosStep2")}</li>
-              <li>{t("install.iosStep3")}</li>
-            </ol>
-          ) : (
-            <p className="install-help__text">{t("install.unsupportedNote")}</p>
-          )}
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => setShowHelp(false)}
-          >
-            {t("install.close")}
-          </button>
-        </div>
+    <div
+      className="install-help"
+      role="dialog"
+      aria-label={t("install.title")}
+    >
+      <p className="install-help__title">{t("install.title")}</p>
+      {isIOS ? (
+        <ol className="install-help__steps">
+          <li>{t("install.iosStep1")}</li>
+          <li>{t("install.iosStep2")}</li>
+          <li>{t("install.iosStep3")}</li>
+        </ol>
+      ) : (
+        <p className="install-help__text">{t("install.unsupportedNote")}</p>
       )}
+      <button type="button" className="link-button" onClick={onClose}>
+        {t("install.close")}
+      </button>
     </div>
   );
 }
