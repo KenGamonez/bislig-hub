@@ -26,6 +26,7 @@ body {
   line-height: var(--leading-normal);
   color: var(--text-primary);
   background: var(--bg-page);
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

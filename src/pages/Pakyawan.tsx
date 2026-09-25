@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { JourneySteps } from "../components/JourneySteps";
 import {
   confirmPakyawanBooking,
   createPakyawanBooking,
@@ -16,48 +17,99 @@ import { isSupabaseConfigured } from "../lib/supabase";
 const HUB_PAKYAWAN_PREFIX = "bislig-hub-pakyawan-";
 const POLL_MS = 10000;
 
-const TRACK_COPY: Record<PakyawanStatus, { title: string; next: string }> = {
+const TRACK_COPY: Record<
+  PakyawanStatus,
+  { title: string; next: string; stage: string }
+> = {
   pending: {
     title: "Finding a driver",
-    next: "Your request is with nearby drivers. This page updates automatically.",
+    next: "Your request is open. This page updates automatically when a driver accepts — no need to resubmit.",
+    stage: "Finding a driver",
   },
   assigned: {
     title: "Driver found",
-    next: "A driver accepted your trip and is preparing the price.",
+    next: "A driver accepted your trip and is preparing your price. The quote appears below.",
+    stage: "Driver found",
   },
   quoted: {
     title: "Price quote ready",
-    next: "Review the quote below. Confirm to lock in your booking.",
+    next: "Review the quote below. Confirm only if you agree — nothing is charged here.",
+    stage: "Quote ready",
   },
   confirmed: {
     title: "Booking confirmed",
     next: "Your booking is confirmed and scheduled.",
+    stage: "Confirmed",
   },
   scheduled: {
     title: "Booking confirmed — scheduled",
-    next: "Your driver will head to your pickup at the scheduled time.",
+    next: "Your driver will head to your pickup at the scheduled time. Please be ready a few minutes early.",
+    stage: "Scheduled",
   },
   driver_on_way: {
     title: "Driver is on the way",
-    next: "Please be ready at your pickup location.",
+    next: "Please be ready at your pickup location with your things.",
+    stage: "Driver on the way",
   },
   driver_arrived: {
     title: "Driver has arrived",
     next: "Meet your driver at the pickup location.",
+    stage: "Arrived",
   },
   in_progress: {
     title: "Trip in progress",
     next: "Enjoy your trip around Bislig.",
+    stage: "On trip",
   },
   completed: {
     title: "Trip completed",
     next: "Thanks for booking with Bislig Hub.",
+    stage: "Done",
   },
   cancelled: {
     title: "Booking cancelled",
     next: "This booking was cancelled. You can make a new request anytime.",
+    stage: "Closed",
   },
 };
+
+const PAKYAWAN_JOURNEY = [
+  { label: "Finding driver" },
+  { label: "Quote" },
+  { label: "Confirmed" },
+  { label: "Trip day" },
+  { label: "Done" },
+];
+
+function journeyIndex(status: PakyawanStatus): number {
+  switch (status) {
+    case "pending":
+      return 0;
+    case "assigned":
+    case "quoted":
+      return 1;
+    case "confirmed":
+    case "scheduled":
+      return 2;
+    case "driver_on_way":
+    case "driver_arrived":
+    case "in_progress":
+      return 3;
+    case "completed":
+      return 4;
+    default:
+      return 0;
+  }
+}
+
+function activityState(status: PakyawanStatus): {
+  label: string;
+  tone: "active" | "closed";
+} {
+  if (status === "completed" || status === "cancelled")
+    return { label: "Closed", tone: "closed" };
+  return { label: "Booking active", tone: "active" };
+}
 
 const ACTIVE_STATUSES: PakyawanStatus[] = [
   "pending",
@@ -118,6 +170,7 @@ export function Pakyawan() {
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState("");
   const [restoring, setRestoring] = useState(true);
+  const [restored, setRestored] = useState(false);
   const pollRef = useRef<number | null>(null);
 
   const stopPolling = useCallback(() => {
@@ -173,6 +226,7 @@ export function Pakyawan() {
           if (ACTIVE_STATUSES.includes(found.status)) {
             setIdentity({ id: candidate.id, token: candidate.token });
             setBooking(found);
+            setRestored(true);
             setRestoring(false);
             return;
           }
@@ -337,6 +391,7 @@ export function Pakyawan() {
     setIdentity(null);
     setBooking(null);
     setStep(1);
+    setRestored(false);
     setSubmitError("");
     setConfirmError("");
     setTrackingError("");
@@ -376,14 +431,33 @@ export function Pakyawan() {
     const quoted =
       booking.status === "quoted" &&
       typeof booking.price_cents === "number";
+    const activity = activityState(booking.status);
+    const showJourney = booking.status !== "cancelled";
     return (
       <div className="container">
+        {restored && (
+          <div className="restore-banner" role="status">
+            <strong>Your Pakyawan booking</strong>
+            <span>Picking up right where you left off.</span>
+          </div>
+        )}
         <section className="status-card" aria-live="polite">
-          <p className="status-card__kicker">
-            Pakyawan · {booking.status.replace(/_/g, " ")}
-          </p>
+          <p className="status-card__kicker">Pakyawan · {copy.stage}</p>
+          <div>
+            <span className={`activity-pill activity-pill--${activity.tone}`}>
+              {activity.label}
+            </span>
+          </div>
           <h1 className="status-card__title">{copy.title}</h1>
           <p className="status-card__text">{copy.next}</p>
+
+          {showJourney && (
+            <JourneySteps
+              stages={PAKYAWAN_JOURNEY}
+              currentIndex={journeyIndex(booking.status)}
+              ariaLabel="Booking progress"
+            />
+          )}
 
           <dl className="status-card__route">
             <div>
@@ -412,16 +486,23 @@ export function Pakyawan() {
           </dl>
 
           <div className="fare-box" aria-live="polite">
-            <span className="field-label">Price</span>
+            <span className="field-label">Price quote</span>
             {quoted ? (
               <>
                 <strong>₱{formatCentavos(booking.price_cents as number)}</strong>
-                <small>Quoted for this trip</small>
+                <small>
+                  Quoted for this trip · {booking.passengers} passenger
+                  {booking.passengers === 1 ? "" : "s"} · {booking.trip_type}
+                </small>
               </>
             ) : (
               <>
                 <strong>Awaiting quote</strong>
-                <small>The driver will send a price for this trip</small>
+                <small>
+                  {booking.status === "pending" || booking.status === "assigned"
+                    ? "No price yet — a driver sends it after accepting"
+                    : "No price was set for this booking"}
+                </small>
               </>
             )}
           </div>
@@ -478,8 +559,8 @@ export function Pakyawan() {
             )}
           </div>
           <p className="form-footnote">
-            Reference: {booking.id.slice(0, 8)}… · Updates automatically every
-            few seconds.
+            Updates automatically every few seconds. Keep this screen open —
+            your booking is saved on this device.
           </p>
         </section>
       </div>
@@ -502,23 +583,33 @@ export function Pakyawan() {
         <p className="form-header__kicker">Transport · Pakyawan</p>
         <h1 className="form-header__title">Book a vehicle</h1>
         <p className="form-header__subtitle">
-          For longer trips or private use. Step {step} of 3.
+          For longer trips or private use.{" "}
+          {step === 1
+            ? "First, when do you need the vehicle?"
+            : step === 2
+              ? "Now the trip details."
+              : "Lastly, how do we reach you?"}
         </p>
       </header>
 
-      <div
-        className="flow-progress"
-        role="presentation"
-        aria-label={`Step ${step} of 3`}
-      >
-        {[1, 2, 3].map((n) => (
-          <span
-            key={n}
-            className={`flow-progress-step${step === n ? " is-current" : ""}${step > n ? " is-done" : ""}`}
-          >
-            {step > n ? "✓" : `0${n}`}
-          </span>
-        ))}
+      <div className="wizard-progress" aria-label={`Step ${step} of 3`}>
+        <div className="flow-progress" role="presentation">
+          {[1, 2, 3].map((n) => (
+            <span
+              key={n}
+              className={`flow-progress-step${step === n ? " is-current" : ""}${step > n ? " is-done" : ""}`}
+            >
+              {step > n ? "✓" : `0${n}`}
+            </span>
+          ))}
+        </div>
+        <span className="wizard-step-label">
+          {step === 1
+            ? "Step 1 — Schedule"
+            : step === 2
+              ? "Step 2 — Trip details"
+              : "Step 3 — Contact details"}
+        </span>
       </div>
 
       <form className="booking-form" onSubmit={(e) => void handleSubmit(e)} noValidate>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { JourneySteps } from "../components/JourneySteps";
 import {
   cancelRide,
   createRide,
@@ -63,37 +64,79 @@ function statusToPhase(status: RideStatus): Phase {
 
 const PHASE_COPY: Record<
   Exclude<Phase, "form" | "submitting">,
-  { title: string; next: string }
+  { title: string; next: string; stage: string }
 > = {
   searching: {
     title: "Finding a nearby driver",
-    next: "We're asking nearby drivers. This usually takes a few seconds.",
+    next: "We're asking nearby drivers. This usually takes a few seconds — stay on this screen.",
+    stage: "Finding a driver",
   },
   no_driver: {
     title: "No driver is available right now",
-    next: "Try again in a moment, or close and book later.",
+    next: "Your request is saved. Nobody is available at the moment — try again shortly, or close and book later.",
+    stage: "Paused",
   },
   accepted: {
-    title: "Your driver is on the way",
-    next: "Please head to your pickup point and keep your phone nearby.",
+    title: "Driver accepted your ride",
+    next: "Your driver is on the way. Please head to your pickup point and keep your phone nearby.",
+    stage: "Driver on the way",
   },
   arrived: {
     title: "Your driver has arrived",
-    next: "Meet your driver at the pickup point. Check the vehicle details below.",
+    next: "Meet your driver at the pickup point. Check the vehicle details below before getting in.",
+    stage: "Arrived",
   },
   in_progress: {
-    title: "You're on your way",
-    next: "Sit back — your driver is taking you to your destination.",
+    title: "Ride in progress",
+    next: "You're on your way. Your driver is taking you to your destination.",
+    stage: "On trip",
   },
   completed: {
     title: "Ride completed",
     next: "Thanks for riding with Bislig Hub. Book again anytime.",
+    stage: "Done",
   },
   cancelled: {
     title: "Ride cancelled",
     next: "This ride was cancelled. You can book a new ride anytime.",
+    stage: "Closed",
   },
 };
+
+const RIDE_JOURNEY = [
+  { label: "Finding driver" },
+  { label: "Driver on way" },
+  { label: "Arrived" },
+  { label: "On trip" },
+  { label: "Done" },
+];
+
+function journeyIndex(phase: Phase): number {
+  switch (phase) {
+    case "searching":
+    case "no_driver":
+      return 0;
+    case "accepted":
+      return 1;
+    case "arrived":
+      return 2;
+    case "in_progress":
+      return 3;
+    case "completed":
+      return 4;
+    default:
+      return 0;
+  }
+}
+
+function activityState(
+  phase: Phase
+): { label: string; tone: "active" | "paused" | "closed" } {
+  if (phase === "no_driver") return { label: "Paused", tone: "paused" };
+  if (phase === "completed" || phase === "cancelled")
+    return { label: "Closed", tone: "closed" };
+  return { label: "Request active", tone: "active" };
+}
 
 const CANCEL_REASONS = [
   "Changed my plans",
@@ -146,6 +189,8 @@ export function RideNow() {
   const [cancelReason, setCancelReason] = useState<string>(CANCEL_REASONS[0]);
   const [cancelling, setCancelling] = useState(false);
   const [restoring, setRestoring] = useState(true);
+  const [restored, setRestored] = useState(false);
+  const [formStep, setFormStep] = useState(1);
   const pollRef = useRef<number | null>(null);
 
   const fareQuote = useMemo(() => {
@@ -172,6 +217,8 @@ export function RideNow() {
     setRide(null);
     setDriver(null);
     setPhase("form");
+    setFormStep(1);
+    setRestored(false);
     setSubmitError("");
     setConfirmingCancel(false);
   }, [stopPolling]);
@@ -210,15 +257,11 @@ export function RideNow() {
         if (cancelled) return;
         if (!latest) {
           writeStoredRideId(null);
-        } else if (
-          latest.status === "completed" ||
-          latest.status === "cancelled"
-        ) {
-          setRide(latest);
-          setPhase(statusToPhase(latest.status));
         } else {
           setRide(latest);
           setPhase(statusToPhase(latest.status));
+          // Resumed from this device: orient the customer explicitly.
+          setRestored(true);
         }
       } catch {
         // Offline or expired session — stay on the form.
@@ -300,10 +343,16 @@ export function RideNow() {
     );
   };
 
-  const validate = (): boolean => {
+  const validateRoute = (): boolean => {
     const errors: Record<string, string> = {};
     if (!pickup.trim()) errors.pickup = "Pickup is required.";
     if (!destination.trim()) errors.destination = "Destination is required.";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const validateDetails = (): boolean => {
+    const errors: Record<string, string> = {};
     if (!name.trim()) errors.name = "Your name is required.";
     if (vehicleType === "motorcycle" && passengerCount > 1) {
       errors.passengerCount = "Motorcycles take 1 passenger only.";
@@ -318,7 +367,14 @@ export function RideNow() {
       setSubmitError("Transport is unavailable right now. Please try again later.");
       return;
     }
-    if (!validate()) return;
+    if (formStep === 1) {
+      if (validateRoute()) setFormStep(2);
+      return;
+    }
+    if (!validateRoute() || !validateDetails()) {
+      if (!pickup.trim() || !destination.trim()) setFormStep(1);
+      return;
+    }
     setSubmitError("");
     setPhase("submitting");
 
@@ -433,14 +489,38 @@ export function RideNow() {
   if (phase !== "form" && phase !== "submitting" && ride) {
     const copy = PHASE_COPY[phase];
     const cancellable = CANCELLABLE.includes(ride.status);
+    const activity = activityState(phase);
+    const showJourney =
+      phase === "searching" ||
+      phase === "accepted" ||
+      phase === "arrived" ||
+      phase === "in_progress" ||
+      phase === "completed";
     return (
       <div className="container">
+        {restored && (
+          <div className="restore-banner" role="status">
+            <strong>Your ride is still active</strong>
+            <span>Picking up right where you left off.</span>
+          </div>
+        )}
         <section className="status-card" aria-live="polite">
-          <p className="status-card__kicker">
-            Ride Now · {ride.status.replace("_", " ")}
-          </p>
+          <p className="status-card__kicker">Ride Now · {copy.stage}</p>
+          <div>
+            <span className={`activity-pill activity-pill--${activity.tone}`}>
+              {activity.label}
+            </span>
+          </div>
           <h1 className="status-card__title">{copy.title}</h1>
           <p className="status-card__text">{copy.next}</p>
+
+          {showJourney && (
+            <JourneySteps
+              stages={RIDE_JOURNEY}
+              currentIndex={journeyIndex(phase)}
+              ariaLabel="Ride progress"
+            />
+          )}
 
           <dl className="status-card__route">
             <div>
@@ -588,176 +668,205 @@ export function RideNow() {
         <p className="form-header__kicker">Transport · Ride Now</p>
         <h1 className="form-header__title">Where to?</h1>
         <p className="form-header__subtitle">
-          Request a ride around Bislig. A nearby driver will be notified
-          instantly.
+          {formStep === 1
+            ? "First, tell us your route around Bislig."
+            : "Now your details — then review the fare and request."}
         </p>
       </header>
 
-      <form className="booking-form" onSubmit={(e) => void handleSubmit(e)} noValidate>
-        <label className="field-block">
-          <span className="field-label">Pickup</span>
-          <input
-            className={`input-field${fieldErrors.pickup ? " has-error" : ""}`}
-            type="text"
-            placeholder="e.g. Mangagoy Public Market"
-            value={pickup}
-            onChange={(e) => {
-              setPickup(e.target.value);
-              setFieldErrors((c) => ({ ...c, pickup: "" }));
-            }}
-            autoComplete="off"
-          />
-          {fieldErrors.pickup && (
-            <span className="field-error">{fieldErrors.pickup}</span>
-          )}
-        </label>
+      <div className="wizard-progress" aria-label={`Step ${formStep} of 2`}>
+        <div className="flow-progress" role="presentation">
+          {[1, 2].map((n) => (
+            <span
+              key={n}
+              className={`flow-progress-step${formStep === n ? " is-current" : ""}${formStep > n ? " is-done" : ""}`}
+            >
+              {formStep > n ? "✓" : `0${n}`}
+            </span>
+          ))}
+        </div>
+        <span className="wizard-step-label">
+          {formStep === 1 ? "Step 1 — Route" : "Step 2 — Details & fare"}
+        </span>
+      </div>
 
-        <button
-          type="button"
-          className="link-button"
-          onClick={useMyLocation}
-          disabled={locating}
-        >
-          {locating
-            ? "Getting your location…"
-            : pickupCoords
-              ? "✓ Using your current location"
-              : "Use my current location"}
-        </button>
-        {locationError && (
-          <p className="field-note field-note--error">{locationError}</p>
+      <form className="booking-form" onSubmit={(e) => void handleSubmit(e)} noValidate>
+        {formStep === 1 && (
+          <>
+            <label className="field-block">
+              <span className="field-label">Pickup</span>
+              <input
+                className={`input-field${fieldErrors.pickup ? " has-error" : ""}`}
+                type="text"
+                placeholder="e.g. Mangagoy Public Market"
+                value={pickup}
+                onChange={(e) => {
+                  setPickup(e.target.value);
+                  setFieldErrors((c) => ({ ...c, pickup: "" }));
+                }}
+                autoComplete="off"
+              />
+              {fieldErrors.pickup && (
+                <span className="field-error">{fieldErrors.pickup}</span>
+              )}
+            </label>
+
+            <button
+              type="button"
+              className="link-button"
+              onClick={useMyLocation}
+              disabled={locating}
+            >
+              {locating
+                ? "Getting your location…"
+                : pickupCoords
+                  ? "✓ Using your current location"
+                  : "Use my current location"}
+            </button>
+            {locationError && (
+              <p className="field-note field-note--error">{locationError}</p>
+            )}
+
+            <label className="field-block">
+              <span className="field-label">Destination</span>
+              <input
+                className={`input-field${fieldErrors.destination ? " has-error" : ""}`}
+                type="text"
+                placeholder="e.g. Tinuy-an Falls"
+                value={destination}
+                onChange={(e) => {
+                  setDestination(e.target.value);
+                  setFieldErrors((c) => ({ ...c, destination: "" }));
+                }}
+                autoComplete="off"
+              />
+              {fieldErrors.destination && (
+                <span className="field-error">{fieldErrors.destination}</span>
+              )}
+            </label>
+          </>
         )}
 
-        <label className="field-block">
-          <span className="field-label">Destination</span>
-          <input
-            className={`input-field${fieldErrors.destination ? " has-error" : ""}`}
-            type="text"
-            placeholder="e.g. Tinuy-an Falls"
-            value={destination}
-            onChange={(e) => {
-              setDestination(e.target.value);
-              setFieldErrors((c) => ({ ...c, destination: "" }));
-            }}
-            autoComplete="off"
-          />
-          {fieldErrors.destination && (
-            <span className="field-error">{fieldErrors.destination}</span>
-          )}
-        </label>
-
-        <div className="fare-box" aria-live="polite">
-          <span className="field-label">Estimated fare</span>
-          {fareQuote ? (
-            <>
-              <strong>₱{formatCentavos(fareQuote.fareCents)}</strong>
-              <small>
-                {fareQuote.discountApplied ? "Discounted · " : ""}
-                {fareQuote.matchedDestination ?? "Standard rate"}
-              </small>
-            </>
-          ) : (
-            <>
-              <strong>Fare confirmed by driver</strong>
-              <small>Shown before pickup once a driver accepts</small>
-            </>
-          )}
-        </div>
-
-        <div className="form-row">
-          <label className="field-block">
-            <span className="field-label">Vehicle</span>
-            <select
-              className="input-field"
-              value={vehicleType}
-              onChange={(e) => {
-                const v = e.target.value as VehicleType;
-                setVehicleType(v);
-                if (v === "motorcycle") setPassengerCount(1);
-              }}
-            >
-              <option value="tricycle">Tricycle</option>
-              <option value="umbak">Umbak</option>
-              <option value="motorcycle">Motorcycle</option>
-            </select>
-          </label>
-
-          <div className="field-block">
-            <span className="field-label" id="pax-label">
-              Passengers
-            </span>
-            <div
-              className="stepper"
-              role="group"
-              aria-labelledby="pax-label"
-            >
-              <button
-                type="button"
-                aria-label="Fewer passengers"
-                onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
-              >
-                −
-              </button>
-              <output aria-live="polite">{passengerCount}</output>
-              <button
-                type="button"
-                aria-label="More passengers"
-                onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
-              >
-                +
-              </button>
+        {formStep === 2 && (
+          <>
+            <div className="fare-box" aria-live="polite">
+              <span className="field-label">Estimated fare</span>
+              {fareQuote ? (
+                <>
+                  <strong>₱{formatCentavos(fareQuote.fareCents)}</strong>
+                  <small>
+                    {fareQuote.discountApplied ? "Discounted · " : ""}
+                    {fareQuote.matchedDestination ?? "Standard rate"}
+                  </small>
+                </>
+              ) : (
+                <>
+                  <strong>Fare confirmed by driver</strong>
+                  <small>Shown before pickup once a driver accepts</small>
+                </>
+              )}
             </div>
-            {fieldErrors.passengerCount && (
-              <span className="field-error">{fieldErrors.passengerCount}</span>
-            )}
-          </div>
-        </div>
 
-        <label className="field-block">
-          <span className="field-label">Passenger type</span>
-          <select
-            className="input-field"
-            value={passengerType}
-            onChange={(e) => setPassengerType(e.target.value as PassengerType)}
-          >
-            <option value="Regular">Regular</option>
-            <option value="Student">Student</option>
-            <option value="Senior Citizen">Senior Citizen</option>
-            <option value="PWD">PWD</option>
-          </select>
-        </label>
+            <div className="form-row">
+              <label className="field-block">
+                <span className="field-label">Vehicle</span>
+                <select
+                  className="input-field"
+                  value={vehicleType}
+                  onChange={(e) => {
+                    const v = e.target.value as VehicleType;
+                    setVehicleType(v);
+                    if (v === "motorcycle") setPassengerCount(1);
+                  }}
+                >
+                  <option value="tricycle">Tricycle</option>
+                  <option value="umbak">Umbak</option>
+                  <option value="motorcycle">Motorcycle</option>
+                </select>
+              </label>
 
-        <label className="field-block">
-          <span className="field-label">Your name</span>
-          <input
-            className={`input-field${fieldErrors.name ? " has-error" : ""}`}
-            type="text"
-            placeholder="Full name"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setFieldErrors((c) => ({ ...c, name: "" }));
-            }}
-            autoComplete="name"
-          />
-          {fieldErrors.name && (
-            <span className="field-error">{fieldErrors.name}</span>
-          )}
-        </label>
+              <div className="field-block">
+                <span className="field-label" id="pax-label">
+                  Passengers
+                </span>
+                <div
+                  className="stepper"
+                  role="group"
+                  aria-labelledby="pax-label"
+                >
+                  <button
+                    type="button"
+                    aria-label="Fewer passengers"
+                    onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
+                  >
+                    −
+                  </button>
+                  <output aria-live="polite">{passengerCount}</output>
+                  <button
+                    type="button"
+                    aria-label="More passengers"
+                    onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
+                  >
+                    +
+                  </button>
+                </div>
+                {fieldErrors.passengerCount && (
+                  <span className="field-error">{fieldErrors.passengerCount}</span>
+                )}
+              </div>
+            </div>
 
-        <label className="field-block">
-          <span className="field-label">
-            Phone number <span className="optional-tag">(optional)</span>
-          </span>
-          <input
-            className="input-field"
-            type="tel"
-            placeholder="09xx xxx xxxx"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            autoComplete="tel"
-          />
-        </label>
+            <label className="field-block">
+              <span className="field-label">Passenger type</span>
+              <select
+                className="input-field"
+                value={passengerType}
+                onChange={(e) => setPassengerType(e.target.value as PassengerType)}
+              >
+                <option value="Regular">Regular</option>
+                <option value="Student">Student</option>
+                <option value="Senior Citizen">Senior Citizen</option>
+                <option value="PWD">PWD</option>
+              </select>
+            </label>
+
+            <label className="field-block">
+              <span className="field-label">Your name</span>
+              <input
+                className={`input-field${fieldErrors.name ? " has-error" : ""}`}
+                type="text"
+                placeholder="Full name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setFieldErrors((c) => ({ ...c, name: "" }));
+                }}
+                autoComplete="name"
+              />
+              {fieldErrors.name && (
+                <span className="field-error">{fieldErrors.name}</span>
+              )}
+            </label>
+
+            <label className="field-block">
+              <span className="field-label">
+                Phone number <span className="optional-tag">(optional)</span>
+              </span>
+              <input
+                className="input-field"
+                type="tel"
+                placeholder="09xx xxx xxxx"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                autoComplete="tel"
+              />
+            </label>
+
+            <p className="field-note">
+              {pickup.trim() || "Pickup"} → {destination.trim() || "Destination"}
+            </p>
+          </>
+        )}
 
         {submitError && (
           <p className="form-error-message" role="alert">
@@ -765,15 +874,32 @@ export function RideNow() {
           </p>
         )}
 
-        <button
-          type="submit"
-          className="btn btn--primary btn--block"
-          disabled={phase === "submitting"}
-        >
-          {phase === "submitting" ? "Requesting ride…" : "Request ride"}
-        </button>
+        <div className="form-actions">
+          {formStep === 1 ? (
+            <button type="submit" className="btn btn--primary btn--block">
+              Continue →
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="btn btn--primary btn--block"
+              disabled={phase === "submitting"}
+            >
+              {phase === "submitting" ? "Requesting ride…" : "Request ride"}
+            </button>
+          )}
+          {formStep === 2 && (
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setFormStep(1)}
+            >
+              ← Back to route
+            </button>
+          )}
+        </div>
         <p className="form-footnote">
-          No account needed. Dispatch runs on the Bislig Ride network.
+          No account needed. Rides are fulfilled by local Bislig drivers.
         </p>
       </form>
     </div>
