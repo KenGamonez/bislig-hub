@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { LanguageToggle } from "../legacy/components/LanguageToggle";
 
-export function AppHeader({ trailing }: { trailing?: ReactNode }) {
+export function AppHeader() {
   return (
     <header className="app-header" role="banner">
       <div className="app-header__inner">
@@ -17,10 +17,7 @@ export function AppHeader({ trailing }: { trailing?: ReactNode }) {
         </Link>
 
         <div className="app-header__right">
-          {trailing}
-          <span className="app-header__city" aria-hidden="true">
-            Bislig City
-          </span>
+          <LanguageToggle />
         </div>
       </div>
     </header>

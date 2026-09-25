@@ -2,7 +2,6 @@ import { Suspense, lazy } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AppHeader } from "./components/AppHeader";
 import { BottomNav } from "./components/BottomNav";
-import { LanguageToggle } from "./legacy/components/LanguageToggle";
 import { Home } from "./pages/Home";
 import { Pakyawan } from "./pages/Pakyawan";
 import { RideNow } from "./pages/RideNow";
@@ -80,7 +79,7 @@ export default function App() {
     return (
       <div className="app-shell">
         <div className="app-canvas">
-          <AppHeader trailing={<LanguageToggle />} />
+          <AppHeader />
           <main className="page" id="main-content">
             <Suspense fallback={<LegacyFallback />}>
               <Routes>

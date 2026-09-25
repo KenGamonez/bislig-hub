@@ -1,7 +1,6 @@
 import { SectionHeader } from "../components/SectionHeader";
 import { ServiceCard } from "../components/ServiceCard";
 import { InstallAction } from "../components/InstallAction";
-import { LanguageToggle } from "../legacy/components/LanguageToggle";
 import { useLanguage } from "../legacy/lib/i18n";
 
 function RideIcon() {
@@ -47,7 +46,6 @@ export function Home() {
           </h1>
           <p className="hero__subtitle">{t("hub.subtitle")}</p>
           <div className="home-utils">
-            <LanguageToggle />
             <InstallAction />
           </div>
         </section>
@@ -106,10 +104,6 @@ export function Home() {
             />
           </div>
         </section>
-
-        <footer className="home-foot">
-          <p className="home-foot__text">{t("hub.footer")}</p>
-        </footer>
       </div>
     </div>
   );

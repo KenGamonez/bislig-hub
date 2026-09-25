@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAppInstall } from "../legacy/lib/appInstall";
 import { useLanguage } from "../legacy/lib/i18n";
 
@@ -12,8 +13,18 @@ import { useLanguage } from "../legacy/lib/i18n";
 export function InstallAction() {
   const { t } = useLanguage();
   const { canInstall, isInstalled, isIOS, promptInstall } = useAppInstall();
+  const location = useLocation();
   const [showHelp, setShowHelp] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // Deep-link from the BottomNav "Add Home Screen" action: when the browser
+  // has no native prompt, open the guidance panel instead.
+  useEffect(() => {
+    if (location.hash === "#install-help" && !canInstall && !isInstalled) {
+      setShowHelp(true);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [location.hash, canInstall, isInstalled]);
 
   if (isInstalled) {
     return <p className="install-note">{t("install.installedNote")}</p>;

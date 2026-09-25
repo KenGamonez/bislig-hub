@@ -692,6 +692,7 @@ const en = {
   'hub.rides': 'Rides',
   'hub.activity': 'Activity',
   'hub.driver': 'Driver',
+  'hub.addHomeScreen': 'Add Home Screen',
 } as const
 
 export type TranslationKey = keyof typeof en
@@ -1377,6 +1378,7 @@ const bi: Record<TranslationKey, string> = {
   'hub.rides': 'Mga Sakay',
   'hub.activity': 'Kalihokan',
   'hub.driver': 'Driver',
+  'hub.addHomeScreen': 'Ibutang sa Home Screen',
 }
 
 type LanguageContextValue = {

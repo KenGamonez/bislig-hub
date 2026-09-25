@@ -1,11 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAppInstall } from "../legacy/lib/appInstall";
 import { useLanguage } from "../legacy/lib/i18n";
 
 type NavItem = {
   label: string;
   to: string;
   icon: React.ReactNode;
-  disabled?: boolean;
 };
 
 function HomeIcon({ active }: { active?: boolean }) {
@@ -31,10 +31,11 @@ function RidesIcon() {
   );
 }
 
-function ActivityIcon() {
+function AddHomeScreenIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M13 2L4 13h5l-1 9 9-13h-5l1-7Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M12 3.5 4.5 10v9a1 1 0 0 0 1 1H10v-5h4v5h4.5a1 1 0 0 0 1-1v-9L12 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M12 12v4M10.2 14.2 12 16l1.8-1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -50,52 +51,57 @@ function DriverIcon() {
 
 export function BottomNav() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { canInstall, promptInstall } = useAppInstall();
   const items: NavItem[] = [
     { label: t("nav.home"), to: "/", icon: <HomeIcon /> },
     { label: t("hub.rides"), to: "/ride", icon: <RidesIcon /> },
-    { label: t("hub.activity"), to: "/history", icon: <ActivityIcon /> },
     { label: t("hub.driver"), to: "/driver", icon: <DriverIcon /> },
   ];
+
+  const handleAddHomeScreen = async () => {
+    // Same install flow as the Home InstallAction: native prompt when the
+    // browser exposes it, otherwise fall back to the Home guidance panel.
+    if (canInstall) {
+      await promptInstall();
+      return;
+    }
+    navigate("/#install-help");
+  };
+
   return (
     <nav className="bottom-nav" aria-label="Primary">
       <div className="bottom-nav__inner">
-        {items.map((item) => {
-          if (item.disabled) {
-            return (
-              <span
-                key={item.label}
-                className="bottom-nav__item bottom-nav__item--disabled"
-                aria-disabled="true"
-                role="link"
-                tabIndex={0}
-                title="Coming soon"
-              >
-                <span className="bottom-nav__icon">{item.icon}</span>
+        {items.map((item) => (
+          <NavLink
+            key={item.label}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              `bottom-nav__item ${isActive ? "bottom-nav__item--active" : ""}`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span className="bottom-nav__icon">
+                  {item.to === "/" ? <HomeIcon active={isActive} /> : item.icon}
+                </span>
                 <span className="bottom-nav__label">{item.label}</span>
-              </span>
-            );
-          }
-
-          return (
-            <NavLink
-              key={item.label}
-              to={item.to}
-              end={item.to === "/"}
-              className={({ isActive }) =>
-                `bottom-nav__item ${isActive ? "bottom-nav__item--active" : ""}`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <span className="bottom-nav__icon">
-                    {item.label === "Home" ? <HomeIcon active={isActive} /> : item.icon}
-                  </span>
-                  <span className="bottom-nav__label">{item.label}</span>
-                </>
-              )}
-            </NavLink>
-          );
-        })}
+              </>
+            )}
+          </NavLink>
+        ))}
+        <button
+          type="button"
+          className="bottom-nav__item"
+          onClick={() => void handleAddHomeScreen()}
+          aria-label={t("hub.addHomeScreen")}
+        >
+          <span className="bottom-nav__icon">
+            <AddHomeScreenIcon />
+          </span>
+          <span className="bottom-nav__label">{t("hub.addHomeScreen")}</span>
+        </button>
       </div>
     </nav>
   );

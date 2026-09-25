@@ -86,25 +86,6 @@
   color: #fff;
 }
 
-@media (max-width: 359px) {
-  .app-header__city {
-    display: none;
-  }
-}
-
-.app-header__city {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  background: var(--bg-surface-soft);
-  border: 1px solid var(--border-soft);
-  padding: 6px 10px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
 /* Bottom Nav */
 .bottom-nav {
   position: fixed;
@@ -160,28 +141,42 @@
   user-select: none;
 }
 
+button.bottom-nav__item {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .bottom-nav__item--active {
   color: var(--brand-slate-deep);
   background: var(--bg-surface-soft);
 }
 
-.bottom-nav__item:not(.bottom-nav__item--disabled):hover {
+.bottom-nav__item:hover {
   background: var(--bg-surface-soft);
   color: var(--brand-slate);
 }
 
-.bottom-nav__item--disabled {
-  opacity: 0.55;
-  cursor: default;
+.bottom-nav__item:active {
+  transform: scale(0.97);
 }
 
 .bottom-nav__icon {
   display: inline-flex;
   line-height: 0;
+  flex-shrink: 0;
 }
 
 .bottom-nav__label {
-  line-height: 1;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* Hero */
@@ -388,25 +383,6 @@
 }
 
 
-.home-foot {
-  margin-top: 22px;
-  padding: 16px 0 8px;
-  border-top: 1px solid var(--border-soft);
-}
-
-.home-foot__text {
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--text-faint);
-}
-
-.home-foot__admin {
-  color: var(--text-faint);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  font-weight: 600;
-}
-
 /* Phase 1 consolidation — home utilities: language + install */
 
 .home-utils {
@@ -415,35 +391,6 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-}
-
-.home-utils .language-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--bg-surface);
-}
-
-.home-utils .language-option {
-  min-width: 44px;
-  min-height: 32px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: var(--radius-pill);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-}
-
-.home-utils .language-option.is-active {
-  background: var(--brand-slate-deep);
-  color: #fff;
 }
 
 .btn--compact {
