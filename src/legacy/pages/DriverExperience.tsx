@@ -4531,7 +4531,7 @@ const renderOnlineState = () => (
               Your driver account is inactive. Please contact Bislig Hub to reactivate it.
             </p>
             <button type="button" className="primary-action request-ride-action" onClick={onBack}>
-              Back to Ride Booking
+              Back to Home
             </button>
           </div>
         </div>
