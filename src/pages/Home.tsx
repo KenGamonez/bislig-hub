@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { SectionHeader } from "../components/SectionHeader";
-import { ComingSoonCard, ServiceCard } from "../components/ServiceCard";
+import { ServiceCard } from "../components/ServiceCard";
 
 function RideIcon() {
   return (
@@ -28,28 +28,6 @@ function DeliveryIcon() {
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M3.5 9a1.5 1.5 0 0 1 1.5-1.5H11l2.2 2.2A1.5 1.5 0 0 0 14.3 10H16a1.5 1.5 0 0 1 1.5 1.5V15a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3.5 15V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
       <path d="M9 7.5V6a1 1 0 0 1 1-1h1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 13.5V11a2 2 0 0 1 2-2h9l2.2 2.2A2 2 0 0 1 18 12.8V13.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      <circle cx="7" cy="15.8" r="1.7" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="17" cy="15.8" r="1.7" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M9 9V7.2a1 1 0 0 1 1-1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ServicesIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="4" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="14" y="4" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="4" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="14" y="14" width="6" height="6" rx="1.2" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -93,16 +71,6 @@ export function Home() {
               icon={<DeliveryIcon />}
             />
           </div>
-        </section>
-
-        {/* Coming Soon */}
-        <section className="stack stack--muted" aria-labelledby="soon-heading">
-          <SectionHeader title="Coming Soon" subtitle="More local services on the way" kicker="Next up" />
-          <div className="card-grid card-grid--soon" id="soon-heading">
-            <ComingSoonCard title="Car Rental" description="Self-drive rentals via GoDrive." icon={<CarIcon />} />
-            <ComingSoonCard title="Services" description="Local businesses and everyday services." icon={<ServicesIcon />} />
-          </div>
-          <p className="soon-note">Car Rental and Services are preview items only — they will launch when ready.</p>
         </section>
 
         {/* Driver entry */}
