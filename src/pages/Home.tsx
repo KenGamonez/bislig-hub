@@ -97,7 +97,7 @@ export function Home() {
             <ServiceCard
               title={t("nav.driverLogin")}
               description={t("hub.driverLoginDesc")}
-              to="/driver"
+              to="/driver/login"
               icon={<PakyawanIcon />}
             />
           </div>

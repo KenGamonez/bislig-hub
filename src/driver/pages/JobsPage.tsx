@@ -50,7 +50,7 @@ export function JobsPage() {
               : "Use your driver account to receive job offers."
           }
           action={
-            <Link to="/driver" className="btn btn--primary btn--block">
+            <Link to="/driver/login" className="btn btn--primary btn--block">
               Go to driver sign in
             </Link>
           }

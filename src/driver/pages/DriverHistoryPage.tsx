@@ -31,7 +31,7 @@ export function DriverHistoryPage() {
           title="Sign in to drive"
           body="Your trip history will appear here once you're signed in."
           action={
-            <Link to="/driver" className="btn btn--primary btn--block">
+            <Link to="/driver/login" className="btn btn--primary btn--block">
               Go to driver sign in
             </Link>
           }

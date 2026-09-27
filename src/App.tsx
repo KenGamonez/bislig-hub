@@ -6,6 +6,7 @@ import { Home } from "./pages/Home";
 import { Pakyawan } from "./pages/Pakyawan";
 import { RideNow } from "./pages/RideNow";
 import { History } from "./pages/History";
+import { DriverPresenceProvider } from "./driver/hooks/useDriverPresenceContext";
 
 // Ported Bislig Ride screens (incl. maplibre + legacy stylesheet) are
 // code-split so the Hub home stays light on mobile networks.
@@ -82,6 +83,24 @@ export default function App() {
   const isNewDriverRoute = matchPrefixes(location.pathname, NEW_DRIVER_PREFIXES);
   const isAdminRoute = matchPrefixes(location.pathname, ADMIN_PREFIXES);
 
+  // Public driver sign-in has its own screen and must be matched before
+  // the workspace prefix check below ("/driver/login" starts with "/driver").
+  if (location.pathname === "/driver/login") {
+    return (
+      <div className="app-shell">
+        <div className="app-canvas">
+          <main id="main-content">
+            <Suspense fallback={<LegacyFallback />}>
+              <Routes>
+                <Route path="/driver/login" element={<Driver />} />
+              </Routes>
+            </Suspense>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   // New Hub-native driver UI has its own shell/chrome.
   // NOTE: check before isDriverRoute since these paths share the prefix.
   if (isNewDriverRoute) {
@@ -89,15 +108,17 @@ export default function App() {
       <div className="app-shell">
         <div className="app-canvas">
           <Suspense fallback={<LegacyFallback />}>
-            <DriverShell>
-              <Routes>
-                <Route path="/driver" element={<Navigate to="/driver/jobs" replace />} />
-                <Route path="/driver/jobs" element={<DriverJobs />} />
-                <Route path="/driver/active" element={<DriverActive />} />
-                <Route path="/driver/you" element={<DriverYou />} />
-                <Route path="/driver/history" element={<DriverHistory />} />
-              </Routes>
-            </DriverShell>
+            <DriverPresenceProvider>
+              <DriverShell>
+                <Routes>
+                  <Route path="/driver" element={<Navigate to="/driver/jobs" replace />} />
+                  <Route path="/driver/jobs" element={<DriverJobs />} />
+                  <Route path="/driver/active" element={<DriverActive />} />
+                  <Route path="/driver/you" element={<DriverYou />} />
+                  <Route path="/driver/history" element={<DriverHistory />} />
+                </Routes>
+              </DriverShell>
+            </DriverPresenceProvider>
           </Suspense>
         </div>
       </div>

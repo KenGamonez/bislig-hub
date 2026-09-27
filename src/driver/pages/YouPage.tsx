@@ -35,7 +35,7 @@ export function YouPage() {
           }
           body="Your profile, vehicle and account live here once you're signed in."
           action={
-            <Link to="/driver" className="btn btn--primary btn--block">
+            <Link to="/driver/login" className="btn btn--primary btn--block">
               Go to driver sign in
             </Link>
           }
