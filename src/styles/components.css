@@ -970,6 +970,7 @@ select.input-field {
   font-weight: 600;
   color: var(--text-primary);
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .driver-card {
@@ -1422,4 +1423,18 @@ select.input-field {
   .home-backdrop__drift {
     animation: none;
   }
+}
+
+/* ---- Passenger driver card body (grid safety + spacing) ---- */
+.driver-card__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  align-content: center;
+}
+
+.driver-card__body p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

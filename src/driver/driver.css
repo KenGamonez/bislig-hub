@@ -1156,3 +1156,27 @@
     margin-top: 8px;
   }
 }
+
+/* ---- Driver chat toggle (link-style action) ---- */
+.hub-driver__linkbtn {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 6px 2px;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--brand-slate-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.hub-driver__linkbtn:hover {
+  color: var(--brand-orange);
+}
+.hub-driver__linkbtn:focus-visible {
+  outline: 2px solid var(--brand-orange);
+  outline-offset: 2px;
+}
