@@ -1371,3 +1371,55 @@ select.input-field {
   color: var(--text-secondary);
   margin-left: auto;
 }
+
+/* Home — abstract liquid background field (background only) */
+.home {
+  position: relative;
+  overflow: clip;
+}
+
+.home-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.home-backdrop__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.home > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.home-backdrop__drift {
+  animation: home-backdrop-drift 48s ease-in-out infinite alternate;
+}
+
+@keyframes home-backdrop-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-16px, 14px, 0);
+  }
+}
+
+/* Intentional mobile crop: keep the right-side mass visible, hero readable */
+@media (max-width: 480px) {
+  .home-backdrop__svg {
+    transform: scale(1.18);
+    transform-origin: 78% 22%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-backdrop__drift {
+    animation: none;
+  }
+}

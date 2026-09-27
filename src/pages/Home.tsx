@@ -1,3 +1,4 @@
+import { HomeBackdrop } from "../components/HomeBackdrop";
 import { SectionHeader } from "../components/SectionHeader";
 import { ServiceCard } from "../components/ServiceCard";
 import { useLanguage } from "../legacy/lib/i18n";
@@ -36,6 +37,7 @@ export function Home() {
   const { t } = useLanguage();
   return (
     <div className="home">
+      <HomeBackdrop />
       {/* Hero */}
       <div className="container">
         <section className="hero" aria-labelledby="home-title">
