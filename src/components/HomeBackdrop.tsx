@@ -39,7 +39,7 @@ export function HomeBackdrop() {
           rx="560"
           ry="400"
           fill="#E6EBEF"
-          opacity="0.9"
+          opacity="0.79"
           filter="url(#hb-blur-80)"
         />
         <ellipse
@@ -48,7 +48,7 @@ export function HomeBackdrop() {
           rx="480"
           ry="520"
           fill="#E9EEF1"
-          opacity="0.7"
+          opacity="0.62"
           filter="url(#hb-blur-80)"
         />
 
@@ -62,7 +62,7 @@ export function HomeBackdrop() {
                C 975 1320, 1120 1520, 1035 1900
                L 1440 1900 L 1440 -120 Z"
             fill="#D4DCE2"
-            opacity="0.62"
+            opacity="0.55"
           />
           {/* Layer 2b — overlapping lighter lobe for tonal depth */}
           <path
@@ -75,7 +75,7 @@ export function HomeBackdrop() {
                C 1240 700, 1120 420, 1000 240
                C 950 170, 910 110, 880 60 Z"
             fill="#CBD5DB"
-            opacity="0.45"
+            opacity="0.4"
           />
 
           {/* Layer 3 — darker translucent edge ribbon following the form */}
@@ -88,7 +88,7 @@ export function HomeBackdrop() {
             stroke="#22343A"
             strokeWidth="36"
             strokeLinecap="round"
-            opacity="0.16"
+            opacity="0.14"
             filter="url(#hb-blur-10)"
           />
           {/* Thin editorial echo of the same edge */}
@@ -101,7 +101,7 @@ export function HomeBackdrop() {
             stroke="#22343A"
             strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.12"
+            opacity="0.11"
           />
 
           {/* Layer 3b — parallel flowing lines (editorial movement) */}
@@ -113,7 +113,7 @@ export function HomeBackdrop() {
             fill="none"
             stroke="#22343A"
             strokeWidth="1.5"
-            opacity="0.10"
+            opacity="0.09"
           />
           <path
             d="M 1142 -120
@@ -123,7 +123,7 @@ export function HomeBackdrop() {
             fill="none"
             stroke="#22343A"
             strokeWidth="1.5"
-            opacity="0.08"
+            opacity="0.07"
           />
           <path
             d="M 1184 -120
@@ -133,7 +133,7 @@ export function HomeBackdrop() {
             fill="none"
             stroke="#22343A"
             strokeWidth="1.5"
-            opacity="0.06"
+            opacity="0.05"
           />
         </g>
 
@@ -144,7 +144,7 @@ export function HomeBackdrop() {
           rx="420"
           ry="300"
           fill="#DCE3E8"
-          opacity="0.5"
+          opacity="0.44"
           filter="url(#hb-blur-55)"
         />
         {/* Faint lower-left wash so the field feels continuous, not cut off */}
@@ -154,7 +154,7 @@ export function HomeBackdrop() {
           rx="320"
           ry="230"
           fill="#E9EEF1"
-          opacity="0.7"
+          opacity="0.62"
           filter="url(#hb-blur-55)"
         />
 
@@ -165,9 +165,9 @@ export function HomeBackdrop() {
           stroke="#FF6B1A"
           strokeWidth="10"
           strokeLinecap="round"
-          opacity="0.85"
+          opacity="0.75"
         />
-        <circle cx="1242" cy="702" r="7" fill="#FF6B1A" opacity="0.9" />
+        <circle cx="1242" cy="702" r="7" fill="#FF6B1A" opacity="0.79" />
       </svg>
     </div>
   );
