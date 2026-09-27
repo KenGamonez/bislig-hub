@@ -1423,3 +1423,105 @@ select.input-field {
     animation: none;
   }
 }
+
+/* Header weather utility (Bislig City, compact) */
+.header-weather {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+.header-weather-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.header-weather-btn:hover {
+  background: var(--bg-surface-soft);
+  border-color: var(--border);
+}
+.header-weather-btn:focus-visible {
+  outline: 2px solid var(--brand-orange);
+  outline-offset: 2px;
+}
+.header-utility-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.header-weather-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  max-width: calc(100vw - 32px);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-elevated);
+  padding: 14px;
+  z-index: 1200;
+  text-align: left;
+}
+.header-weather-place {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.header-weather-temp {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.header-weather-cond {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.header-weather-meta {
+  margin: 2px 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.header-weather-updated {
+  margin: 8px 0 0;
+  font-size: 0.70rem;
+  color: var(--text-muted);
+}
+@media (max-width: 380px) {
+  .app-header__right {
+    gap: 6px;
+  }
+  .header-utility-divider {
+    display: none;
+  }
+  .header-weather-btn {
+    padding: 4px 7px;
+    font-size: 0.74rem;
+  }
+  .header-weather-popup {
+    width: 200px;
+    padding: 12px;
+  }
+}

@@ -12,7 +12,7 @@ export function DriverHeader({
     <header className="hub-driver__header" role="banner">
       <Link to="/" className="hub-driver__brand" aria-label="Bislig Hub — Home">
         <img
-          src="/assets/bislig-hub-logo.png"
+          src="/assets/bislig-hub-logo-transparent.png"
           alt="Bislig Hub"
           className="hub-driver__logo"
           width={120}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { HeaderWeather } from "./HeaderWeather";
 import { LanguageToggle } from "../legacy/components/LanguageToggle";
 
 export function AppHeader() {
@@ -7,7 +8,7 @@ export function AppHeader() {
       <div className="app-header__inner">
         <Link to="/" className="app-header__brand" aria-label="Bislig Hub — Home">
           <img
-            src="/assets/bislig-hub-logo.png"
+            src="/assets/bislig-hub-logo-transparent.png"
             alt="Bislig Hub"
             className="app-header__logo"
             width={148}
@@ -17,6 +18,8 @@ export function AppHeader() {
         </Link>
 
         <div className="app-header__right">
+          <HeaderWeather />
+          <span className="header-utility-divider" aria-hidden="true"></span>
           <LanguageToggle />
         </div>
       </div>
