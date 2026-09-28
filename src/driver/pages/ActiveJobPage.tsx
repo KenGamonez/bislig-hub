@@ -28,6 +28,36 @@ const NEXT_ACTION: Record<string, { label: string; next: "arrived" | "in_progres
   in_progress: { label: "Complete ride", next: "completed" },
 };
 
+// Human-facing guide per ride status: current state + what to do now +
+// what happens next. Copy only — the state machine is untouched.
+const RIDE_GUIDE: Record<string, { title: string; guide: string }> = {
+  accepted: {
+    title: "Ride accepted",
+    guide:
+      "Go to the passenger pickup location. Navigate to the pickup, then tap Arrived when you reach the passenger.",
+  },
+  arrived: {
+    title: "Passenger pickup",
+    guide:
+      "You have arrived at the pickup location. Please wait for the passenger. Tap Start Ride after the passenger boards.",
+  },
+  in_progress: {
+    title: "Ride in progress",
+    guide:
+      "Take the passenger to the destination. Tap Complete Ride when you arrive.",
+  },
+  completed: {
+    title: "Ride completed",
+    guide:
+      "Collect the fare from the passenger. You are now available for another ride.",
+  },
+  cancelled: {
+    title: "Ride cancelled",
+    guide:
+      "This ride was cancelled. You are now available for another ride.",
+  },
+};
+
 function friendlyError(error: unknown): string {
   if (import.meta.env.DEV) console.error("[active-job]", error);
   const message = error instanceof Error ? error.message : "";
@@ -211,6 +241,16 @@ export function ActiveJobPage() {
       <div className="hub-driver__card">
         <ActiveJobHeader status={ride.status} />
         <JourneySteps status={ride.status} />
+        {RIDE_GUIDE[ride.status] ? (
+          <>
+            <p className="hub-driver__card-title">
+              {RIDE_GUIDE[ride.status].title}
+            </p>
+            <p className="hub-driver__card-sub">
+              {RIDE_GUIDE[ride.status].guide}
+            </p>
+          </>
+        ) : null}
         <ActiveJobRoute
           pickup={ride.pickup_address}
           destination={ride.destination_address}

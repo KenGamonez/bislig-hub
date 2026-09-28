@@ -4135,7 +4135,7 @@ const renderOnlineState = () => (
         <div>
           <p className="section-label">NEW RIDE REQUEST</p>
           <h3>{request?.customer_name}</h3>
-          <p>Review the trip details before accepting.</p>
+          <p>Review the pickup and destination, then accept if you want this ride.</p>
         </div>
         <span className="state-badge request-badge">NEW</span>
       </div>
@@ -4205,8 +4205,9 @@ const renderOnlineState = () => (
       <div className="state-heading">
         <div>
           <p className="section-label">CURRENT RIDE</p>
-<h3>Heading to passenger</h3>
+<h3>Going to pickup</h3>
           <p>{activeRide?.customer_name} · {activeRide?.passenger_count} passenger(s)</p>
+          <p>Navigate to the passenger. Tap Arrived when you reach the pickup location.</p>
         </div>
         <span className="state-badge progress-badge">EN ROUTE</span>
       </div>
@@ -4260,7 +4261,7 @@ const renderOnlineState = () => (
         <div>
           <p className="section-label">CURRENT RIDE</p>
           <h3>Passenger pickup</h3>
-          <p>You've arrived at the pickup location.</p>
+          <p>You have arrived at the pickup location. Please wait for the passenger. Tap Start Ride after the passenger boards.</p>
         </div>
         <span className="state-badge arrived-badge">ARRIVED</span>
       </div>
@@ -4308,7 +4309,7 @@ const renderOnlineState = () => (
         <div>
           <p className="section-label">CURRENT RIDE</p>
           <h3>Ride in progress</h3>
-          <p>{activeRide?.customer_name} is on board.</p>
+          <p>{activeRide?.customer_name} is on board. Take the passenger to the destination. Tap Complete Ride when you arrive.</p>
         </div>
         <span className="state-badge live-badge">IN PROGRESS</span>
       </div>
@@ -4366,8 +4367,8 @@ const renderOnlineState = () => (
       <div className="state-heading">
         <div>
           <p className="section-label">RIDE COMPLETE</p>
-          <h3>Trip completed</h3>
-          <p>Great job. Your ride has been completed.</p>
+          <h3>Ride completed</h3>
+          <p>Collect the fare from the passenger. You are now available for another ride.</p>
         </div>
         <span className="state-badge completed-badge">COMPLETED</span>
       </div>

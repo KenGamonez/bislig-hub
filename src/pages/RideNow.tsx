@@ -105,33 +105,33 @@ const PHASE_COPY: Record<
   { title: string; next: string; stage: string }
 > = {
   searching: {
-    title: "Finding a nearby driver",
-    next: "We're asking nearby drivers. This usually takes a few seconds — stay on this screen.",
+    title: "Finding your driver",
+    next: "Your request is in — please wait while we look for an available driver.",
     stage: "Finding a driver",
   },
   no_driver: {
-    title: "No driver is available right now",
-    next: "Your request is saved. Nobody is available at the moment — try again shortly, or close and book later.",
+    title: "No driver found",
+    next: "We couldn't find an available driver for this request. Please try requesting again.",
     stage: "Paused",
   },
   accepted: {
-    title: "Driver accepted your ride",
-    next: "Your driver is on the way. Please head to your pickup point and keep your phone nearby.",
+    title: "Driver found!",
+    next: "Your driver is on the way. Please be ready at your pickup location.",
     stage: "Driver on the way",
   },
   arrived: {
     title: "Your driver has arrived",
-    next: "Meet your driver at the pickup point. Check the vehicle details below before getting in.",
+    next: "Please meet your driver at the pickup location. Your driver will start the ride when you're ready.",
     stage: "Arrived",
   },
   in_progress: {
     title: "Ride in progress",
-    next: "You're on your way. Your driver is taking you to your destination.",
+    next: "You're on your way to your destination. Please stay with your driver until you arrive.",
     stage: "On trip",
   },
   completed: {
     title: "Ride completed",
-    next: "Thanks for riding with Bislig Hub. Book again anytime.",
+    next: "Please pay your driver the displayed fare. Thank you for riding with Bislig Hub.",
     stage: "Done",
   },
   cancelled: {

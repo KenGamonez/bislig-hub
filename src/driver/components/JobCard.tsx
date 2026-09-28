@@ -26,6 +26,16 @@ export function JobCard({
         ) : null}
       </div>
 
+      {job.kind === "ride" ? (
+        <>
+          <p className="hub-driver__card-title">New ride request</p>
+          <p className="hub-driver__card-sub">
+            Review the pickup and destination, then accept if you want
+            this ride.
+          </p>
+        </>
+      ) : null}
+
       <p className="hub-driver__job-route">
         {job.pickup}
         <span className="hub-driver__job-arrow" aria-hidden="true">
