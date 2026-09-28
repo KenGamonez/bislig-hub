@@ -388,6 +388,31 @@ export function RideNow() {
     };
   }, [ride?.id, phase, syncRide, stopPolling]);
 
+  // Foreground recovery: background tabs get throttled intervals and
+  // suspended sockets, so a returning passenger can stare at a stale
+  // phase. Re-sync immediately on return; the poll interval and realtime
+  // subscription keep covering the foreground.
+  useEffect(() => {
+    const rideId = ride?.id;
+    if (!rideId || !ride || ride.status === "completed" || ride.status === "cancelled") {
+      return;
+    }
+    const reload = () => {
+      void syncRide(rideId);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    window.addEventListener("focus", reload);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", reload);
+    return () => {
+      window.removeEventListener("focus", reload);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", reload);
+    };
+  }, [ride?.id, ride?.status, syncRide]);
+
   // Load assigned driver profile.
   useEffect(() => {
     if (!ride?.driver_id) {

@@ -224,6 +224,30 @@ export function DriverExperience({
   const [lastLocationFixIso] = useState<string | null>(null)
   const [, setLocationTick] = useState(0)
   const [offerSecondsLeft, setOfferSecondsLeft] = useState(0)
+  // Bumped whenever the tab returns to the foreground or connectivity
+  // returns. Background tabs get throttled timers and suspended sockets,
+  // so without this a returning driver sits on stale state. Included in
+  // the refresh/subscription effect deps below for an immediate reload.
+  const [foregroundTick, setForegroundTick] = useState(0)
+
+  useEffect(() => {
+    const bump = () => {
+      setForegroundTick((current) => current + 1)
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        bump()
+      }
+    }
+    window.addEventListener('focus', bump)
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('online', bump)
+    return () => {
+      window.removeEventListener('focus', bump)
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('online', bump)
+    }
+  }, [])
 
   const locationStatus = !driverOnline ? 'lost' : driverLocationStatus(lastLocationFixIso)
 
@@ -605,7 +629,7 @@ useEffect(() => {
       window.clearInterval(timer)
       unsubscribeAssignedRides()
     }
-  }, [driverOnline, driverId])
+  }, [driverOnline, driverId, foregroundTick])
 
 useEffect(() => {
     if (!activeRide?.id || !driverAuthId) {
@@ -804,7 +828,7 @@ return unsubscribe
     return () => {
       unsubscribe()
     }
-  }, [driverAuthId, driverId, driverOnline])
+  }, [driverAuthId, driverId, driverOnline, foregroundTick])
 
   useEffect(() => {
     if (phase !== 'incoming_request' || !pendingOffer) {

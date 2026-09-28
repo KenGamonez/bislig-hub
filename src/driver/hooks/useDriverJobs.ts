@@ -163,6 +163,28 @@ export function useDriverJobs(args: {
     return () => window.clearInterval(timer);
   }, [driverId, online, loadAll]);
 
+  // Foreground recovery: mobile browsers throttle intervals and suspend
+  // sockets in background tabs, so a returning driver can sit on stale
+  // (empty) state for a full poll cycle or longer. Refresh immediately on
+  // return instead of waiting. Same idempotent loader the interval uses.
+  useEffect(() => {
+    if (!driverId || !online) return;
+    const reload = () => {
+      void loadAll();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    window.addEventListener("focus", reload);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", reload);
+    return () => {
+      window.removeEventListener("focus", reload);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", reload);
+    };
+  }, [driverId, online, loadAll]);
+
   // Expiry clock (also drives countdowns).
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 5000);
