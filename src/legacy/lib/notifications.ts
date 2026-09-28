@@ -169,6 +169,26 @@ export type DriverPushStatus =
   | { status: 'denied' }
   | { status: 'error'; message: string }
 
+/**
+ * Read-only check: does this browser/device already hold a push
+ * subscription for our service worker? Never creates one — creation
+ * stays behind the explicit Enable action via ensureDriverPushSubscription.
+ */
+export async function hasPushSubscription(): Promise<boolean> {
+  try {
+    if (!isPushSupported()) {
+      return false
+    }
+
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+
+    return Boolean(subscription)
+  } catch {
+    return false
+  }
+}
+
 export async function ensureDriverPushSubscription(): Promise<DriverPushStatus> {
   if (!isPushSupported()) {
     return { status: 'unsupported' }

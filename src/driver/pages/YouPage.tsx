@@ -6,6 +6,7 @@ import { useDriverSession } from "../hooks/useDriverSession";
 import { useDriverPresenceContext } from "../hooks/useDriverPresenceContext";
 import { useDriverReputation } from "../hooks/useDriverReputation";
 import { DriverIdentityCard } from "../components/DriverIdentityCard";
+import { DriverPushControl } from "../components/DriverPushControl";
 import { DriverStats } from "../components/DriverStats";
 import { DriverVehicleCard } from "../components/DriverVehicleCard";
 import { DriverAccountActions } from "../components/DriverAccountActions";
@@ -100,6 +101,8 @@ export function YouPage() {
       />
 
       <DriverAccountActions onCloseChangePassword={() => {}} />
+
+      <DriverPushControl />
 
       <Link to="/driver/history" className="btn btn--primary btn--block hub-driver__history-link">
         View Trip History
