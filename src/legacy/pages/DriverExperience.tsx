@@ -249,6 +249,36 @@ export function DriverExperience({
     }
   }, [])
 
+  // Presence heartbeat (same contract as the new driver shell): re-assert
+  // presence about every 60 seconds while online so dispatch keeps
+  // treating this driver as genuinely available. Best effort only.
+  useEffect(() => {
+    if (!driverOnline || !driverId) {
+      return
+    }
+
+    const beat = () => {
+      void (async () => {
+        try {
+          const fix = await getBestEffortPosition()
+          await setDriverPresence(
+            true,
+            driverIsAvailable,
+            driverAutoAccept,
+            fix?.latitude ?? null,
+            fix?.longitude ?? null,
+          )
+        } catch {
+          // Best effort only — next beat retries.
+        }
+      })()
+    }
+
+    beat()
+    const timer = window.setInterval(beat, 60000)
+    return () => window.clearInterval(timer)
+  }, [driverOnline, driverId, driverIsAvailable, driverAutoAccept])
+
   const locationStatus = !driverOnline ? 'lost' : driverLocationStatus(lastLocationFixIso)
 
   const offerExpired = phase === 'incoming_request' && Boolean(pendingOffer) && offerSecondsLeft === 0

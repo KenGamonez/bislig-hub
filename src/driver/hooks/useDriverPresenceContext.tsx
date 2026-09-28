@@ -83,6 +83,35 @@ export function DriverPresenceProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Presence heartbeat: re-assert presence about every 60 seconds
+  // while online so dispatch keeps treating this driver as genuinely
+  // available. The backend excludes presence rows untouched for over 5
+  // minutes from dispatch rounds; without this, an idle-but-online
+  // driver would go stale and stop receiving offers. Best effort only —
+  // failures never touch local state, the next beat retries.
+  useEffect(() => {
+    if (!online) return;
+    const beat = () => {
+      void (async () => {
+        try {
+          const fix = await getBestEffortPosition();
+          await setDriverPresence(
+            true,
+            available,
+            autoAccept,
+            fix?.latitude ?? null,
+            fix?.longitude ?? null
+          );
+        } catch {
+          // Best effort only — next beat retries.
+        }
+      })();
+    };
+    beat();
+    const timer = window.setInterval(beat, 60000);
+    return () => window.clearInterval(timer);
+  }, [online, available, autoAccept]);
+
   const setOnline = useCallback(async () => {
     if (transitioning) return;
     setTransitioning(true);
