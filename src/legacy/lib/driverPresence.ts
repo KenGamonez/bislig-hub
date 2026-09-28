@@ -1,4 +1,3 @@
-import { appSupabasePublishableKey, appSupabaseUrl, supabase } from './supabase'
 import { updateDriverLocation } from './driverLocations'
 
 export type DriverPosition = {
@@ -111,37 +110,5 @@ export function startDriverLocationTracking(
   return () => {
     navigator.geolocation.clearWatch(watchId)
     window.clearInterval(heartbeatId)
-  }
-}
-
-export function persistOfflineBestEffort() {
-  try {
-    void supabase.auth.getSession().then(({ data }) => {
-      const token = data.session?.access_token
-
-      if (!token) {
-        return
-      }
-
-      void fetch(`${appSupabaseUrl}/rest/v1/rpc/set_driver_presence`, {
-        method: 'POST',
-        keepalive: true,
-        headers: {
-          apikey: appSupabasePublishableKey,
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        // Send all five parameters so PostgREST resolves the 5-argument
-        // overload. With only three, the call is ambiguous (the 5-argument
-        // overload has defaults for the last two) and the offline signal
-        // is silently dropped.
-        body: JSON.stringify({ p_online: false, p_available: false, p_auto_accept: false, p_latitude: null, p_longitude: null }),
-      }).catch(() => {
-        // Best effort only — presence is restored the next time the driver
-        // signs in and toggles availability.
-      })
-    })
-  } catch {
-    // Best effort only.
   }
 }

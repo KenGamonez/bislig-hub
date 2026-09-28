@@ -42,7 +42,6 @@ import {
 import {
   driverLocationStatus,
   getBestEffortPosition,
-  persistOfflineBestEffort,
 } from '../lib/driverPresence'
 import {
   cancelRide,
@@ -547,20 +546,6 @@ useEffect(() => {
 
     return () => {
       window.clearInterval(timer)
-    }
-  }, [driverOnline])
-
-  useEffect(() => {
-    const onPageHide = () => {
-      if (driverOnline) {
-        persistOfflineBestEffort()
-      }
-    }
-
-    window.addEventListener('pagehide', onPageHide)
-
-    return () => {
-      window.removeEventListener('pagehide', onPageHide)
     }
   }, [driverOnline])
 
