@@ -36,6 +36,25 @@ import {
   rideToJob,
   type DriverJob,
 } from "../jobs";
+import { useNotifications } from "../../notifications/notifications";
+
+const JOB_OFFER_COPY: Record<
+  DriverJob["kind"],
+  { title: string; message: string }
+> = {
+  ride: {
+    title: "New Ride Now request",
+    message: "A passenger is requesting a ride.",
+  },
+  pakyawan: {
+    title: "New Pakyawan request",
+    message: "A customer is requesting a trip.",
+  },
+  delivery: {
+    title: "New delivery request",
+    message: "A customer is requesting a delivery.",
+  },
+};
 
 function friendlyError(error: unknown, fallback: string): string {
   if (import.meta.env.DEV) console.error("[driver-jobs]", fallback, error);
@@ -103,6 +122,7 @@ export function useDriverJobs(args: {
   const [submittingKey, setSubmittingKey] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const mountedRef = useRef(true);
+  const { notify } = useNotifications();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -344,6 +364,29 @@ export function useDriverJobs(args: {
     if (dismissed.has(key)) continue;
     jobs.push(deliveryRequestToJob(booking));
   }
+
+  // Announce visible jobs once. The store dedups by job key, so polling,
+  // realtime, and foreground recovery can re-emit freely. Dismissed jobs
+  // never notify.
+  useEffect(() => {
+    for (const job of jobs) {
+      const copy = JOB_OFFER_COPY[job.kind];
+      notify({
+        id: job.key,
+        service: job.kind,
+        title: copy.title,
+        message: copy.message,
+        entityId:
+          job.kind === "ride"
+            ? job.rideId
+            : job.kind === "pakyawan"
+              ? job.bookingId
+              : job.deliveryId,
+        target: "/driver/jobs",
+        actionLabel: "View request",
+      });
+    }
+  }, [jobs.map((job) => job.key).join("|"), notify]);
 
   const runAction = useCallback(
     async (job: DriverJob, fn: () => Promise<unknown>) => {

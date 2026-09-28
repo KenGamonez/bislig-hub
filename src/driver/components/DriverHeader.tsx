@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { LanguageToggle } from "../../legacy/components/LanguageToggle";
+import { NotificationBell } from "../../notifications/NotificationCenter";
 
 export function DriverHeader({
   name,
@@ -30,6 +31,7 @@ export function DriverHeader({
             {name.split(" ")[0]}
           </span>
         ) : null}
+        <NotificationBell />
         <LanguageToggle />
       </div>
     </header>

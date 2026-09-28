@@ -8,6 +8,54 @@ import { playChatNotification, showBrowserNotification, unlockNotificationAudio 
 import { formatCentavos } from '../lib/fare'
 import type { DeliveryBooking } from '../types/delivery'
 import { useLanguage } from '../lib/i18n'
+import { useNotifications } from '../../notifications/notifications'
+
+const DELIVERY_SENDER_COPY: Record<string, { title: string; message: string }> = {
+  quoted: {
+    title: 'Delivery quote received',
+    message: 'Review the delivery details.',
+  },
+  confirmed: {
+    title: 'Delivery confirmed',
+    message: 'Your delivery is confirmed.',
+  },
+  assigned: {
+    title: 'Driver found',
+    message: 'A driver accepted your delivery.',
+  },
+  driver_on_way: {
+    title: 'Driver on the way',
+    message: 'Your driver is heading to the pickup location.',
+  },
+  driver_arrived: {
+    title: 'Driver arrived',
+    message: 'Meet your driver to hand over the package.',
+  },
+  picked_up: {
+    title: 'Package picked up',
+    message: 'Your driver has your package.',
+  },
+  in_transit: {
+    title: 'Package in transit',
+    message: 'Your package is on its way to the destination.',
+  },
+  delivered: {
+    title: 'Delivered',
+    message: 'Your package was delivered.',
+  },
+  cancelled: {
+    title: 'Delivery cancelled',
+    message: 'This delivery was cancelled.',
+  },
+  failed: {
+    title: 'Delivery failed',
+    message: 'This delivery could not be completed. Contact Bislig Hub if you need help.',
+  },
+  no_driver: {
+    title: 'No driver found',
+    message: 'Try submitting your delivery request again.',
+  },
+}
 
 
 
@@ -47,6 +95,7 @@ const packageTypes = ['Documents', 'Parcels', 'Food', 'Clothing', 'Gadgets', 'Ot
 
 export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
   const { t } = useLanguage()
+  const { notify } = useNotifications()
   const [deliveryTiming, setDeliveryTiming] = useState<'now' | 'scheduled'>('now')
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<FormErrors>({})
@@ -261,6 +310,15 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
       setDeliveryChatAlert(null)
       prevDeliverySigRef.current = null
       setSubmitted(true)
+      notify({
+        id: `delivery:${created.id}:submitted`,
+        service: 'delivery',
+        title: 'Delivery request sent',
+        message: "We're finding a driver for your package.",
+        entityId: created.id,
+        target: '/delivery',
+        actionLabel: 'View delivery',
+      })
     } catch (error) {
       console.error('Unable to submit delivery request:', error)
       setSubmitError(t('pad.submitFailed'))
@@ -404,6 +462,22 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
     prevDeliverySigRef.current = sig
 
     if (!notifiable.includes(trackedDelivery.status)) {
+      // Terminal/failure states skip the chime but still get a durable
+      // notification (baseline-silent on first observation).
+      if (prevSig !== null && prevSig !== sig) {
+        const terminalCopy = DELIVERY_SENDER_COPY[trackedDelivery.status]
+        if (terminalCopy) {
+          notify({
+            id: `delivery:${trackedDelivery.id}:${trackedDelivery.status}`,
+            service: 'delivery',
+            title: terminalCopy.title,
+            message: terminalCopy.message,
+            entityId: trackedDelivery.id,
+            target: '/delivery',
+            actionLabel: 'View delivery',
+          })
+        }
+      }
       return
     }
 
@@ -450,6 +524,18 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
     setDeliveryUnread(true)
     playChatNotification()
     showBrowserNotification(t('pad.newUpdate'), deliveryStatusLabel(trackedDelivery.status))
+    const senderCopy = DELIVERY_SENDER_COPY[trackedDelivery.status]
+    if (senderCopy) {
+      notify({
+        id: `delivery:${trackedDelivery.id}:${trackedDelivery.status}`,
+        service: 'delivery',
+        title: senderCopy.title,
+        message: senderCopy.message,
+        entityId: trackedDelivery.id,
+        target: '/delivery',
+        actionLabel: 'View delivery',
+      })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitted, createdDeliveryId, trackedDelivery])
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CancelRideModal } from '../components/CancelRideModal'
 import { MapView } from '../components/MapView'
 import { RideChat } from '../components/RideChat'
@@ -6,6 +6,8 @@ import { PakyawanChat, PakyawanChatAlertPopup } from '../components/PakyawanChat
 import { DeliveryChatSection } from '../components/DeliveryChatSection'
 import { DeliveryRating } from '../components/DeliveryRating'
 import { supabase } from '../lib/supabase'
+import { timeAgo, useNotifications } from '../../notifications/notifications'
+import { DRIVER_COPY_BY_SERVICE } from '../../notifications/copy'
 import { demoDriver } from '../lib/demoDriver'
 import { changeDriverPassword } from '../lib/driverAuth'
 import { PASSWORD_HELP_TEXT, validatePasswordStrength } from '../lib/driverAccounts'
@@ -112,16 +114,6 @@ type DriverSummaryProfile = {
   vehicleCapacity: number | null
   email: string | null
   username: string | null
-}
-
-type DriverNotificationItem = {
-  id: string
-  kind: 'ride' | 'pakyawan'
-  title: string
-  subtitle: string
-  rideId: string | null
-  seen: boolean
-  createdAt: number
 }
 
 type DriverHistoryRide = {
@@ -301,7 +293,16 @@ export function DriverExperience({
   const completedRideIdRef = useRef<string | null>(null)
   const phaseRef = useRef<DriverPhase>('offline')
   const activeRideRef = useRef<Ride | null>(null)
-  const [notifications, setNotifications] = useState<DriverNotificationItem[]>([])
+  // Notification inbox is the shared unified store (bell + center also
+  // used by the passenger header and the new driver shell). The panel UI
+  // and action handlers below are unchanged; only the data source moved.
+  const {
+    items: notifications,
+    unreadCount: unreadNotificationCount,
+    notify,
+    markAllRead,
+    removeNotification,
+  } = useNotifications()
   const [showNotifications, setShowNotifications] = useState(false)
   const [canAcceptPakyawan, setCanAcceptPakyawan] = useState(false)
   const [canAcceptDeliveries, setCanAcceptDeliveries] = useState(false)
@@ -832,18 +833,15 @@ return unsubscribe
       const pickupAddress = pending.ride.pickup_address ?? 'Pickup'
       const destinationAddress = pending.ride.destination_address ?? 'Destination'
 
-      setNotifications((current) => [
-        {
-          id: `offer-${pending.offer.id}`,
-          kind: 'ride',
-          rideId: pending.ride.id,
-          title: 'New ride offer',
-          subtitle: `${pickupAddress} → ${destinationAddress}`,
-          seen: false,
-          createdAt: Date.now(),
-        },
-        ...current,
-      ])
+      notify({
+        id: `offer-${pending.offer.id}`,
+        service: 'ride',
+        title: 'New ride offer',
+        message: `${pickupAddress} → ${destinationAddress}`,
+        entityId: pending.ride.id,
+        target: '/driver/login',
+        actionLabel: 'View request',
+      })
 
       if (driverOnline) {
         playRequestChime()
@@ -952,18 +950,15 @@ return unsubscribe
 
           const subtitle = `${incoming.pickup_location ?? 'Pickup'} → ${incoming.destination ?? 'Destination'}`
 
-          setNotifications((current) => [
-            {
-              id: `pakyawan-${incoming.id}`,
-              kind: 'pakyawan',
-              rideId: null,
-              title: 'New Pakyawan request',
-              subtitle,
-              seen: false,
-              createdAt: Date.now(),
-            },
-            ...current,
-          ])
+          notify({
+            id: `pakyawan-${incoming.id}`,
+            service: 'pakyawan',
+            title: 'New Pakyawan request',
+            message: subtitle,
+            entityId: incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View request',
+          })
 
           if (driverOnline) {
             playRequestChime()
@@ -1032,22 +1027,15 @@ return unsubscribe
 
           const subtitle = 'A customer is requesting a Pakyawan trip.'
 
-          setNotifications((current) =>
-            current.some((item) => item.id === `pakyawan-offer-${incoming.id}`)
-              ? current
-              : [
-                  {
-                    id: `pakyawan-offer-${incoming.id}`,
-                    kind: 'pakyawan',
-                    rideId: null,
-                    title: 'New Pakyawan offer',
-                    subtitle,
-                    seen: false,
-                    createdAt: Date.now(),
-                  },
-                  ...current,
-                ],
-          )
+          notify({
+            id: `pakyawan-offer-${incoming.id}`,
+            service: 'pakyawan',
+            title: 'New Pakyawan offer',
+            message: subtitle,
+            entityId: incoming.booking_id ?? incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View request',
+          })
 
           if (driverOnline) {
             playRequestChime()
@@ -1116,22 +1104,15 @@ return unsubscribe
 
           const subtitle = `${incoming.pickup_location ?? 'Pickup'} → ${incoming.destination ?? 'Destination'}`
 
-          setNotifications((current) =>
-            current.some((item) => item.id === `pakyawan-confirmed-${incoming.id}`)
-              ? current
-              : [
-                  {
-                    id: `pakyawan-confirmed-${incoming.id}`,
-                    kind: 'pakyawan',
-                    rideId: null,
-                    title: 'Pakyawan confirmed',
-                    subtitle,
-                    seen: false,
-                    createdAt: Date.now(),
-                  },
-                  ...current,
-                ],
-          )
+          notify({
+            id: `pakyawan-confirmed-${incoming.id}`,
+            service: 'pakyawan',
+            title: 'Pakyawan confirmed',
+            message: subtitle,
+            entityId: incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View booking',
+          })
 
           setPakyawanConfirmedPopup((current) =>
             current && current.id === incoming.id ? current : (incoming as PakyawanBooking),
@@ -1215,22 +1196,15 @@ return unsubscribe
 
           const subtitle = `${incoming.pickup_address ?? 'Pickup'} → ${incoming.delivery_address ?? 'Destination'}`
 
-          setNotifications((current) =>
-            current.some((item) => item.id === `delivery-${incoming.id}`)
-              ? current
-              : [
-                  {
-                    id: `delivery-${incoming.id}`,
-                    kind: 'pakyawan',
-                    rideId: null,
-                    title: 'New delivery request',
-                    subtitle,
-                    seen: false,
-                    createdAt: Date.now(),
-                  },
-                  ...current,
-                ],
-          )
+          notify({
+            id: `delivery-${incoming.id}`,
+            service: 'delivery',
+            title: 'New delivery request',
+            message: subtitle,
+            entityId: incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View request',
+          })
 
           if (driverOnline && !deliveryChimedIdsRef.current.has(incoming.id)) {
             deliveryChimedIdsRef.current.add(incoming.id)
@@ -1300,22 +1274,15 @@ return unsubscribe
 
           const subtitle = 'A customer is requesting a package delivery.'
 
-          setNotifications((current) =>
-            current.some((item) => item.id === `delivery-offer-${incoming.id}`)
-              ? current
-              : [
-                  {
-                    id: `delivery-offer-${incoming.id}`,
-                    kind: 'pakyawan',
-                    rideId: null,
-                    title: 'New delivery offer',
-                    subtitle,
-                    seen: false,
-                    createdAt: Date.now(),
-                  },
-                  ...current,
-                ],
-          )
+          notify({
+            id: `delivery-offer-${incoming.id}`,
+            service: 'delivery',
+            title: 'New delivery offer',
+            message: subtitle,
+            entityId: incoming.delivery_id ?? incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View request',
+          })
 
           if (driverOnline) {
             playRequestChime()
@@ -1408,22 +1375,15 @@ return unsubscribe
 
           const subtitle = `${incoming.pickup_address ?? 'Pickup'} → ${incoming.delivery_address ?? 'Destination'}`
 
-          setNotifications((current) =>
-            current.some((item) => item.id === `delivery-confirmed-${incoming.id}`)
-              ? current
-              : [
-                  {
-                    id: `delivery-confirmed-${incoming.id}`,
-                    kind: 'pakyawan',
-                    rideId: null,
-                    title: 'Delivery confirmed',
-                    subtitle,
-                    seen: false,
-                    createdAt: Date.now(),
-                  },
-                  ...current,
-                ],
-          )
+          notify({
+            id: `delivery-confirmed-${incoming.id}`,
+            service: 'delivery',
+            title: 'Delivery confirmed',
+            message: subtitle,
+            entityId: incoming.id ?? '',
+            target: '/driver/login',
+            actionLabel: 'View booking',
+          })
 
           setDeliveryConfirmedPopup((current) =>
             current && current.id === incoming.id ? current : (incoming as DeliveryBooking),
@@ -1530,22 +1490,15 @@ return unsubscribe
               : 'Delivery booking'
             const preview = String(incoming.message ?? '').slice(0, 160)
 
-            setNotifications((current) =>
-              current.some((item) => item.id === `delivery-chatmsg-${incoming.id}`)
-                ? current
-                : [
-                    {
-                      id: `delivery-chatmsg-${incoming.id}`,
-                      kind: 'pakyawan',
-                      rideId: null,
-                      title: 'New delivery message',
-                      subtitle: preview,
-                      seen: false,
-                      createdAt: Date.now(),
-                    },
-                    ...current,
-                  ],
-            )
+            notify({
+              id: `delivery-chatmsg-${incoming.id}`,
+              service: 'delivery',
+              title: 'New delivery message',
+              message: preview,
+              entityId: deliveredId,
+              target: '/driver/login',
+              actionLabel: 'Open chat',
+            })
 
             setDeliveryChatAlert({ bookingId: deliveredId, route, preview })
 
@@ -1657,22 +1610,15 @@ return unsubscribe
               : 'Pakyawan booking'
             const preview = String(incoming.message ?? '').slice(0, 160)
 
-            setNotifications((current) =>
-              current.some((item) => item.id === `pakyawan-chatmsg-${incoming.id}`)
-                ? current
-                : [
-                    {
-                      id: `pakyawan-chatmsg-${incoming.id}`,
-                      kind: 'pakyawan',
-                      rideId: null,
-                      title: 'New Pakyawan message',
-                      subtitle: preview,
-                      seen: false,
-                      createdAt: Date.now(),
-                    },
-                    ...current,
-                  ],
-            )
+            notify({
+              id: `pakyawan-chatmsg-${incoming.id}`,
+              service: 'pakyawan',
+              title: 'New Pakyawan message',
+              message: preview,
+              entityId: heldId,
+              target: '/driver/login',
+              actionLabel: 'Open chat',
+            })
 
             setPakyawanChatAlert({ bookingId: heldId, route, preview })
 
@@ -2152,17 +2098,12 @@ const handleToggleOnline = async () => {
 
 const displayedDriver = driverProfile ?? demoDriver
 
-  const unreadNotificationCount = useMemo(
-    () => notifications.filter((item) => !item.seen).length,
-    [notifications],
-  )
-
   const handleOpenNotifications = () => {
     setShowNotifications((current) => {
       const next = !current
 
       if (next) {
-        setNotifications((items) => items.map((item) => ({ ...item, seen: true })))
+        markAllRead()
       }
 
       return next
@@ -2199,11 +2140,11 @@ const displayedDriver = driverProfile ?? demoDriver
   }
 
   const handleDismissNotification = (id: string) => {
-    setNotifications((current) => current.filter((item) => item.id !== id))
+    removeNotification(id)
   }
 
   const handleOpenRideRequest = async (id: string) => {
-    setNotifications((current) => current.filter((item) => item.id !== id))
+    removeNotification(id)
     setShowNotifications(false)
 
     try {
@@ -2238,7 +2179,7 @@ const displayedDriver = driverProfile ?? demoDriver
           ? current.map((booking) => (booking.id === updated.id ? updated : booking))
           : [updated, ...current].slice(0, 10),
       )
-      setNotifications((current) => current.filter((item) => item.id !== `pakyawan-${bookingId}`))
+      removeNotification(`pakyawan-${bookingId}`)
       // Successful accept only: open the Pakyawan view so the assigned
       // booking and its price input are immediately visible.
       setDriverView('pakyawan')
@@ -2252,7 +2193,7 @@ const displayedDriver = driverProfile ?? demoDriver
 
   const handleDeclinePakyawan = (bookingId: string) => {
     setPakyawanRequests((current) => current.filter((booking) => booking.id !== bookingId))
-    setNotifications((current) => current.filter((item) => item.id !== `pakyawan-${bookingId}`))
+    removeNotification(`pakyawan-${bookingId}`)
   }
 
   const resolvePakyawanOfferError = (error: unknown): string => {
@@ -2286,7 +2227,8 @@ const displayedDriver = driverProfile ?? demoDriver
           ? current.map((booking) => (booking.id === assigned.id ? assigned : booking))
           : [assigned, ...current].slice(0, 10),
       )
-      setNotifications((current) => current.filter((item) => item.id !== `pakyawan-offer-${offerId}` && item.id !== `pakyawan-${assigned.id}`))
+      removeNotification(`pakyawan-offer-${offerId}`)
+      removeNotification(`pakyawan-${assigned.id}`)
     } catch (error) {
       console.error('Unable to accept pakyawan offer:', error)
       setPakyawanOffersError(resolvePakyawanOfferError(error))
@@ -2313,7 +2255,7 @@ const displayedDriver = driverProfile ?? demoDriver
     try {
       await declinePakyawanOffer(offerId)
       setPakyawanOffers((current) => current.filter((offer) => offer.id !== offerId))
-      setNotifications((current) => current.filter((item) => item.id !== `pakyawan-offer-${offerId}`))
+      removeNotification(`pakyawan-offer-${offerId}`)
     } catch (error) {
       console.error('Unable to decline pakyawan offer:', error)
       setPakyawanOffersError(resolvePakyawanOfferError(error))
@@ -2566,6 +2508,94 @@ const displayedDriver = driverProfile ?? demoDriver
     (offer) => new Date(offer.expires_at).getTime() > pakyawanNow,
   )
 
+  // Announce held-work lifecycle transitions once (ride + pakyawan +
+  // delivery). Derives new/changed entity states from existing state —
+  // no workflow logic changes. First run baselines silently so a reload
+  // mid-job does not re-announce an old state. Cancelled pakyawan/
+  // delivery rows drop out of the held lists (existing query design), so
+  // only ride cancellation is observable here — via cancellationNotice.
+  const lifecycleSeenRef = useRef<Set<string> | null>(null)
+  const cancelledNoticeRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const current = new Map<string, { service: 'ride' | 'pakyawan' | 'delivery'; id: string; status: string }>()
+
+    if (activeRide) {
+      current.set(`ride:${activeRide.id}:${activeRide.status}`, {
+        service: 'ride',
+        id: activeRide.id,
+        status: activeRide.status,
+      })
+    }
+
+    for (const booking of acceptedPakyawan) {
+      current.set(`pakyawan:${booking.id}:${booking.status}`, {
+        service: 'pakyawan',
+        id: booking.id,
+        status: booking.status,
+      })
+    }
+
+    for (const booking of acceptedDeliveries) {
+      current.set(`delivery:${booking.id}:${booking.status}`, {
+        service: 'delivery',
+        id: booking.id,
+        status: booking.status,
+      })
+    }
+
+    if (lifecycleSeenRef.current === null) {
+      lifecycleSeenRef.current = new Set(current.keys())
+      return
+    }
+
+    const seen = lifecycleSeenRef.current
+
+    for (const [sig, item] of current) {
+      if (seen.has(sig)) {
+        continue
+      }
+
+      seen.add(sig)
+      const copy = DRIVER_COPY_BY_SERVICE[item.service][item.status]
+
+      if (copy) {
+        notify({
+          id: sig,
+          service: item.service,
+          title: copy.title,
+          message: copy.message,
+          entityId: item.id,
+          target: '/driver/login',
+          actionLabel: 'View job',
+        })
+      }
+    }
+  })
+
+  useEffect(() => {
+    if (!cancellationNotice) {
+      return
+    }
+
+    const id = `ride:${cancellationNotice.ride_id}:cancelled`
+
+    if (cancelledNoticeRef.current === id) {
+      return
+    }
+
+    cancelledNoticeRef.current = id
+    notify({
+      id,
+      service: 'ride',
+      title: 'Ride cancelled',
+      message: 'The passenger cancelled this ride.',
+      entityId: cancellationNotice.ride_id,
+      target: '/driver/login',
+      actionLabel: 'View jobs',
+    })
+  }, [cancellationNotice, notify])
+
   const renderNotificationBell = () => (
     <div className="notification-wrap">
       <button
@@ -2600,17 +2630,18 @@ const displayedDriver = driverProfile ?? demoDriver
           ) : (
             <ul className="notification-list">
               {notifications.map((item) => (
-                <li key={item.id} className={item.seen ? 'notification-item seen' : 'notification-item'}>
+                <li key={item.id} className={item.read ? 'notification-item seen' : 'notification-item'}>
                   <div className="notification-copy">
                     <strong>{item.title}</strong>
-                    <span>{item.subtitle}</span>
+                    <span>{item.message}</span>
+                    <span className="notification-time">{timeAgo(item.createdAt)}</span>
                   </div>
                   <div className="notification-actions">
-                    {item.kind === 'ride' ? (
+                    {item.service === 'ride' ? (
                       <button
                         type="button"
                         className="compact-button notification-action"
-                        onClick={() => void handleOpenRideRequest(item.rideId ?? item.id)}
+                        onClick={() => void handleOpenRideRequest(item.entityId || item.id)}
                       >
                         View request
                       </button>
@@ -2738,7 +2769,7 @@ const displayedDriver = driverProfile ?? demoDriver
           ? current.map((booking) => (booking.id === assigned.id ? assigned : booking))
           : [assigned, ...current].slice(0, 10),
       )
-      setNotifications((current) => current.filter((item) => item.id !== `delivery-${bookingId}`))
+      removeNotification(`delivery-${bookingId}`)
       // Successful accept only: keep the driver inside the delivery workflow.
       setDriverView('delivery')
     } catch (error) {
@@ -2759,7 +2790,7 @@ const displayedDriver = driverProfile ?? demoDriver
 
   const handleDeclineDeliveryRequest = (bookingId: string) => {
     setDeliveryRequests((current) => current.filter((booking) => booking.id !== bookingId))
-    setNotifications((current) => current.filter((item) => item.id !== `delivery-${bookingId}`))
+    removeNotification(`delivery-${bookingId}`)
   }
 
   const resolveDeliveryPriceError = (error: unknown): string => {
@@ -3059,7 +3090,7 @@ const displayedDriver = driverProfile ?? demoDriver
     setPakyawanConfirmedPopup(null)
 
     if (bookingId) {
-      setNotifications((items) => items.filter((item) => item.id !== `pakyawan-confirmed-${bookingId}`))
+      removeNotification(`pakyawan-confirmed-${bookingId}`)
     }
   }
 
@@ -3146,7 +3177,7 @@ const displayedDriver = driverProfile ?? demoDriver
     setDeliveryConfirmedPopup(null)
 
     if (bookingId) {
-      setNotifications((items) => items.filter((item) => item.id !== `delivery-confirmed-${bookingId}`))
+      removeNotification(`delivery-confirmed-${bookingId}`)
     }
   }
 

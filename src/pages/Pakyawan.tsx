@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNotifications } from "../notifications/notifications";
 import { Link } from "react-router-dom";
 import { PakyawanChat } from "../legacy/components/PakyawanChat";
 import { JourneySteps } from "../components/JourneySteps";
@@ -144,6 +145,45 @@ function readStoredIdentities(): Array<{ id: string; token: string }> {
   return out;
 }
 
+const PAK_SENDER_COPY: Record<string, { title: string; message: string }> = {
+  quoted: {
+    title: "Price quote received",
+    message: "Review the trip price for your booking.",
+  },
+  confirmed: {
+    title: "Booking confirmed",
+    message: "Your Pakyawan trip is confirmed.",
+  },
+  assigned: {
+    title: "Driver found",
+    message: "A driver accepted your trip.",
+  },
+  scheduled: {
+    title: "Trip scheduled",
+    message: "Your driver will head to the pickup location.",
+  },
+  driver_on_way: {
+    title: "Driver on the way",
+    message: "Your driver is heading to the pickup location.",
+  },
+  driver_arrived: {
+    title: "Driver arrived",
+    message: "Meet your driver at the pickup location.",
+  },
+  in_progress: {
+    title: "Trip in progress",
+    message: "You're on your way to your destination.",
+  },
+  completed: {
+    title: "Trip completed",
+    message: "Thank you for riding with Bislig Hub.",
+  },
+  cancelled: {
+    title: "Booking cancelled",
+    message: "This Pakyawan booking was cancelled.",
+  },
+};
+
 export function Pakyawan() {
   const [step, setStep] = useState(1);
   const [timing, setTiming] = useState<"now" | "scheduled">("now");
@@ -166,6 +206,11 @@ export function Pakyawan() {
     token: string;
   } | null>(null);
   const [booking, setBooking] = useState<PakyawanBooking | null>(null);
+  // Last booking status already announced as a notification. First
+  // observation baselines silently so a reload mid-trip does not
+  // re-announce an old state.
+  const pakNotifySigRef = useRef<string | null>(null);
+  const { notify } = useNotifications();
   const [trackingError, setTrackingError] = useState("");
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState("");
@@ -268,6 +313,31 @@ export function Pakyawan() {
     return stopPolling;
   }, [identity, booking?.status, refresh, stopPolling]);
 
+  // Announce booking status transitions once. First observation baselines
+  // silently; the idempotent store additionally guards against repeats
+  // from polling, restores, and foreground recovery.
+  useEffect(() => {
+    if (!booking) return;
+    const sig = `${booking.id}:${booking.status}`;
+    if (pakNotifySigRef.current === null) {
+      pakNotifySigRef.current = sig;
+      return;
+    }
+    if (pakNotifySigRef.current === sig) return;
+    pakNotifySigRef.current = sig;
+    const copy = PAK_SENDER_COPY[booking.status];
+    if (!copy) return;
+    notify({
+      id: `pakyawan:${booking.id}:${booking.status}`,
+      service: "pakyawan",
+      title: copy.title,
+      message: copy.message,
+      entityId: booking.id,
+      target: "/pakyawan",
+      actionLabel: "View booking",
+    });
+  }, [booking, notify]);
+
   const validateStep = (target: number): boolean => {
     const next: Record<string, string> = {};
     if (target === 1 && timing === "scheduled") {
@@ -334,6 +404,16 @@ export function Pakyawan() {
         // Private browsing — tracking lasts for this session only.
       }
       setIdentity({ id: created.id, token: created.accessToken });
+      pakNotifySigRef.current = `${created.id}:pending`;
+      notify({
+        id: `pakyawan:${created.id}:submitted`,
+        service: "pakyawan",
+        title: "Pakyawan request sent",
+        message: "We're finding a driver for your trip.",
+        entityId: created.id,
+        target: "/pakyawan",
+        actionLabel: "View booking",
+      });
       // Optimistic shell until the first poll resolves the real row.
       setBooking({
         id: created.id,

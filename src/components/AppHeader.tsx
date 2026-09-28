@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { LanguageToggle } from "../legacy/components/LanguageToggle";
+import { NotificationBell } from "../notifications/NotificationCenter";
 
 export function AppHeader() {
   return (
@@ -17,6 +18,7 @@ export function AppHeader() {
         </Link>
 
         <div className="app-header__right">
+          <NotificationBell />
           <LanguageToggle />
         </div>
       </div>

@@ -6,6 +6,8 @@ import {
 } from "../../legacy/lib/rides";
 import { fetchDriverPakyawanBookings } from "../../legacy/lib/scheduledBookings";
 import { fetchDriverDeliveries } from "../../legacy/lib/deliveries";
+import { useNotifications } from "../../notifications/notifications";
+import { DRIVER_COPY_BY_SERVICE } from "../../notifications/copy";
 import type { Ride } from "../../legacy/types/ride";
 import type { PakyawanBooking } from "../../legacy/types/scheduledBooking";
 import type { DeliveryBooking } from "../../legacy/types/delivery";
@@ -20,6 +22,13 @@ export type ActiveJobState =
   | { status: "empty"; job: null; cancelled: boolean }
   | { status: "active"; job: ActiveServiceJob; cancelled: false }
   | { status: "error"; job: null; cancelled: false };
+
+const RIDE_LIFECYCLE_COPY = DRIVER_COPY_BY_SERVICE.ride;
+
+const PAKYAWAN_LIFECYCLE_COPY = DRIVER_COPY_BY_SERVICE.pakyawan;
+
+const DELIVERY_LIFECYCLE_COPY = DRIVER_COPY_BY_SERVICE.delivery;
+
 
 /**
  * Multi-service active-job adapter. Backend is authoritative: reads the
@@ -38,6 +47,12 @@ export function useActiveJob(driverId: string | null) {
   const [tick, setTick] = useState(0);
   const mountedRef = useRef(true);
   const lastRideIdRef = useRef<string | null>(null);
+  // Last active-job state already announced (service:id:status). First
+  // observation baselines silently so a reload mid-job does not
+  // re-announce an old state.
+  const notifySigRef = useRef<string | null>(null);
+  const cancelledRideRef = useRef<string | null>(null);
+  const { notify } = useNotifications();
 
   useEffect(() => {
     mountedRef.current = true;
@@ -131,6 +146,67 @@ export function useActiveJob(driverId: string | null) {
     state = { status: "error", job: null, cancelled: false };
   else if (job) state = { status: "active", job, cancelled: false };
   else state = { status: "empty", job: null, cancelled };
+
+  // Announce active-job transitions once across all three services.
+  // First observation baselines silently; the idempotent store guards
+  // against repeats from polling, realtime, and foreground recovery.
+  useEffect(() => {
+    if (state.status === "active" && state.job?.service === "ride") {
+      cancelledRideRef.current = state.job.ride.id;
+    }
+    let sig: string | null = null;
+    let copy: { title: string; message: string } | undefined;
+    let entityId = "";
+    let service: "ride" | "pakyawan" | "delivery" = "ride";
+    if (state.status === "active" && state.job) {
+      if (state.job.service === "ride") {
+        service = "ride";
+        entityId = state.job.ride.id;
+        sig = `ride:${entityId}:${state.job.ride.status}`;
+        copy = RIDE_LIFECYCLE_COPY[state.job.ride.status];
+      } else if (state.job.service === "pakyawan") {
+        service = "pakyawan";
+        entityId = state.job.booking.id;
+        sig = `pakyawan:${entityId}:${state.job.booking.status}`;
+        copy = PAKYAWAN_LIFECYCLE_COPY[state.job.booking.status];
+      } else {
+        service = "delivery";
+        entityId = state.job.booking.id;
+        sig = `delivery:${entityId}:${state.job.booking.status}`;
+        copy = DELIVERY_LIFECYCLE_COPY[state.job.booking.status];
+      }
+    } else if (
+      state.status === "empty" &&
+      state.cancelled &&
+      cancelledRideRef.current
+    ) {
+      service = "ride";
+      entityId = cancelledRideRef.current;
+      cancelledRideRef.current = null;
+      sig = `ride:${entityId}:cancelled`;
+      copy = {
+        title: "Ride cancelled",
+        message: "This ride was cancelled. Head back to Jobs for new work.",
+      };
+    }
+    if (!sig) return;
+    if (notifySigRef.current === null) {
+      notifySigRef.current = sig;
+      return;
+    }
+    if (notifySigRef.current === sig) return;
+    notifySigRef.current = sig;
+    if (!copy) return;
+    notify({
+      id: sig,
+      service,
+      title: copy.title,
+      message: copy.message,
+      entityId,
+      target: "/driver/active",
+      actionLabel: "View job",
+    });
+  });
 
   return { ...state, error, refresh, retry };
 }

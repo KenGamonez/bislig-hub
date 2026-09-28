@@ -34,6 +34,37 @@ import {
   isSupabaseConfigured,
   requireSupabase,
 } from "../lib/supabase";
+import { useNotifications } from "../notifications/notifications";
+
+const RIDE_SENDER_COPY: Record<
+  string,
+  { title: string; message: string }
+> = {
+  accepted: {
+    title: "Driver found",
+    message: "Your driver has accepted your ride.",
+  },
+  arrived: {
+    title: "Driver arrived",
+    message: "Your driver is waiting at the pickup location.",
+  },
+  in_progress: {
+    title: "Ride started",
+    message: "Your ride is now in progress.",
+  },
+  completed: {
+    title: "Ride completed",
+    message: "Please pay your driver the displayed fare.",
+  },
+  cancelled: {
+    title: "Ride cancelled",
+    message: "Your ride was cancelled. You can book a new ride.",
+  },
+  no_driver: {
+    title: "No driver found",
+    message: "We couldn't find an available driver. Try requesting again.",
+  },
+};
 
 const HUB_RIDE_KEY = "bislig-hub-last-ride-id";
 const HUB_SHARE_KEY = "bislig-hub-share-";
@@ -254,6 +285,11 @@ export function RideNow() {
   const redispatchAttemptsRef = useRef(0);
   const redispatchBusyRef = useRef(false);
   const handledChatIdsRef = useRef<Set<string>>(new Set());
+  // Last ride status already announced as a notification (per ride).
+  // First observation baselines silently so a reload mid-trip does not
+  // re-announce an old state.
+  const rideNotifySigRef = useRef<string | null>(null);
+  const { notify } = useNotifications();
 
   const fareQuote = useMemo(() => {
     if (!destination.trim()) return null;
@@ -304,6 +340,7 @@ export function RideNow() {
     setShareError("");
     setCancelNotice(null);
     handledChatIdsRef.current = new Set();
+    rideNotifySigRef.current = null;
     redispatchAttemptsRef.current = 0;
   }, [stopPolling, stopRedispatch]);
 
@@ -317,6 +354,24 @@ export function RideNow() {
         }
         setRide(latest);
         setPhase(statusToPhase(latest.status));
+        const sig = `${latest.id}:${latest.status}`;
+        if (rideNotifySigRef.current === null) {
+          rideNotifySigRef.current = sig;
+        } else if (rideNotifySigRef.current !== sig) {
+          rideNotifySigRef.current = sig;
+          const copy = RIDE_SENDER_COPY[latest.status];
+          if (copy) {
+            notify({
+              id: `ride:${latest.id}:${latest.status}`,
+              service: "ride",
+              title: copy.title,
+              message: copy.message,
+              entityId: latest.id,
+              target: "/ride",
+              actionLabel: "View ride",
+            });
+          }
+        }
         if (latest.status === "cancelled" || latest.status === "completed") {
           // Terminal: keep the in-session view, but stop resurrecting it.
           writeStoredRideId(null);
@@ -326,7 +381,7 @@ export function RideNow() {
         if (import.meta.env.DEV) console.error("[bislig-hub] ride sync", err);
       }
     },
-    [clearLocalRide, stopPolling]
+    [clearLocalRide, stopPolling, notify]
   );
 
   // Restore an in-progress Hub ride on mount.
@@ -682,6 +737,16 @@ export function RideNow() {
       setRide(created);
       writeStoredRideId(created.id);
       setPhase("searching");
+      rideNotifySigRef.current = `${created.id}:${created.status}`;
+      notify({
+        id: `ride:${created.id}:submitted`,
+        service: "ride",
+        title: "Ride request sent",
+        message: "We're finding an available driver.",
+        entityId: created.id,
+        target: "/ride",
+        actionLabel: "View ride",
+      });
 
       try {
         const result = await dispatchRide(created.id);
