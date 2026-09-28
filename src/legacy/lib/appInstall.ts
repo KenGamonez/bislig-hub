@@ -39,12 +39,26 @@ export function useAppInstall() {
       setDeferredPrompt(null)
     }
 
+    const media = window.matchMedia('(display-mode: standalone)')
+    const onDisplayChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setInstalled(true)
+        setDeferredPrompt(null)
+      }
+    }
+
     window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
     window.addEventListener('appinstalled', onAppInstalled)
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', onDisplayChange)
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
       window.removeEventListener('appinstalled', onAppInstalled)
+      if (typeof media.removeEventListener === 'function') {
+        media.removeEventListener('change', onDisplayChange)
+      }
     }
   }, [])
 
@@ -53,7 +67,15 @@ export function useAppInstall() {
       return 'unavailable'
     }
 
-    deferredPrompt.prompt()
+    // The retained event is single-use: clear it before prompting so a
+    // second tap can never call prompt() on a consumed event.
+    setDeferredPrompt(null)
+
+    try {
+      deferredPrompt.prompt()
+    } catch {
+      return 'dismissed'
+    }
 
     try {
       const choice = await deferredPrompt.userChoice

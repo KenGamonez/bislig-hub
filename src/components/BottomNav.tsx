@@ -94,12 +94,18 @@ export function BottomNav() {
           type="button"
           className="bottom-nav__item"
           onClick={() => void handleAddHomeScreen()}
-          aria-label={t("hub.addHomeScreen")}
+          aria-label={
+            isInstalled ? t("install.installedNote") : t("hub.addHomeScreen")
+          }
+          title={isInstalled ? t("install.installedNote") : undefined}
+          disabled={isInstalled}
         >
           <span className="bottom-nav__icon">
             <AddHomeScreenIcon />
           </span>
-          <span className="bottom-nav__label">{t("hub.addHomeScreen")}</span>
+          <span className="bottom-nav__label">
+            {isInstalled ? t("hub.onHomeScreen") : t("hub.addHomeScreen")}
+          </span>
         </button>
         </div>
       </nav>
