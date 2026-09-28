@@ -39,6 +39,7 @@ import {
 } from '../lib/dispatch'
 import {
   driverLocationStatus,
+  getBestEffortPosition,
   persistOfflineBestEffort,
 } from '../lib/driverPresence'
 import {
@@ -389,6 +390,32 @@ const { data: driver, error: driverError } = await supabase
           email: driver.email,
           username: driver.username,
         })
+
+        // Hydrate the online toggle from the persisted presence row so a
+        // driver the backend already considers online is not shown offline
+        // after a reload. Reads the driver's own driver_locations row,
+        // which existing RLS permits. No row yet means offline until the
+        // driver explicitly goes online.
+        void (async () => {
+          try {
+            const { data: presence } = await supabase
+              .from('driver_locations')
+              .select('is_online, is_available, auto_accept')
+              .eq('driver_id', driver.id)
+              .maybeSingle()
+
+            if (!mounted || !presence) {
+              return
+            }
+
+            const row = presence as { is_online: boolean; is_available: boolean; auto_accept: boolean }
+            setDriverOnline(Boolean(row.is_online))
+            setDriverIsAvailable(Boolean(row.is_available))
+            setDriverAutoAccept(Boolean(row.auto_accept))
+          } catch {
+            // Best effort only — the driver can still toggle explicitly.
+          }
+        })()
       }
     }
 
@@ -1668,17 +1695,25 @@ const handleToggleOnline = async () => {
 
     try {
       if (!driverOnline) {
-        // Go online via the presence RPC without requiring a GPS fix. The
-        // ACTIVE-driver + authenticated-session checks happen inside
-        // set_driver_presence; no latitude/longitude are needed.
-        const presence = await setDriverPresence(true, driverIsAvailable, driverAutoAccept)
+        // Go online via the presence RPC. GPS is best-effort only: a fix
+        // improves dispatch ordering when available, but going online never
+        // waits on permission — nulls are passed through and the RPC
+        // upserts the driver_locations row regardless.
+        const fix = await getBestEffortPosition()
+        const presence = await setDriverPresence(
+          true,
+          driverIsAvailable,
+          driverAutoAccept,
+          fix?.latitude ?? null,
+          fix?.longitude ?? null,
+        )
         setDriverIsAvailable(presence.is_available)
         setDriverAutoAccept(presence.auto_accept)
 
-        // No location tracking is started here: going online must not spin up
-        // navigator.geolocation (watchPosition), request permission, or
-        // require a first fix. The map remains fully functional — it simply
-        // renders without a driver-marker position until one is shared.
+        // No continuous location tracking is started here: going online must
+        // not spin up navigator.geolocation watchPosition. The map remains
+        // fully functional — it simply renders without a driver-marker
+        // position until one is shared.
 
         completedRideIdRef.current = null
         lastActiveRideIdRef.current = null
@@ -1718,7 +1753,14 @@ const handleToggleOnline = async () => {
     setPresenceError('')
 
     try {
-      const presence = await setDriverPresence(true, nextAvailable, driverAutoAccept)
+      const fix = await getBestEffortPosition()
+      const presence = await setDriverPresence(
+        true,
+        nextAvailable,
+        driverAutoAccept,
+        fix?.latitude ?? null,
+        fix?.longitude ?? null,
+      )
       setDriverIsAvailable(presence.is_available)
     } catch (error) {
       console.error('Unable to update availability:', error)
@@ -1737,7 +1779,14 @@ const handleToggleOnline = async () => {
     setPresenceError('')
 
     try {
-      const presence = await setDriverPresence(true, driverIsAvailable, nextAutoAccept)
+      const fix = await getBestEffortPosition()
+      const presence = await setDriverPresence(
+        true,
+        driverIsAvailable,
+        nextAutoAccept,
+        fix?.latitude ?? null,
+        fix?.longitude ?? null,
+      )
       setDriverAutoAccept(presence.auto_accept)
     } catch (error) {
       console.error('Unable to update auto-accept:', error)

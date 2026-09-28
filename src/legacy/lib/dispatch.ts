@@ -10,6 +10,12 @@ export async function setDriverPresence(
   latitude?: number | null,
   longitude?: number | null,
 ): Promise<DriverPresence> {
+  // Always send all five parameters so PostgREST resolves the 5-argument
+  // set_driver_presence overload. That overload only requires an ACTIVE
+  // driver and upserts the driver_locations row; the 3-argument overload
+  // instead demands a pre-existing row with non-null coordinates and raises
+  // 42501 for every freshly created driver. Null coordinates are valid —
+  // going online must never depend on GPS.
   const { data, error } = await supabase
     .rpc('set_driver_presence', {
       p_online: online,

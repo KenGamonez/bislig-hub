@@ -38,6 +38,20 @@ export function requestFirstFix(timeoutMs = 15000): Promise<DriverPosition> {
   })
 }
 
+/**
+ * Best-effort one-shot position for presence updates. Never throws and never
+ * prompts repeatedly: returns null when geolocation is unavailable, denied,
+ * or times out. Callers must pass the nulls through so going online never
+ * depends on GPS permission.
+ */
+export async function getBestEffortPosition(timeoutMs = 5000): Promise<DriverPosition | null> {
+  try {
+    return await requestFirstFix(timeoutMs)
+  } catch {
+    return null
+  }
+}
+
 export function driverLocationStatus(updatedAtIso: string | null | undefined): DriverLocationStatus {
   if (!updatedAtIso) {
     return 'lost'
@@ -117,7 +131,11 @@ export function persistOfflineBestEffort() {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ p_online: false, p_available: false, p_auto_accept: false }),
+        // Send all five parameters so PostgREST resolves the 5-argument
+        // overload. With only three, the call is ambiguous (the 5-argument
+        // overload has defaults for the last two) and the offline signal
+        // is silently dropped.
+        body: JSON.stringify({ p_online: false, p_available: false, p_auto_accept: false, p_latitude: null, p_longitude: null }),
       }).catch(() => {
         // Best effort only — presence is restored the next time the driver
         // signs in and toggles availability.

@@ -34,7 +34,7 @@ import { adminCancelDelivery, fetchDeliveriesForAdmin, fetchDeliveryProofIds, fe
 import { getDeliveryProofSignedUrl } from '../lib/deliveryProof'
 import type { DeliveryBooking } from '../types/delivery'
 import { formatCentavos } from '../lib/fare'
-import { formatCapacityOption, formatVehicleCapacity, passengerCapacityOptionsFor, VEHICLE_LABELS, VEHICLE_TYPES, type VehicleType } from '../lib/vehicle'
+import { formatCapacityOption, formatVehicleCapacity, passengerCapacityOptionsFor, VEHICLE_LABELS, VEHICLE_MAX_PASSENGERS, VEHICLE_TYPES, type VehicleType } from '../lib/vehicle'
 import { driverApplicationStatuses, driverApplicationStatusLabels, type DriverApplication, type DriverApplicationStatus } from '../types/driverApplication'
 import { contactMessageStatusLabels, type ContactMessage, type ContactMessageStatus } from '../types/contactMessage'
 import { supabase } from '../lib/supabase'
@@ -64,6 +64,8 @@ type DriverDraft = {
   vehicleCapacity: number
   status: DriverStatus
   availability: DriverAvailability
+  canAcceptPakyawan: boolean
+  canAcceptDeliveries: boolean
   createAccount: boolean
   username: string
   passwordMethod: 'generated' | 'custom'
@@ -97,6 +99,8 @@ const emptyDriverDraft: DriverDraft = {
   vehicleCapacity: 1,
   status: 'Active',
   availability: 'Offline',
+  canAcceptPakyawan: true,
+  canAcceptDeliveries: true,
   createAccount: true,
   username: '',
   passwordMethod: 'generated',
@@ -1124,6 +1128,12 @@ useEffect(() => {
       // Driver row first: a row without auth is a normal recoverable state
       // in this system (Manage login flow), while an auth account without a
       // driver row would be orphaned.
+      // Capabilities are written explicitly (never the false column
+      // defaults) so an approved driver can work immediately, and capacity
+      // comes from the existing vehicle mapping — dispatch skips drivers
+      // with no capacity set.
+      const provisionCapacity =
+        (VEHICLE_MAX_PASSENGERS as Record<string, number | undefined>)[vehicleType.toLowerCase()] ?? null
       const created = await createDriver({
         full_name: fullName,
         phone,
@@ -1131,9 +1141,11 @@ useEffect(() => {
         vehicle_type: vehicleType,
         vehicle_model: vehicleModel,
         plate_number: plateNumber,
-        vehicle_capacity: null,
+        vehicle_capacity: provisionCapacity,
         status: 'active',
         availability: 'offline',
+        can_accept_pakyawan: true,
+        can_accept_deliveries: true,
         username,
       })
 
@@ -1395,6 +1407,8 @@ useEffect(() => {
               : driverDraft.availability === 'Busy'
                 ? 'busy'
                 : 'offline',
+          can_accept_pakyawan: driverDraft.canAcceptPakyawan,
+          can_accept_deliveries: driverDraft.canAcceptDeliveries,
           username: storedUsername,
           auth_user_id: account.authUserId,
         })
@@ -1437,6 +1451,8 @@ useEffect(() => {
             : driverDraft.availability === 'Busy'
               ? 'busy'
               : 'offline',
+        can_accept_pakyawan: driverDraft.canAcceptPakyawan,
+        can_accept_deliveries: driverDraft.canAcceptDeliveries,
       })
 
       const mappedDriver = mapDriverRecord(created)
@@ -2120,6 +2136,24 @@ useEffect(() => {
                       <option value="Online">Online</option>
                       <option value="Busy">Busy</option>
                     </select>
+                  </label>
+
+                  <label className="field-block form-check">
+                    <input
+                      type="checkbox"
+                      checked={driverDraft.canAcceptPakyawan}
+                      onChange={(event) => setDriverDraft((current) => ({ ...current, canAcceptPakyawan: event.target.checked }))}
+                    />
+                    <span className="field-label">Enable Pakyawan trips for this driver</span>
+                  </label>
+
+                  <label className="field-block form-check">
+                    <input
+                      type="checkbox"
+                      checked={driverDraft.canAcceptDeliveries}
+                      onChange={(event) => setDriverDraft((current) => ({ ...current, canAcceptDeliveries: event.target.checked }))}
+                    />
+                    <span className="field-label">Enable Pa-Deliver jobs for this driver</span>
                   </label>
                 </div>
 
