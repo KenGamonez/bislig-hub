@@ -26,6 +26,23 @@ const Admin = lazy(() =>
   import("./pages/Admin").then((m) => ({ default: m.Admin }))
 );
 
+// Organization admin area (read-only group dashboard; separate shell).
+const OrgLogin = lazy(() =>
+  import("./org/pages/OrgLogin").then((m) => ({ default: m.OrgLogin }))
+);
+const OrgDashboard = lazy(() =>
+  import("./org/pages/OrgDashboard").then((m) => ({ default: m.OrgDashboard }))
+);
+const OrgDrivers = lazy(() =>
+  import("./org/pages/OrgDrivers").then((m) => ({ default: m.OrgDrivers }))
+);
+const OrgActivity = lazy(() =>
+  import("./org/pages/OrgActivity").then((m) => ({ default: m.OrgActivity }))
+);
+const OrgShell = lazy(() =>
+  import("./org/OrgShell").then((m) => ({ default: m.OrgShell }))
+);
+
 // New Hub-native driver UI (Phase 6D; runs alongside the legacy workspace).
 const DriverJobs = lazy(() =>
   import("./driver/pages/JobsPage").then((m) => ({ default: m.JobsPage }))
@@ -69,6 +86,7 @@ const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
 const DRIVER_PREFIXES = ["/driver/reset-password"];
 const NEW_DRIVER_PREFIXES = ["/driver", "/driver/jobs", "/driver/active", "/driver/you", "/driver/history"];
 const ADMIN_PREFIXES = ["/admin"];
+const ORG_PREFIXES = ["/org"];
 
 function matchPrefixes(pathname: string, prefixes: string[]): boolean {
   return prefixes.some(
@@ -82,6 +100,7 @@ export default function App() {
   const isDriverRoute = matchPrefixes(location.pathname, DRIVER_PREFIXES);
   const isNewDriverRoute = matchPrefixes(location.pathname, NEW_DRIVER_PREFIXES);
   const isAdminRoute = matchPrefixes(location.pathname, ADMIN_PREFIXES);
+  const isOrgRoute = matchPrefixes(location.pathname, ORG_PREFIXES);
 
   // Public driver sign-in has its own screen and must be matched before
   // the workspace prefix check below ("/driver/login" starts with "/driver").
@@ -136,6 +155,47 @@ export default function App() {
               </Routes>
             </Suspense>
           </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Organization admin area: own shell/chrome, guarded per page by the
+  // organization_admins lookup (never by URL alone).
+  if (isOrgRoute) {
+    return (
+      <div className="app-shell">
+        <div className="app-canvas">
+          <Suspense fallback={<LegacyFallback />}>
+            <Routes>
+              <Route path="/org/login" element={<OrgLogin />} />
+              <Route path="/org" element={<Navigate to="/org/login" replace />} />
+              <Route
+                path="/org/:slug/dashboard"
+                element={
+                  <OrgShell>
+                    <OrgDashboard />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/drivers"
+                element={
+                  <OrgShell>
+                    <OrgDrivers />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/activity"
+                element={
+                  <OrgShell>
+                    <OrgActivity />
+                  </OrgShell>
+                }
+              />
+            </Routes>
+          </Suspense>
         </div>
       </div>
     );
