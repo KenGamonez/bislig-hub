@@ -58,7 +58,21 @@ const JOB_OFFER_COPY: Record<
 
 function friendlyError(error: unknown, fallback: string): string {
   if (import.meta.env.DEV) console.error("[driver-jobs]", fallback, error);
-  const message = error instanceof Error ? error.message : "";
+  // Supabase failures resolve as plain JSON objects ({ code, message,
+  // details, hint }), not Error instances — read the server text first.
+  const message =
+    error instanceof Error && error.message.trim()
+      ? error.message
+      : error && typeof error === "object"
+        ? (["message", "details", "hint"] as const)
+            .map((key) => (error as Record<string, unknown>)[key])
+            .filter(
+              (part): part is string =>
+                typeof part === "string" && part.trim().length > 0
+            )
+            .map((part) => part.trim())
+            .join(" — ") || fallback
+        : fallback;
   if (/no longer available|taken by another/i.test(message)) {
     return "This request is no longer available. It may have been taken by another driver.";
   }
@@ -68,7 +82,7 @@ function friendlyError(error: unknown, fallback: string): string {
   if (/expired/i.test(message)) {
     return "This offer already expired.";
   }
-  return fallback;
+  return message;
 }
 
 export type JobsState = {

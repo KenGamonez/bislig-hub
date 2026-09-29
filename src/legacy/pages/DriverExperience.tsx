@@ -99,6 +99,34 @@ const resolvePresenceErrorMessage = (error: unknown, offline: boolean): string =
     : 'Unable to go online right now. Check your connection and GPS, then try again.'
 }
 
+// Supabase failures resolve as plain JSON objects ({ code, message,
+// details, hint }), not Error instances — so `instanceof Error` alone
+// swallows every RPC failure into a generic fallback. Extract the real
+// server text first, keeping the caller-provided fallback for when the
+// response carries nothing usable.
+const resolveRideActionErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message
+  }
+
+  if (error && typeof error === 'object') {
+    const candidate = error as { message?: unknown; details?: unknown; hint?: unknown; code?: unknown }
+    const parts = [candidate.message, candidate.details, candidate.hint]
+      .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
+      .map((part) => part.trim())
+
+    if (parts.length > 0) {
+      return parts.join(' — ')
+    }
+
+    if (typeof candidate.code === 'string' && candidate.code.trim()) {
+      return `${fallback} (code ${candidate.code.trim()})`
+    }
+  }
+
+  return fallback
+}
+
 type DriverPhase = 'offline' | 'online' | 'incoming_request' | 'heading_to_pickup' | 'arrived' | 'in_progress' | 'completed'
 
   type DriverView = 'profile' | 'queue' | 'pakyawan' | 'delivery'
@@ -1810,9 +1838,7 @@ const handleToggleOnline = async () => {
       setPhase('online')
     } catch (error) {
       console.error('Unable to decline ride offer:', error)
-      setRequestError(
-        error instanceof Error ? error.message : 'Unable to decline this ride right now.',
-      )
+      setRequestError(resolveRideActionErrorMessage(error, 'Unable to decline this ride right now.'))
     } finally {
       setTransitioning(false)
     }
@@ -1836,7 +1862,7 @@ const handleToggleOnline = async () => {
       setDriverView('queue')
     } catch (error) {
       console.error('Unable to accept ride offer:', error)
-      const message = error instanceof Error ? error.message : 'Unable to accept this ride.'
+      const message = resolveRideActionErrorMessage(error, 'Unable to accept this ride.')
       const terminals = ['no longer available', 'no longer eligible']
       const isTerminal = terminals.some((part) => message.toLowerCase().includes(part))
 
