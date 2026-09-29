@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../legacy/lib/supabase";
+import { resolveDriverCredentials } from "../../legacy/lib/driverAuth";
 import { fetchMyOrgAdminRows, fetchOrganization } from "../orgData";
 
 /**
@@ -11,7 +12,7 @@ import { fetchMyOrgAdminRows, fetchOrganization } from "../orgData";
  */
 export function OrgLogin() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,23 +20,31 @@ export function OrgLogin() {
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!email.trim() || !password.trim()) {
-      setError("Enter your organization email and password to continue.");
-      return;
-    }
-
-    if (!email.includes("@")) {
-      setError("Enter a valid email address.");
+    if (!identifier.trim() || !password.trim()) {
+      setError("Enter your username or email and password to continue.");
       return;
     }
 
     setError("");
     setIsSubmitting(true);
 
+    let resolvedEmail = identifier.trim();
+
+    // Resolve username to authentication email using the existing
+    // platform credential-resolution mechanism (same as /driver/login).
+    try {
+      resolvedEmail = await resolveDriverCredentials(identifier.trim());
+    } catch (resolveError) {
+      // If resolution fails (e.g. unknown username), fall back to using
+      // the identifier as-is; Supabase signInWithPassword will handle
+      // invalid credentials consistently.
+      resolvedEmail = identifier.trim();
+    }
+
     try {
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: resolvedEmail,
           password,
         });
 
@@ -47,7 +56,7 @@ export function OrgLogin() {
 
       if (rows.length === 0) {
         await supabase.auth.signOut();
-        setError("This account does not have organization access.");
+        setError("This account does not have organization admin access.");
         return;
       }
 
@@ -55,14 +64,14 @@ export function OrgLogin() {
 
       if (!org) {
         await supabase.auth.signOut();
-        setError("This account does not have organization access.");
+        setError("This account does not have organization admin access.");
         return;
       }
 
       navigate(`/org/${org.slug}/dashboard`, { replace: true });
     } catch (signInError) {
       console.error("Unable to sign in organization admin:", signInError);
-      setError("Unable to sign in. Check your email and password and try again.");
+      setError("Unable to sign in. Check your username/email and password and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -86,19 +95,19 @@ export function OrgLogin() {
                   alt="Bislig Hub"
                   className="hub-auth-logo"
                 />
-                <p className="eyebrow auth-eyebrow">Organization Access</p>
-                <h2>TODA admin sign in</h2>
+                <p className="eyebrow auth-eyebrow">Organization Admin</p>
+                <h2>Sign in to manage your organization.</h2>
               </div>
               <form className="auth-card" onSubmit={(event) => void handleLogin(event)}>
                 <label className="field-block">
-                  <span className="field-label">Email</span>
+                  <span className="field-label">USERNAME OR EMAIL</span>
                   <input
                     className="input-field"
-                    type="email"
-                    placeholder="organization email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    autoComplete="email"
+                    type="text"
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                    placeholder="e.g. kolot or organization email"
+                    autoComplete="username"
                   />
                 </label>
                 <label className="field-block">
