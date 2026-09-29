@@ -39,6 +39,11 @@ const OrgDrivers = lazy(() =>
 const OrgActivity = lazy(() =>
   import("./org/pages/OrgActivity").then((m) => ({ default: m.OrgActivity }))
 );
+const OrgAnnouncements = lazy(() =>
+  import("./org/pages/OrgAnnouncements").then((m) => ({
+    default: m.OrgAnnouncements,
+  }))
+);
 const OrgShell = lazy(() =>
   import("./org/OrgShell").then((m) => ({ default: m.OrgShell }))
 );
@@ -191,6 +196,14 @@ export default function App() {
                 element={
                   <OrgShell>
                     <OrgActivity />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/announcements"
+                element={
+                  <OrgShell>
+                    <OrgAnnouncements />
                   </OrgShell>
                 }
               />
