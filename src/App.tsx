@@ -44,6 +44,12 @@ const OrgAnnouncements = lazy(() =>
     default: m.OrgAnnouncements,
   }))
 );
+const OrgForum = lazy(() =>
+  import("./org/pages/OrgForum").then((m) => ({ default: m.OrgForum }))
+);
+const OrgTopic = lazy(() =>
+  import("./org/pages/OrgTopic").then((m) => ({ default: m.OrgTopic }))
+);
 const OrgShell = lazy(() =>
   import("./org/OrgShell").then((m) => ({ default: m.OrgShell }))
 );
@@ -204,6 +210,22 @@ export default function App() {
                 element={
                   <OrgShell>
                     <OrgAnnouncements />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/forum"
+                element={
+                  <OrgShell>
+                    <OrgForum />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/forum/:topicId"
+                element={
+                  <OrgShell>
+                    <OrgTopic />
                   </OrgShell>
                 }
               />
