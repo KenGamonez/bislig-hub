@@ -5,9 +5,11 @@ import {
   fetchMemberDrivers,
   fetchMemberPresence,
   fetchOrgMembers,
+  fetchOrgRideStats,
   type MemberDriver,
   type MemberPresence,
   type OrgRecord,
+  type OrgRideStats,
 } from "../orgData";
 
 const POLL_MS = 15000;
@@ -76,6 +78,30 @@ export function OrgDashboard() {
 
 function DashboardBody({ org }: { org: OrgRecord }) {
   const { drivers, presence, loading, error, retry } = useOrgRoster(org);
+  const [rideStats, setRideStats] = useState<OrgRideStats | null>(null);
+  const [rideStatsError, setRideStatsError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setRideStats(null);
+    setRideStatsError("");
+    void fetchOrgRideStats(org.id)
+      .then((stats) => {
+        if (!cancelled) setRideStats(stats);
+      })
+      .catch((statsError: unknown) => {
+        console.error("Unable to load ride statistics:", statsError);
+        if (!cancelled) {
+          setRideStatsError(
+            "Ride statistics are unavailable right now."
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [org.id]);
+
   const presenceByDriver = new Map(
     presence.map((row) => [row.driver_id, row])
   );
@@ -120,8 +146,38 @@ function DashboardBody({ org }: { org: OrgRecord }) {
         )}
         <p className="muted-copy" style={{ marginTop: 12 }}>
           Counts reflect {org.name} members only, based on live driver
-          presence. Trip history and per-ride earnings are not part of this
-          view.
+          presence.
+        </p>
+      </section>
+
+      <section className="driver-card" aria-live="polite">
+        <p className="section-label">Ride statistics</p>
+        {rideStats ? (
+          <div style={{ marginTop: 4 }}>
+            <StatTile label="Total rides" value={String(rideStats.total_rides)} />
+            <StatTile
+              label="Completed rides"
+              value={String(rideStats.completed_rides)}
+            />
+            <StatTile label="Active rides" value={String(rideStats.active_rides)} />
+            <StatTile
+              label="Cancelled rides"
+              value={String(rideStats.cancelled_rides)}
+            />
+          </div>
+        ) : rideStatsError ? (
+          <p className="muted-copy" role="alert" style={{ marginTop: 8 }}>
+            {rideStatsError}
+          </p>
+        ) : (
+          <div className="loading-block" aria-live="polite">
+            <span className="spinner" aria-hidden="true" />
+            <p>Loading ride statistics…</p>
+          </div>
+        )}
+        <p className="muted-copy" style={{ marginTop: 12 }}>
+          Aggregate counts for {org.name} member drivers only. No trip,
+          customer, or payment details are shown here.
         </p>
       </section>
 

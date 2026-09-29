@@ -209,6 +209,42 @@ export async function deleteOrgAnnouncement(id: string): Promise<void> {
  * signed-in member-driver belongs to. RLS (published-only + own org)
  * enforces visibility; this only shapes the query.
  */
+export type OrgRideStats = {
+  total_rides: number;
+  completed_rides: number;
+  active_rides: number;
+  cancelled_rides: number;
+};
+
+/**
+ * Aggregate ride statistics for one organization via the read-only
+ * org_ride_stats RPC. Returns counts only — no ride, customer, fare, or
+ * payment data ever leaves the database. Throws (including on
+ * non-admin callers) instead of returning fabricated zeros.
+ */
+export async function fetchOrgRideStats(
+  orgId: string
+): Promise<OrgRideStats> {
+  const { data, error } = await supabase.rpc("org_ride_stats", {
+    p_org_id: orgId,
+  });
+
+  if (error) throw error;
+
+  const row = (Array.isArray(data) ? data[0] : data) as OrgRideStats | null;
+
+  if (!row) {
+    throw new Error("Ride statistics are unavailable.");
+  }
+
+  return {
+    total_rides: Number(row.total_rides ?? 0),
+    completed_rides: Number(row.completed_rides ?? 0),
+    active_rides: Number(row.active_rides ?? 0),
+    cancelled_rides: Number(row.cancelled_rides ?? 0),
+  };
+}
+
 export type OrgForumTopic = {
   id: string;
   org_id: string;
