@@ -53,6 +53,9 @@ const OrgTopic = lazy(() =>
 const OrgShell = lazy(() =>
   import("./org/OrgShell").then((m) => ({ default: m.OrgShell }))
 );
+const OrgSettings = lazy(() =>
+  import("./org/pages/OrgSettings").then((m) => ({ default: m.OrgSettings }))
+);
 
 // New Hub-native driver UI (Phase 6D; runs alongside the legacy workspace).
 const DriverJobs = lazy(() =>
@@ -218,6 +221,14 @@ export default function App() {
                 element={
                   <OrgShell>
                     <OrgForum />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/settings"
+                element={
+                  <OrgShell>
+                    <OrgSettings />
                   </OrgShell>
                 }
               />

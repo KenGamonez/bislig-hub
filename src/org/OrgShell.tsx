@@ -95,6 +95,14 @@ export function OrgShell({ children }: { children: ReactNode }) {
                 >
                   Forum
                 </NavLink>
+                <NavLink
+                  to={`/org/${session.org.slug}/settings`}
+                  className={({ isActive }) =>
+                    `btn btn--compact ${isActive ? "btn--primary" : "btn--ghost"}`
+                  }
+                >
+                  Settings
+                </NavLink>
               </nav>
             </div>
           ) : null}
