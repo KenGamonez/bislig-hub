@@ -101,6 +101,56 @@ export async function fetchOrgMembers(
   return (data ?? []) as OrgMemberRow[];
 }
 
+export type DriverSearchResult = {
+  id: string;
+  username: string | null;
+  full_name: string;
+  vehicle_type: string | null;
+  status: string;
+  has_other_membership: boolean;
+};
+
+/**
+ * Username-prefix search for the Add-Driver picker. Server-enforced:
+ * caller must administer at least one organization, active drivers
+ * only, five approved fields plus a membership flag, max 10 rows.
+ */
+export async function searchDriversForMembership(
+  search: string
+): Promise<DriverSearchResult[]> {
+  const { data, error } = await supabase.rpc("find_drivers_for_membership", {
+    p_search: search,
+  });
+
+  if (error) throw error;
+  return (data ?? []) as DriverSearchResult[];
+}
+
+export async function addOrganizationMember(
+  orgId: string,
+  driverId: string
+): Promise<void> {
+  const { error } = await supabase.from("organization_members").insert({
+    org_id: orgId,
+    driver_id: driverId,
+  });
+
+  if (error) throw error;
+}
+
+export async function removeOrganizationMember(
+  orgId: string,
+  driverId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("organization_members")
+    .delete()
+    .eq("org_id", orgId)
+    .eq("driver_id", driverId);
+
+  if (error) throw error;
+}
+
 export async function fetchMemberDrivers(
   driverIds: string[]
 ): Promise<MemberDriver[]> {
