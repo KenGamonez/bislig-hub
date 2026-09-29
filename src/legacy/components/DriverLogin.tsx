@@ -10,11 +10,20 @@ type DriverLoginProps = {
 
 type DriverLoginMode = 'login' | 'forgot' | 'sent'
 
+type DriverGroup = 'btrp' | 'independent'
+
+// BTRP TODA organization id (public.organizations). Used only to match
+// the selected group against the authenticated driver's actual
+// organization_members rows — never trusted from client state, never
+// used for authorization beyond this login gate.
+const BTRP_ORG_ID = 'db6648d8-ae1b-4813-a573-0e4f6cdbeacd'
+
 export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
   const { t } = useLanguage()
   const [mode, setMode] = useState<DriverLoginMode>('login')
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [group, setGroup] = useState<'' | DriverGroup>('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,6 +33,11 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
 
     if (!identifier.trim() || !password) {
       setError(t('auth.errMissingCredentials'))
+      return
+    }
+
+    if (!group) {
+      setError(t('auth.errGroupRequired'))
       return
     }
 
@@ -55,6 +69,40 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
       if (driver.status === 'inactive') {
         await supabase.auth.signOut()
         setError(t('auth.errDeactivated'))
+        setLoading(false)
+        return
+      }
+
+      // Group gate: the selection must match the driver's real
+      // organization membership (organization_members only — adminship
+      // never counts). Mismatch signs out, mirroring the existing
+      // not-linked/deactivated handling above.
+      const { data: memberships, error: membershipError } = await supabase
+        .from('organization_members')
+        .select('org_id')
+        .eq('driver_id', driver.id)
+
+      if (membershipError) {
+        await supabase.auth.signOut()
+        setError(t('auth.errInvalidCredentials'))
+        setLoading(false)
+        return
+      }
+
+      const memberOrgIds = ((memberships ?? []) as Array<{ org_id: string }>).map(
+        (row) => row.org_id,
+      )
+
+      if (group === 'btrp' && !memberOrgIds.includes(BTRP_ORG_ID)) {
+        await supabase.auth.signOut()
+        setError(t('auth.errNotBtrpMember'))
+        setLoading(false)
+        return
+      }
+
+      if (group === 'independent' && memberOrgIds.length > 0) {
+        await supabase.auth.signOut()
+        setError(t('auth.errHasOrganization'))
         setLoading(false)
         return
       }
@@ -167,6 +215,36 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
                   </button>
                 </div>
               </label>
+
+              <div className="password-method" role="radiogroup" aria-label={t('auth.driverGroup')}>
+                <p className="field-label">{t('auth.driverGroup')}</p>
+                <label className="form-check">
+                  <input
+                    type="radio"
+                    name="driver-group"
+                    checked={group === 'btrp'}
+                    onChange={() => setGroup('btrp')}
+                    disabled={loading}
+                  />
+                  <span className="field-label">
+                    {t('auth.groupBtrp')}
+                    <span className="muted-copy"> — {t('auth.groupBtrpHint')}</span>
+                  </span>
+                </label>
+                <label className="form-check">
+                  <input
+                    type="radio"
+                    name="driver-group"
+                    checked={group === 'independent'}
+                    onChange={() => setGroup('independent')}
+                    disabled={loading}
+                  />
+                  <span className="field-label">
+                    {t('auth.groupIndependent')}
+                    <span className="muted-copy"> — {t('auth.groupIndependentHint')}</span>
+                  </span>
+                </label>
+              </div>
 
               <button
                 type="submit"

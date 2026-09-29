@@ -612,6 +612,16 @@ const en = {
   'auth.errForgotMissing': 'Enter your username or email to find your account.',
   'auth.errResetFailed':
     "We couldn't send a reset link right now. Please try again.",
+  'auth.driverGroup': 'Select your driver group',
+  'auth.groupBtrp': 'BTRP TODA',
+  'auth.groupBtrpHint': 'BTRP TODA members',
+  'auth.groupIndependent': 'Independent Driver',
+  'auth.groupIndependentHint': 'Drivers operating independently',
+  'auth.errGroupRequired': 'Select your driver group to continue.',
+  'auth.errNotBtrpMember':
+    'This account is not registered as a BTRP TODA driver.',
+  'auth.errHasOrganization':
+    'This account belongs to a driver organization. Select the correct driver group.',
 
   /* Driver blocked account (App) */
   'blocked.title': 'Account inactive',
@@ -1299,6 +1309,16 @@ const bi: Record<TranslationKey, string> = {
   'auth.errForgotMissing': 'Isulod ang imong username o email aron makit-an ang imong account.',
   'auth.errResetFailed':
     'Dili maipadala karon ang reset link. Palihog sulayi og balik.',
+  'auth.driverGroup': 'Pilia ang imong driver group',
+  'auth.groupBtrp': 'BTRP TODA',
+  'auth.groupBtrpHint': 'Mga miyembro sa BTRP TODA',
+  'auth.groupIndependent': 'Independent Driver',
+  'auth.groupIndependentHint': 'Mga independent nga driver',
+  'auth.errGroupRequired': 'Pilia una ang imong driver group aron makapadayon.',
+  'auth.errNotBtrpMember':
+    'Kini nga account dili rehistrado isip BTRP TODA driver.',
+  'auth.errHasOrganization':
+    'Kini nga account sakop sa usa ka driver organization. Pilia ang saktong driver group.',
 
   /* Driver blocked account (App) */
   'blocked.title': 'Inaktibo ang account',
