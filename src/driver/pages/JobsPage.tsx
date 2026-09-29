@@ -7,6 +7,7 @@ import { StatusPill } from "../components/StatusPill";
 import { useDriverJobs } from "../hooks/useDriverJobs";
 import { useDriverPresenceContext } from "../hooks/useDriverPresenceContext";
 import { useDriverSession } from "../hooks/useDriverSession";
+import { DriverPushControl } from "../components/DriverPushControl";
 
 /**
  * Unified incoming-job workspace. Presentation only — every read and
@@ -101,6 +102,8 @@ export function JobsPage() {
               : "Go online"}
         </button>
       </div>
+
+      {presence.online ? <DriverPushControl dismissKey="jobs" /> : null}
 
       {jobs.assignedRide ? (
         <div className="hub-driver__card">
