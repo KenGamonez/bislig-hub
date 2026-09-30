@@ -264,12 +264,12 @@ function DashboardBody({ org }: { org: OrgRecord }) {
                     <tbody>
                       {onRide.map((row) => (
                         <tr key={row.driver_id}>
-                          <td>
+                          <td data-label="Driver">
                             <span className="orgx-cell__primary">
                               {nameOf(row.driver_id)}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <span className="orgx-badge orgx-badge--busy">
                               On a ride
                             </span>

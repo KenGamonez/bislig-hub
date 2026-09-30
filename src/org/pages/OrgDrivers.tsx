@@ -827,7 +827,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 </tbody>
               </table>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Phone</span>
                 <input
@@ -851,7 +851,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 />
               </label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Vehicle type</span>
                 <input
@@ -1546,7 +1546,7 @@ function DriverDetailPanel({
                   ) : null}
                 </p>
               </div>
-              <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+              <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <label className="btn btn--ghost btn--compact" style={{ cursor: "pointer" }}>
                   {photoBusy ? "Uploading…" : detail.profile_photo_url ? "Replace photo" : "Add photo"}
                   <input
@@ -1649,7 +1649,7 @@ function DriverDetailPanel({
             <p className="section-label" style={{ marginTop: 16 }}>
               Profile &amp; vehicle
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Full name</span>
                 <input
@@ -1671,7 +1671,7 @@ function DriverDetailPanel({
                 />
               </label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Vehicle type</span>
                 <input
@@ -1693,7 +1693,7 @@ function DriverDetailPanel({
                 />
               </label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Color</span>
                 <input
@@ -1716,7 +1716,7 @@ function DriverDetailPanel({
                 />
               </label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Plate number</span>
                 <input

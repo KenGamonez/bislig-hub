@@ -405,6 +405,21 @@
   width: 100%;
 }
 
+@keyframes orgx-drawer-in {
+  from {
+    transform: translateX(-12px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.orgx-drawer__panel {
+  animation: orgx-drawer-in var(--duration-normal) var(--ease-out);
+}
+
 /* ---- Page header ---- */
 .orgx-pagehead {
   display: flex;
@@ -792,6 +807,30 @@ table.orgx-table tr:has(.orgx-rowlink) {
   outline-offset: -2px;
 }
 
+/* ---- Form grids (2-col desktop, stacked mobile) ---- */
+.orgx-formgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .orgx-formgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---- Touch targets: org console standard is 44px ---- */
+.orgx .btn--compact {
+  min-height: var(--touch-min);
+}
+
+/* ---- Long unbroken strings (emails, usernames, URLs) ---- */
+.orgx-cell__primary,
+.orgx-cell__secondary {
+  overflow-wrap: break-word;
+}
+
 /* ---- Confirm modal ---- */
 .orgx-modal {
   position: fixed;
@@ -807,6 +846,9 @@ table.orgx-table tr:has(.orgx-rowlink) {
 .orgx-modal__card {
   width: 100%;
   max-width: 420px;
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
   background: var(--orgx-card);
   border: 1px solid var(--orgx-line);
   border-radius: var(--radius-md);
@@ -1115,13 +1157,20 @@ table.orgx-table tr:has(.orgx-rowlink) {
   .orgx-pagehead {
     margin-bottom: 18px;
   }
+
+  .orgx-topbar__inner {
+    padding: 0 16px;
+    gap: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .orgx-nav__item,
   table.orgx-table tbody tr,
   .orgx-logout,
-  .orgx-linkbtn {
+  .orgx-linkbtn,
+  .orgx-drawer__panel {
     transition: none;
+    animation: none;
   }
 }
