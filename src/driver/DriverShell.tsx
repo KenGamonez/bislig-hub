@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { DriverHeader } from "./components/DriverHeader";
 import { DriverBottomNav } from "./components/DriverBottomNav";
 import { useDriverSession } from "./hooks/useDriverSession";
@@ -24,6 +24,16 @@ export function DriverShell({ children }: { children: ReactNode }) {
 
   const name =
     session.status === "active" ? session.driver.full_name : null;
+
+  // First-login gate: provisioned drivers must replace the temporary
+  // password before any workspace screen renders.
+  if (
+    session.status === "active" &&
+    session.driver.must_change_password &&
+    location.pathname !== "/driver/welcome"
+  ) {
+    return <Navigate to="/driver/welcome" replace />;
+  }
 
   useEffect(() => {
     if (session.status !== "active") {

@@ -4,8 +4,13 @@ import { OrgGuard } from "../OrgGuard";
 import {
   fetchMemberDrivers,
   fetchMemberPresence,
+  fetchMemberRecentDeliveries,
+  fetchMemberRecentPakyawan,
+  fetchMemberRecentRides,
   fetchOrgMembers,
   type MemberDriver,
+  type MemberOpsBooking,
+  type MemberOpsRide,
   type MemberPresence,
   type OrgRecord,
 } from "../orgData";
@@ -28,6 +33,10 @@ function ActivityBody({ org }: { org: OrgRecord }) {
   const [presence, setPresence] = useState<MemberPresence[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [recentRides, setRecentRides] = useState<MemberOpsRide[]>([]);
+  const [recentPakyawan, setRecentPakyawan] = useState<MemberOpsBooking[]>([]);
+  const [recentDeliveries, setRecentDeliveries] = useState<MemberOpsBooking[]>([]);
+  const [opsError, setOpsError] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -40,6 +49,22 @@ function ActivityBody({ org }: { org: OrgRecord }) {
       setDrivers(driverRows);
       setPresence(presenceRows);
       setError("");
+      try {
+        const [rides, pakyawan, deliveries] = await Promise.all([
+          fetchMemberRecentRides(ids, 10),
+          fetchMemberRecentPakyawan(ids, 10),
+          fetchMemberRecentDeliveries(ids, 10),
+        ]);
+        setRecentRides(rides);
+        setRecentPakyawan(pakyawan);
+        setRecentDeliveries(deliveries);
+        setOpsError("");
+      } catch (opsFailure) {
+        console.error("Unable to load member operations:", opsFailure);
+        setOpsError(
+          "Recent operations are unavailable right now. Live presence above is unaffected."
+        );
+      }
     } catch (loadError) {
       console.error("Unable to load group activity:", loadError);
       setError("Unable to load activity right now. Please try again.");
@@ -236,17 +261,106 @@ function ActivityBody({ org }: { org: OrgRecord }) {
 
           <section className="orgx-panel">
             <div className="orgx-panel__head">
-              <h2 className="orgx-panel__title">Trip history</h2>
+              <h2 className="orgx-panel__title">About this view</h2>
             </div>
             <div className="orgx-panel__body">
               <p className="orgx-note" style={{ marginTop: 0 }}>
-                Per-ride history is not available in this view. Only live
-                presence for {org.name} members is shown here.
+                Live presence plus recent member operations for {org.name}.
+                Per-ride customer and payment details are never shown here.
               </p>
             </div>
           </section>
         </div>
       </div>
+
+      <section className="orgx-panel" style={{ marginTop: 20 }}>
+        <div className="orgx-panel__head">
+          <h2 className="orgx-panel__title">Recent operations</h2>
+          <span className="orgx-panel__meta">Members only</span>
+        </div>
+        <div className="orgx-panel__body">
+          {opsError ? (
+            <p className="muted-copy" role="alert">
+              {opsError}
+            </p>
+          ) : (
+            <div className="orgx-grid orgx-grid--single" style={{ gap: 0 }}>
+              <OpsTable
+                title="Ride Now"
+                rows={recentRides.map((row) => ({
+                  id: row.id,
+                  status: row.status,
+                  created_at: row.created_at,
+                  driver_id: row.driver_id,
+                }))}
+                nameOf={nameOf}
+              />
+              <OpsTable
+                title="Pakyawan"
+                rows={recentPakyawan}
+                nameOf={nameOf}
+              />
+              <OpsTable
+                title="Deliveries"
+                rows={recentDeliveries}
+                nameOf={nameOf}
+              />
+            </div>
+          )}
+        </div>
+      </section>
     </>
+  );
+}
+
+function OpsTable({
+  title,
+  rows,
+  nameOf,
+}: {
+  title: string;
+  rows: Array<{ id: string; status: string; created_at: string; driver_id: string | null }>;
+  nameOf: (driverId: string) => string;
+}) {
+  return (
+    <div style={{ marginBottom: 4 }}>
+      <p className="section-label" style={{ margin: "12px 0 0" }}>
+        {title} ({rows.length})
+      </p>
+      {rows.length === 0 ? (
+        <p className="muted-copy">No recent {title.toLowerCase()} activity.</p>
+      ) : (
+        <div className="orgx-tablewrap">
+          <table className="orgx-table">
+            <thead>
+              <tr>
+                <th scope="col">Driver</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={`${title}-${row.id}`}>
+                  <td data-label="Driver">
+                    <span className="orgx-cell__primary">
+                      {row.driver_id ? nameOf(row.driver_id) : "Unassigned"}
+                    </span>
+                  </td>
+                  <td data-label="Status">
+                    <span className="orgx-cell__secondary">{row.status}</span>
+                  </td>
+                  <td data-label="Date">
+                    <span className="orgx-cell__secondary">
+                      {new Date(row.created_at).toLocaleString()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

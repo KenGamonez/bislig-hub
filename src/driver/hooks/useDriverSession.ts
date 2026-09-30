@@ -14,6 +14,8 @@ export type DriverIdentity = {
   can_accept_deliveries: boolean;
   username: string | null;
   email: string | null;
+  profile_photo_url: string | null;
+  must_change_password: boolean;
 };
 
 export type DriverSessionState =
@@ -43,22 +45,47 @@ export function useDriverSession() {
       return;
     }
 
-    const { data: driver } = await supabase
+    // Full select includes first-login + photo columns. If the
+    // BTRP mini-system migration has not been applied yet, fall back to
+    // the core columns so existing sessions keep working.
+    let driver: Record<string, unknown> | null = null;
+    const fullSelect = await supabase
       .from("drivers")
       .select(
-        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries, username, email"
+        "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries, username, email, profile_photo_url, must_change_password"
       )
       .eq("auth_user_id", user.id)
       .maybeSingle();
+
+    if (fullSelect.error) {
+      console.warn(
+        "Driver session falling back to core columns:",
+        fullSelect.error.message
+      );
+      const coreSelect = await supabase
+        .from("drivers")
+        .select(
+          "id, full_name, vehicle_type, vehicle_model, plate_number, vehicle_capacity, status, rating_average, can_accept_pakyawan, can_accept_deliveries, username, email"
+        )
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+      driver = coreSelect.data;
+    } else {
+      driver = fullSelect.data;
+    }
 
     if (!driver) {
       setState({ status: "logged-out", driver: null, authUserId: null });
       return;
     }
 
-    const identity = driver as DriverIdentity;
+    const identity = driver as unknown as DriverIdentity;
     identity.can_accept_pakyawan = Boolean(identity.can_accept_pakyawan);
     identity.can_accept_deliveries = Boolean(identity.can_accept_deliveries);
+    identity.must_change_password = Boolean(identity.must_change_password);
+    if (identity.profile_photo_url === undefined) {
+      identity.profile_photo_url = null;
+    }
 
     if (identity.status === "inactive") {
       setState({ status: "blocked", driver: null, authUserId: user.id });

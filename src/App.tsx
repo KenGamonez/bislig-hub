@@ -74,6 +74,20 @@ const DriverHistory = lazy(() =>
     default: m.DriverHistoryPage,
   }))
 );
+const DriverHome = lazy(() =>
+  import("./driver/pages/HomePage").then((m) => ({ default: m.HomePage }))
+);
+const DriverNews = lazy(() =>
+  import("./driver/pages/NewsPage").then((m) => ({ default: m.NewsPage }))
+);
+const DriverChat = lazy(() =>
+  import("./driver/pages/ChatPage").then((m) => ({ default: m.ChatPage }))
+);
+const DriverWelcome = lazy(() =>
+  import("./driver/pages/MustChangePasswordPage").then((m) => ({
+    default: m.MustChangePasswordPage,
+  }))
+);
 const DriverShell = lazy(() =>
   import("./driver/DriverShell").then((m) => ({ default: m.DriverShell }))
 );
@@ -98,7 +112,7 @@ function LegacyFallback() {
  */
 const PUBLIC_LEGACY_PREFIXES = ["/delivery", "/become-a-driver"];
 const DRIVER_PREFIXES = ["/driver/reset-password"];
-const NEW_DRIVER_PREFIXES = ["/driver", "/driver/jobs", "/driver/active", "/driver/you", "/driver/history"];
+const NEW_DRIVER_PREFIXES = ["/driver", "/driver/jobs", "/driver/active", "/driver/you", "/driver/history", "/driver/home", "/driver/news", "/driver/chat", "/driver/welcome"];
 const ADMIN_PREFIXES = ["/admin"];
 const ORG_PREFIXES = ["/org"];
 
@@ -144,11 +158,15 @@ export default function App() {
             <DriverPresenceProvider>
               <DriverShell>
                 <Routes>
-                  <Route path="/driver" element={<Navigate to="/driver/jobs" replace />} />
+                  <Route path="/driver" element={<Navigate to="/driver/home" replace />} />
+                  <Route path="/driver/home" element={<DriverHome />} />
                   <Route path="/driver/jobs" element={<DriverJobs />} />
                   <Route path="/driver/active" element={<DriverActive />} />
                   <Route path="/driver/you" element={<DriverYou />} />
                   <Route path="/driver/history" element={<DriverHistory />} />
+                  <Route path="/driver/news" element={<DriverNews />} />
+                  <Route path="/driver/chat" element={<DriverChat />} />
+                  <Route path="/driver/welcome" element={<DriverWelcome />} />
                 </Routes>
               </DriverShell>
             </DriverPresenceProvider>

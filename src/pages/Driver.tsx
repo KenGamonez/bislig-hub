@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { DriverExperience } from "../legacy/pages/DriverExperience";
 import { DriverLogin } from "../legacy/components/DriverLogin";
 import { supabase } from "../legacy/lib/supabase";
@@ -14,6 +14,7 @@ export function Driver() {
   const [driverId, setDriverId] = useState<string | null>(null);
   const [blocked, setBlocked] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -25,15 +26,41 @@ export function Driver() {
       if (!data.session?.user) {
         setDriverId(null);
         setBlocked(false);
+        setMustChangePassword(false);
         setChecking(false);
         return;
       }
 
-      const { data: driver } = await supabase
+      // Full select includes the first-login flag. If the BTRP
+      // mini-system migration has not been applied yet, fall back to the
+      // core columns so the legacy entry keeps working.
+      const fullSelect = await supabase
         .from("drivers")
-        .select("id, status")
+        .select("id, status, must_change_password")
         .eq("auth_user_id", data.session.user.id)
         .maybeSingle();
+
+      let driver: {
+        id: string;
+        status: string;
+        must_change_password?: boolean;
+      } | null = fullSelect.data as {
+        id: string;
+        status: string;
+        must_change_password?: boolean;
+      } | null;
+
+      if (fullSelect.error) {
+        const coreSelect = await supabase
+          .from("drivers")
+          .select("id, status")
+          .eq("auth_user_id", data.session.user.id)
+          .maybeSingle();
+        driver = coreSelect.data as {
+          id: string;
+          status: string;
+        } | null;
+      }
 
       if (!mounted) return;
 
@@ -43,6 +70,7 @@ export function Driver() {
       } else {
         setDriverId(driver ? (driver.id as string) : null);
         setBlocked(false);
+        setMustChangePassword(Boolean(driver?.must_change_password));
       }
       setChecking(false);
     };
@@ -104,6 +132,12 @@ export function Driver() {
         />
       </LegacyShell>
     );
+  }
+
+  // First-login gate: provisioned drivers replace the temporary password
+  // before entering either workspace.
+  if (mustChangePassword) {
+    return <Navigate to="/driver/welcome" replace />;
   }
 
   return (

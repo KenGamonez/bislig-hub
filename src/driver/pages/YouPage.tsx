@@ -10,6 +10,7 @@ import { DriverPushControl } from "../components/DriverPushControl";
 import { DriverStats } from "../components/DriverStats";
 import { DriverVehicleCard } from "../components/DriverVehicleCard";
 import { DriverAccountActions } from "../components/DriverAccountActions";
+import { DriverPhotoControl } from "../components/DriverPhotoControl";
 
 export function YouPage() {
   const session = useDriverSession();
@@ -99,6 +100,8 @@ export function YouPage() {
         canAcceptPakyawan={driver.can_accept_pakyawan}
         canAcceptDeliveries={driver.can_accept_deliveries}
       />
+
+      <DriverPhotoControl />
 
       <DriverAccountActions onCloseChangePassword={() => {}} />
 
