@@ -171,9 +171,9 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
   return (
     <>
       <OrgPageHead
-        eyebrow={`${org.name} · Engagement`}
+        eyebrow="Announcements"
         title="Announcements"
-        description={`${items.length} total · ${published} published · ${items.length - published} drafts.`}
+        description={`The official ${org.name} communication channel — ${items.length} total · ${published} published · ${items.length - published} drafts.`}
         actions={
           !loading && !error && !showForm ? (
             <button
@@ -212,7 +212,12 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
       ) : (
         <>
           {showForm ? (
-            <section className="orgx-panel" style={{ marginBottom: 20 }}>
+            <section
+              className={
+                editingId ? "orgx-panel orgx-panel--highlight" : "orgx-panel"
+              }
+              style={{ marginBottom: 20 }}
+            >
               <div className="orgx-panel__head">
                 <h2 className="orgx-panel__title">
                   {editingId ? "Edit announcement" : "New announcement"}
@@ -245,7 +250,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                         body: event.target.value,
                       }))
                     }
-                    rows={4}
+                    rows={6}
                   />
                 </label>
                 <label className="field-block">
@@ -317,78 +322,60 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                   </p>
                 </div>
               ) : (
-                <div className="orgx-tablewrap">
-                  <table className="orgx-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Announcement</th>
-                        <th scope="col">Visibility</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">
-                          <span className="orgx-cell__actions" style={{ display: "block" }}>Actions</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {items.map((item) => (
-                        <tr key={item.id}>
-                          <td data-label="Announcement">
-                            <span className="orgx-cell__primary">{item.title}</span>
-                            <p className="orgx-cell__secondary">
-                              {excerpt(item.body)}
-                            </p>
-                          </td>
-                          <td data-label="Visibility">
-                            <span
-                              className={`orgx-badge ${
-                                item.published_at
-                                  ? "orgx-badge--pub"
-                                  : "orgx-badge--draft"
-                              }`}
-                            >
-                              {item.published_at ? "Published" : "Draft"}
-                            </span>
-                          </td>
-                          <td data-label="Date">
-                            <span className="orgx-cell__secondary">
-                              {item.published_at
-                                ? `Published ${formatDate(item.published_at)}`
-                                : `Created ${formatDate(item.created_at)}`}
-                            </span>
-                          </td>
-                          <td className="orgx-cell__actions">
-                            <button
-                              type="button"
-                              className="btn btn--ghost btn--compact"
-                              disabled={saving}
-                              onClick={() => startEdit(item)}
-                            >
-                              Edit
-                            </button>{" "}
-                            {item.published_at ? (
-                              <button
-                                type="button"
-                                className="btn btn--ghost btn--compact"
-                                disabled={saving}
-                                onClick={() => void handleUnpublish(item)}
-                              >
-                                Unpublish
-                              </button>
-                            ) : null}{" "}
-                            <button
-                              type="button"
-                              className="btn btn--ghost btn--compact orgx-btn-danger"
-                              disabled={saving}
-                              onClick={() => setPendingDelete(item)}
-                            >
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <ul className="orgx-archive">
+                  {items.map((item) => (
+                    <li key={item.id} className="orgx-archive__item">
+                      <div className="orgx-archive__head">
+                        <h3 className="orgx-archive__title">{item.title}</h3>
+                        <span
+                          className={`orgx-badge ${
+                            item.published_at
+                              ? "orgx-badge--pub"
+                              : "orgx-badge--draft"
+                          }`}
+                        >
+                          {item.published_at ? "Published" : "Draft"}
+                        </span>
+                      </div>
+                      <p className="orgx-archive__meta">
+                        {item.published_at
+                          ? `Published ${formatDate(item.published_at)}`
+                          : `Created ${formatDate(item.created_at)}`}
+                      </p>
+                      <p className="orgx-archive__excerpt">
+                        {excerpt(item.body)}
+                      </p>
+                      <div className="orgx-archive__actions">
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--compact"
+                          disabled={saving}
+                          onClick={() => startEdit(item)}
+                        >
+                          Edit
+                        </button>
+                        {item.published_at ? (
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--compact"
+                            disabled={saving}
+                            onClick={() => void handleUnpublish(item)}
+                          >
+                            Unpublish
+                          </button>
+                        ) : null}
+                        <button
+                          type="button"
+                          className="btn btn--ghost btn--compact orgx-btn-danger"
+                          disabled={saving}
+                          onClick={() => setPendingDelete(item)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </section>

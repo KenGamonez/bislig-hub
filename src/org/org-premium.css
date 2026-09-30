@@ -1107,6 +1107,66 @@ table.orgx-table tr:has(.orgx-rowlink) {
   flex-wrap: wrap;
 }
 
+/* ---- Editorial archive (announcements) ---- */
+.orgx-archive {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orgx-archive__item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--orgx-line-soft);
+}
+
+.orgx-archive__item:first-child {
+  padding-top: 4px;
+}
+
+.orgx-archive__item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.orgx-archive__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.orgx-archive__title {
+  font-size: 17px;
+  line-height: var(--leading-snug);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--orgx-ink-1);
+  margin: 0;
+  min-width: 0;
+}
+
+.orgx-archive__meta {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--orgx-ink-3);
+}
+
+.orgx-archive__excerpt {
+  margin: 8px 0 0;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--orgx-ink-2);
+  max-width: 68ch;
+  overflow-wrap: break-word;
+}
+
+.orgx-archive__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
 /* ---- Empty / error states ---- */
 .orgx-empty {
   padding: 26px 20px;
