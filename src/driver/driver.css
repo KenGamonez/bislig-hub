@@ -1353,6 +1353,199 @@
   font-weight: 600;
   color: var(--driver-text);
 }
+.hub-driver__action-label {
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-text);
+}
+
+/* ---- Jobs page presence card ---- */
+.hub-driver__presence {
+  position: relative;
+}
+
+.hub-driver__presence-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--driver-space-2);
+}
+
+.hub-driver__presence .hub-driver__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: var(--driver-font-sm);
+}
+
+.hub-driver__pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--driver-text-faint);
+  flex-shrink: 0;
+}
+
+.hub-driver__pill.is-on .hub-driver__pill-dot {
+  background: var(--driver-success);
+}
+
+/* ---- Active job link in Jobs page ---- */
+.hub-driver__active-job-link {
+  display: grid;
+  gap: var(--driver-space-2);
+}
+
+.hub-driver__active-job-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--driver-space-2);
+}
+
+.hub-driver__active-job-link .hub-driver__pill {
+  font-size: var(--driver-font-xs);
+}
+
+/* ---- Job cards ---- */
+.hub-driver__job {
+  position: relative;
+}
+
+.hub-driver__job-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--driver-space-2);
+}
+
+.hub-driver__jobtype {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--driver-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: var(--driver-radius-pill);
+  background: var(--driver-slate);
+  color: var(--text-on-dark);
+}
+
+.hub-driver__jobtype--ride {
+  background: var(--driver-orange);
+  color: var(--driver-slate);
+}
+
+.hub-driver__job-meta {
+  display: grid;
+  gap: var(--driver-space-2);
+}
+
+.hub-driver__job-kind {
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-orange);
+  text-transform: capitalize;
+}
+
+.hub-driver__job-route {
+  display: flex;
+  align-items: center;
+  gap: var(--driver-space-2);
+  flex-wrap: wrap;
+  font-size: var(--driver-font-md);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--driver-text);
+  line-height: var(--driver-leading-normal);
+}
+
+.hub-driver__job-stop {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.hub-driver__job-stop-label {
+  font-size: var(--driver-font-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--driver-text-faint);
+}
+
+.hub-driver__job-arrow {
+  color: var(--driver-text-faint);
+  font-size: var(--driver-font-sm);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hub-driver__job-fare {
+  font-size: var(--driver-font-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--driver-slate);
+  margin: 0;
+}
+
+.hub-driver__job-fare--tbd {
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-text-muted);
+}
+
+.hub-driver__job-kind {
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-orange);
+  text-transform: capitalize;
+  margin: 0 0 var(--driver-space-1);
+}
+
+.hub-driver__job-meta {
+  display: grid;
+  gap: var(--driver-space-2);
+  margin-top: var(--driver-space-1);
+}
+
+.hub-driver__job-actions {
+  display: grid;
+  gap: var(--driver-space-2);
+  margin-top: var(--driver-space-2);
+}
+
+.hub-driver__job-accept {
+  min-height: 56px;
+  font-size: var(--driver-font-md);
+  font-weight: 700;
+}
+
+/* ---- Push control ---- */
+.hub-driver__push {
+  background: var(--driver-surface-soft);
+  border: 1px solid var(--driver-border-soft);
+  border-radius: var(--driver-radius-md);
+  padding: var(--driver-space-3);
+}
+
+.hub-driver__push-title {
+  font-size: var(--driver-font-sm);
+  font-weight: 700;
+  color: var(--driver-text);
+  margin: 0 0 var(--driver-space-1);
+}
+
+.hub-driver__push-text {
+  font-size: var(--driver-font-sm);
+  color: var(--driver-text-muted);
+  margin: 0 0 var(--driver-space-2);
+}
+
 @media (max-width: 428px) {
   .hub-driver__identity-facts {
     grid-template-columns: repeat(2, 1fr);

@@ -3,16 +3,15 @@ import { DriverPage } from "../components/DriverPage";
 import { EmptyState } from "../components/EmptyState";
 import { JobCard } from "../components/JobCard";
 import { LoadingState } from "../components/LoadingState";
-import { StatusPill } from "../components/StatusPill";
 import { useDriverJobs } from "../hooks/useDriverJobs";
 import { useDriverPresenceContext } from "../hooks/useDriverPresenceContext";
 import { useDriverSession } from "../hooks/useDriverSession";
 import { DriverPushControl } from "../components/DriverPushControl";
 
 /**
- * Unified incoming-job workspace. Presentation only — every read and
- * mutation below delegates to the existing engine helpers; the backend
- * remains the source of truth for offers, expiry, and assignment.
+ * Unified incoming-job workspace. Premium presentation with clear
+ * hierarchy: presence → active job → incoming offers → empty state.
+ * Every read/mutation delegates to existing engine helpers.
  */
 export function JobsPage() {
   const session = useDriverSession();
@@ -62,6 +61,7 @@ export function JobsPage() {
 
   return (
     <DriverPage title="Jobs" kicker="Work">
+      {/* Presence panel */}
       <div className="hub-driver__card hub-driver__presence">
         <div className="hub-driver__presence-row">
           <div>
@@ -74,9 +74,13 @@ export function JobsPage() {
                 : "Go online to start receiving jobs."}
             </p>
           </div>
-          <StatusPill tone={presence.online ? "success" : "neutral"}>
+          <span
+            className={`hub-driver__pill ${presence.online ? "is-on" : ""}`}
+            aria-label={presence.online ? "Online" : "Offline"}
+          >
+            <span className="hub-driver__pill-dot" aria-hidden="true" />
             {presence.online ? "Online" : "Offline"}
-          </StatusPill>
+          </span>
         </div>
         {presence.error ? (
           <p className="form-error-message" role="alert">
@@ -85,9 +89,7 @@ export function JobsPage() {
         ) : null}
         <button
           type="button"
-          className={`btn btn--block ${
-            presence.online ? "btn--ghost" : "btn--primary"
-          }`}
+          className={`btn btn--block ${presence.online ? "btn--ghost" : "btn--primary"}`}
           disabled={presence.transitioning}
           onClick={() =>
             void (presence.online
@@ -98,29 +100,33 @@ export function JobsPage() {
           {presence.transitioning
             ? "Updating…"
             : presence.online
-              ? "Go offline"
-              : "Go online"}
+            ? "Go offline"
+            : "Go online"}
         </button>
       </div>
 
       {presence.online ? <DriverPushControl dismissKey="jobs" /> : null}
 
+      {/* Active job quick link */}
       {jobs.assignedRide ? (
-        <div className="hub-driver__card">
-          <div className="hub-driver__presence-row">
-            <p className="hub-driver__card-title">Active job</p>
-            <StatusPill tone="active">On job</StatusPill>
+        <div className="hub-driver__card hub-driver__active-job-link">
+          <div className="hub-driver__active-job-head">
+            <div>
+              <p className="hub-driver__card-title">Active job</p>
+              <p className="hub-driver__card-sub">
+                {jobs.assignedRide.pickup_address} →{" "}
+                {jobs.assignedRide.destination_address}
+              </p>
+            </div>
+            <span className="hub-driver__pill is-active">On job</span>
           </div>
-          <p className="hub-driver__card-sub">
-            {jobs.assignedRide.pickup_address} →{" "}
-            {jobs.assignedRide.destination_address}
-          </p>
           <Link to="/driver/active" className="btn btn--primary btn--block">
-            View active
+            View active job
           </Link>
         </div>
       ) : null}
 
+      {/* Loading / Error / Empty states */}
       {jobs.loading ? (
         <LoadingState label="Checking for new jobs…" />
       ) : null}
@@ -156,6 +162,7 @@ export function JobsPage() {
         </p>
       ) : null}
 
+      {/* Incoming job cards */}
       {jobs.jobs.map((job) => {
         const declinable = job.offerId !== null && job.kind !== "delivery";
         const dismissable = !declinable;
@@ -165,12 +172,8 @@ export function JobsPage() {
             job={job}
             busy={jobs.submittingKey === job.key}
             onAccept={() => void jobs.acceptJob(job)}
-            onDecline={
-              declinable ? () => void jobs.declineJob(job) : undefined
-            }
-            onDismiss={
-              dismissable ? () => jobs.dismissJob(job) : undefined
-            }
+            onDecline={declinable ? () => void jobs.declineJob(job) : undefined}
+            onDismiss={dismissable ? () => jobs.dismissJob(job) : undefined}
             onExpire={() => jobs.dismissJob(job)}
           />
         );
