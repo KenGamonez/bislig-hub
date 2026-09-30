@@ -30,6 +30,7 @@ import {
 import {
   createDriverAuthUser,
   isDriverUsernameTaken,
+  sendDriverPasswordReset,
 } from "../../legacy/lib/driverAuth";
 import {
   generateTemporaryPassword,
@@ -1400,6 +1401,30 @@ function DriverDetailPanel({
   const [renameSaving, setRenameSaving] = useState(false);
   const [renameError, setRenameError] = useState("");
   const [renameNotice, setRenameNotice] = useState("");
+  const [resetBusy, setResetBusy] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetNotice, setResetNotice] = useState("");
+
+  const handleSendReset = async () => {
+    if (!detail?.email) return;
+    setResetBusy(true);
+    setResetError("");
+    setResetNotice("");
+    try {
+      // Reuses the existing public reset flow: the driver receives an
+      // email link and sets their own password. Silent no-op on unknown
+      // addresses; nothing privileged happens here.
+      await sendDriverPasswordReset(detail.email);
+      setResetNotice(
+        `Password reset email sent to ${detail.email}. The driver sets their own new password from that link.`
+      );
+    } catch (resetFailure) {
+      console.error("Unable to send password reset:", resetFailure);
+      setResetError("Unable to send the reset email. Please try again.");
+    } finally {
+      setResetBusy(false);
+    }
+  };
 
   const handleRename = async () => {
     if (!detail) return;
@@ -1589,6 +1614,35 @@ function DriverDetailPanel({
             {renameNotice ? (
               <p className="muted-copy" role="status" style={{ marginTop: 8 }}>
                 {renameNotice}
+              </p>
+            ) : null}
+
+            <p className="section-label" style={{ marginTop: 16 }}>
+              Password reset
+            </p>
+            <p className="muted-copy" style={{ marginTop: 0 }}>
+              Sends the standard password-reset email to the driver&apos;s
+              address. The driver chooses their own new password — it is
+              never visible here.
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="btn btn--ghost btn--compact"
+                disabled={resetBusy || !detail?.email}
+                onClick={() => void handleSendReset()}
+              >
+                {resetBusy ? "Sending…" : "Send password reset email"}
+              </button>
+            </div>
+            {resetError ? (
+              <p className="form-error-message" role="alert" style={{ marginTop: 8 }}>
+                {resetError}
+              </p>
+            ) : null}
+            {resetNotice ? (
+              <p className="muted-copy" role="status" style={{ marginTop: 8 }}>
+                {resetNotice}
               </p>
             ) : null}
 

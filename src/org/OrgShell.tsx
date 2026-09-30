@@ -1,5 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import type { ReactNode } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useOrgAdmin } from "./useOrgAdmin";
 import "../styles/ride-legacy.css";
 import "./org-premium.css";
@@ -103,9 +103,42 @@ function orgInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+function OrgNavGroups({ slug, onNavigate }: { slug: string; onNavigate?: () => void }) {
+  return (
+    <>
+      {NAV_GROUPS.map((group) => (
+        <div key={group.label}>
+          <p className="orgx-nav__group-label">{group.label}</p>
+          <ul className="orgx-nav__items">
+            {group.items.map((item) => (
+              <li key={item.label}>
+                <NavLink
+                  to={item.to(slug)}
+                  end={item.label === "Overview"}
+                  className={({ isActive }) =>
+                    `orgx-nav__item${isActive ? " is-active" : ""}`
+                  }
+                  onClick={onNavigate}
+                >
+                  <span className="orgx-nav__icon">{item.icon}</span>
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function OrgShell({ children }: { children: ReactNode }) {
   const session = useOrgAdmin();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleLogout = async () => {
     await session.signOut();
@@ -114,6 +147,29 @@ export function OrgShell({ children }: { children: ReactNode }) {
 
   const slug = session.status === "active" ? session.org.slug : "";
   const orgName = session.status === "active" ? session.org.name : "";
+
+  const closeMenu = () => setMenuOpen(false);
+
+  // Close the drawer on route change and return focus to the menu button.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      menuButtonRef.current?.focus?.();
+    };
+  }, [menuOpen]);
 
   return (
     <div className="orgx orgx-shell">
@@ -128,27 +184,7 @@ export function OrgShell({ children }: { children: ReactNode }) {
               </div>
             </div>
             <nav className="orgx-nav" aria-label="Organization sections">
-              {NAV_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <p className="orgx-nav__group-label">{group.label}</p>
-                  <ul className="orgx-nav__items">
-                    {group.items.map((item) => (
-                      <li key={item.label}>
-                        <NavLink
-                          to={item.to(slug)}
-                          end={item.label === "Overview"}
-                          className={({ isActive }) =>
-                            `orgx-nav__item${isActive ? " is-active" : ""}`
-                          }
-                        >
-                          <span className="orgx-nav__icon">{item.icon}</span>
-                          {item.label}
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+              <OrgNavGroups slug={slug} />
             </nav>
             <div className="orgx-side__foot">
               <div className="orgx-orgcard">
@@ -170,6 +206,21 @@ export function OrgShell({ children }: { children: ReactNode }) {
         <div className="orgx-main">
           <header className="orgx-topbar" role="banner">
             <div className="orgx-topbar__inner">
+              {session.status === "active" ? (
+                <button
+                  ref={menuButtonRef}
+                  type="button"
+                  className="orgx-menubtn"
+                  aria-label="Open organization menu"
+                  aria-expanded={menuOpen}
+                  aria-controls="orgx-drawer"
+                  onClick={() => setMenuOpen(true)}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                    <path d="M4 7h16M4 12h16M4 17h16" />
+                  </svg>
+                </button>
+              ) : null}
               <span className="orgx-topbar__brand">
                 <img src="/assets/bislig-hub-logo.png" alt="Bislig Hub" decoding="async" />
               </span>
@@ -191,22 +242,58 @@ export function OrgShell({ children }: { children: ReactNode }) {
           </header>
 
           <div className="orgx-content">
-            {session.status === "active" ? (
-              <nav className="orgx-mobiletabs" aria-label="Organization sections">
-                {NAV_GROUPS.flatMap((group) => group.items).map((item) => (
-                  <NavLink
-                    key={item.label}
-                    to={item.to(slug)}
-                    end={item.label === "Overview"}
-                    className={({ isActive }) => (isActive ? "is-active" : "")}
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
-              </nav>
-            ) : null}
             <main id="main-content">{children}</main>
           </div>
+          {session.status === "active" && menuOpen ? (
+            <div className="orgx-drawer" id="orgx-drawer">
+              <div
+                className="orgx-drawer__backdrop"
+                role="presentation"
+                onClick={closeMenu}
+              />
+              <div
+                className="orgx-drawer__panel"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Organization menu"
+              >
+                <div className="orgx-drawer__head">
+                  <div className="orgx-orgcard" style={{ flex: 1 }}>
+                    <span className="orgx-orgcard__mark" aria-hidden="true">
+                      {orgInitials(orgName)}
+                    </span>
+                    <div className="orgx-orgcard__meta">
+                      <span className="orgx-orgcard__name">{orgName}</span>
+                      <span className="orgx-orgcard__role">Administrator</span>
+                    </div>
+                  </div>
+                  <button
+                    ref={closeButtonRef}
+                    type="button"
+                    className="orgx-drawer__close"
+                    aria-label="Close organization menu"
+                    onClick={closeMenu}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                      <path d="M6 6l12 12M18 6 6 18" />
+                    </svg>
+                  </button>
+                </div>
+                <nav className="orgx-nav orgx-drawer__nav" aria-label="Organization sections">
+                  <OrgNavGroups slug={slug} onNavigate={closeMenu} />
+                </nav>
+                <div className="orgx-drawer__foot">
+                  <button
+                    type="button"
+                    className="orgx-logout"
+                    onClick={() => void handleLogout()}
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
