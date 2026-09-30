@@ -4,14 +4,18 @@ import { OrgGuard } from "../OrgGuard";
 import { OrgConfirm } from "../OrgConfirm";
 import {
   addOrganizationMember,
+  adoptOrgDriver,
   fetchMemberDriverDetail,
   fetchMemberDrivers,
   fetchMemberPresence,
   fetchMemberRecentRides,
+  fetchOrgApplications,
   fetchOrgMembers,
   provisionOrgDriver,
   removeOrganizationMember,
   removeOrgDriverPhoto,
+  renameOrgDriver,
+  reviewOrgApplication,
   searchDriversForMembership,
   updateOrgDriver,
   uploadOrgDriverPhoto,
@@ -20,6 +24,7 @@ import {
   type MemberDriverDetail,
   type MemberPresence,
   type MemberOpsRide,
+  type OrgApplication,
   type OrgRecord,
 } from "../orgData";
 import {
@@ -114,12 +119,22 @@ function DriversBody({ org }: { org: OrgRecord }) {
   const [provision, setProvision] = useState(emptyProvision);
   const [provisionError, setProvisionError] = useState("");
   const [provisionBusy, setProvisionBusy] = useState(false);
+  const [provisionSourceAppId, setProvisionSourceAppId] = useState<string | null>(null);
   const [provisioned, setProvisioned] = useState<{
     full_name: string;
     username: string;
     email: string;
     tempPassword: string;
   } | null>(null);
+
+  // Organization-targeted applications (review/approve/reject/provision).
+  const [applications, setApplications] = useState<OrgApplication[]>([]);
+  const [appsLoading, setAppsLoading] = useState(true);
+  const [appsAvailable, setAppsAvailable] = useState(true);
+  const [appsError, setAppsError] = useState("");
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<OrgApplication | null>(null);
+  const [expandedAppId, setExpandedAppId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -142,6 +157,32 @@ function DriversBody({ org }: { org: OrgRecord }) {
     setLoading(true);
     void load().finally(() => setLoading(false));
   }, [load]);
+
+  const loadApplications = useCallback(async () => {
+    setAppsLoading(true);
+    setAppsError("");
+    try {
+      const rows = await fetchOrgApplications(org.id);
+      setApplications(rows);
+      setAppsAvailable(true);
+    } catch (applicationsError) {
+      console.error("Unable to load organization applications:", applicationsError);
+      // Pre-backend-update deployments lack the org_id column/RPCs; the
+      // rest of driver management keeps working.
+      setAppsAvailable(false);
+      setApplications([]);
+    } finally {
+      setAppsLoading(false);
+    }
+  }, [org.id]);
+
+  useEffect(() => {
+    void loadApplications();
+  }, [loadApplications]);
+
+  const pendingApplications = applications.filter(
+    (item) => item.status === "pending"
+  );
 
   const presenceByDriver = new Map(
     presence.map((row) => [row.driver_id, row])
@@ -397,6 +438,115 @@ function DriversBody({ org }: { org: OrgRecord }) {
     }
   };
 
+  const handleApproveApplication = async (application: OrgApplication) => {
+    setReviewingId(application.id);
+    setActionError("");
+    try {
+      await reviewOrgApplication(application.id, "approved");
+      setNotice(`${application.full_name}'s application was approved.`);
+      await loadApplications();
+    } catch (reviewFailure) {
+      console.error("Unable to approve application:", reviewFailure);
+      setActionError(
+        reviewFailure instanceof Error
+          ? reviewFailure.message
+          : "Unable to approve this application. Please try again."
+      );
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const handleRejectApplication = async () => {
+    if (!rejectTarget) return;
+    setReviewingId(rejectTarget.id);
+    setActionError("");
+    try {
+      await reviewOrgApplication(rejectTarget.id, "rejected");
+      setRejectTarget(null);
+      setNotice(`${rejectTarget.full_name}'s application was rejected.`);
+      await loadApplications();
+    } catch (reviewFailure) {
+      console.error("Unable to reject application:", reviewFailure);
+      setRejectTarget(null);
+      setActionError(
+        reviewFailure instanceof Error
+          ? reviewFailure.message
+          : "Unable to reject this application. Please try again."
+      );
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const handleProvisionFromApplication = (application: OrgApplication) => {
+    setProvision({
+      full_name: application.full_name,
+      email: application.email,
+      username: suggestUsername(application.full_name),
+      phone: application.mobile_number,
+      vehicle_type: application.vehicle_type,
+      vehicle_model: application.vehicle_number,
+      plate_number: application.plate_number ?? "",
+      tempPassword: generateTemporaryPassword(),
+    });
+    setProvisionSourceAppId(application.id);
+    setProvisioned(null);
+    setProvisionError("");
+    setShowProvision(true);
+    setShowAdd(false);
+  };
+
+  const handleAdoptAccount = async () => {
+    const fullName = provision.full_name.trim();
+    const email = provision.email.trim();
+    const username = normalizeUsername(provision.username);
+
+    if (!fullName || !email || !username) {
+      setProvisionError(
+        "Full name, email, and username are required for recovery."
+      );
+      return;
+    }
+
+    setProvisionBusy(true);
+    setProvisionError("");
+    try {
+      if (await isDriverUsernameTaken(username)) {
+        setProvisionError("That username is already taken.");
+        return;
+      }
+      const driverId = await adoptOrgDriver({
+        org_id: org.id,
+        email,
+        full_name: fullName,
+        username,
+        phone: provision.phone.trim(),
+        vehicle_type: provision.vehicle_type.trim(),
+        vehicle_model: provision.vehicle_model.trim(),
+        plate_number: provision.plate_number.trim(),
+      });
+      setProvision(emptyProvision);
+      setProvisionSourceAppId(null);
+      setShowProvision(false);
+      setNotice(
+        `${fullName} was linked as a member. Ask them to use Forgot password to set their own password.`
+      );
+      await load();
+      await loadApplications();
+      void driverId;
+    } catch (adoptFailure) {
+      console.error("Unable to recover account:", adoptFailure);
+      setProvisionError(
+        adoptFailure instanceof Error
+          ? adoptFailure.message
+          : "Unable to recover this account. Please try again."
+      );
+    } finally {
+      setProvisionBusy(false);
+    }
+  };
+
   const handleSuggestUsername = () => {
     if (!provision.full_name.trim()) {
       setProvisionError("Enter the full name first to suggest a username.");
@@ -451,7 +601,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
       // Step 2: create the driver row + membership atomically (org-scoped
       // RPC). The account stays unconfirmed until the driver opens the
       // confirmation email; must_change_password gates first login.
-      await provisionOrgDriver({
+      const newDriverId = await provisionOrgDriver({
         org_id: org.id,
         full_name: fullName,
         email: account.email,
@@ -463,6 +613,18 @@ function DriversBody({ org }: { org: OrgRecord }) {
         plate_number: provision.plate_number.trim(),
       });
 
+      // Step 3 (only when provisioning from an application): mark it
+      // approved and link the new driver. Failures here never block the
+      // account that was just created.
+      if (provisionSourceAppId) {
+        try {
+          await reviewOrgApplication(provisionSourceAppId, "approved", newDriverId);
+        } catch (linkFailure) {
+          console.error("Unable to link provisioned driver to application:", linkFailure);
+        }
+        setProvisionSourceAppId(null);
+      }
+
       setProvisioned({
         full_name: fullName,
         username,
@@ -472,6 +634,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
       setProvision(emptyProvision);
       setShowProvision(false);
       await load();
+      await loadApplications();
     } catch (provisionFailure) {
       console.error("Unable to provision driver:", provisionFailure);
       setProvisionError(
@@ -726,23 +889,38 @@ function DriversBody({ org }: { org: OrgRecord }) {
               >
                 {provisionBusy ? "Creating…" : "Create account"}
               </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--compact"
+                  disabled={provisionBusy}
+                  onClick={() => {
+                    setShowProvision(false);
+                    setProvision(emptyProvision);
+                    setProvisionError("");
+                    setProvisionSourceAppId(null);
+                  }}
+                >
+                  Cancel
+                </button>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               <button
                 type="button"
                 className="btn btn--ghost btn--compact"
                 disabled={provisionBusy}
-                onClick={() => {
-                  setShowProvision(false);
-                  setProvision(emptyProvision);
-                  setProvisionError("");
-                }}
+                onClick={() => void handleAdoptAccount()}
               >
-                Cancel
+                {provisionBusy
+                  ? "Working…"
+                  : "Recover unconfirmed account instead"}
               </button>
             </div>
             <p className="orgx-note">
               Creates the login account, driver profile, and {org.name}{" "}
               membership in one controlled step. The temporary password is
-              shown once above and never stored.
+              shown once above and never stored. Recovery links an auth
+              account that was created but never confirmed, without handling
+              any password — the driver then uses Forgot password.
             </p>
           </div>
         </section>
@@ -860,6 +1038,150 @@ function DriversBody({ org }: { org: OrgRecord }) {
         </section>
       ) : null}
 
+      <section className="orgx-panel" style={{ marginBottom: 20 }} aria-live="polite">
+        <div className="orgx-panel__head">
+          <h2 className="orgx-panel__title">Applications</h2>
+          <span className="orgx-panel__meta">{pendingApplications.length} pending</span>
+        </div>
+        <div className="orgx-panel__body">
+          {appsLoading ? (
+            <div className="loading-block" aria-live="polite">
+              <span className="spinner" aria-hidden="true" />
+              <p>Loading applications…</p>
+            </div>
+          ) : !appsAvailable ? (
+            <p className="muted-copy">
+              Application review needs the latest backend update. Driver
+              directory and provisioning below keep working.
+            </p>
+          ) : pendingApplications.length === 0 ? (
+            <div className="orgx-empty">
+              <p className="orgx-empty__title">No pending applications</p>
+              <p className="orgx-empty__text">
+                Applications targeted at {org.name} will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="orgx-tablewrap">
+              <table className="orgx-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Applicant</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col">Applied</th>
+                    <th scope="col">
+                      <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingApplications.map((application) => {
+                    const expanded = expandedAppId === application.id;
+                    return (
+                      <tr key={application.id}>
+                        <td data-label="Applicant">
+                          <span className="orgx-cell__primary">
+                            {application.full_name}
+                          </span>
+                          <p className="orgx-cell__secondary">
+                            {[application.email, application.mobile_number]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                          {expanded ? (
+                            <p className="orgx-cell__secondary">
+                              {[
+                                application.barangay && `Barangay ${application.barangay}`,
+                                application.vehicle_number && `Unit ${application.vehicle_number}`,
+                                application.plate_number && `Plate ${application.plate_number}`,
+                                application.driving_experience > 0 &&
+                                  `${application.driving_experience}y experience`,
+                                application.operating_area,
+                                application.preferred_schedule,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                              {application.reason ? ` — ${application.reason}` : ""}
+                            </p>
+                          ) : null}
+                        </td>
+                        <td data-label="Vehicle">
+                          <span className="orgx-cell__secondary">
+                            {application.vehicle_type || "—"}
+                          </span>
+                        </td>
+                        <td data-label="Applied">
+                          <span className="orgx-cell__secondary">
+                            {new Date(application.created_at).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="orgx-cell__actions">
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--compact"
+                            onClick={() =>
+                              setExpandedAppId(expanded ? null : application.id)
+                            }
+                          >
+                            {expanded ? "Hide" : "Review"}
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--compact"
+                            disabled={reviewingId === application.id}
+                            onClick={() => void handleApproveApplication(application)}
+                          >
+                            {reviewingId === application.id ? "Working…" : "Approve"}
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--compact"
+                            disabled={reviewingId === application.id}
+                            onClick={() => setRejectTarget(application)}
+                          >
+                            Reject
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn--primary btn--compact"
+                            onClick={() => handleProvisionFromApplication(application)}
+                          >
+                            Provision
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {appsError ? (
+            <p className="form-error-message" role="alert">
+              {appsError}
+            </p>
+          ) : null}
+          <p className="orgx-note">
+            Only applications applicants targeted at {org.name} appear here.
+            The platform-wide pool stays Founder-only.
+          </p>
+        </div>
+      </section>
+
+      {rejectTarget ? (
+        <OrgConfirm
+          title="Reject application"
+          body={`Reject ${rejectTarget.full_name}'s application? They can reapply later.`}
+          confirmLabel="Reject"
+          busyLabel="Working…"
+          busy={reviewingId !== null}
+          onConfirm={() => void handleRejectApplication()}
+          onCancel={() => {
+            if (reviewingId === null) setRejectTarget(null);
+          }}
+        />
+      ) : null}
+
       <section className="orgx-panel" aria-live="polite">
         <div className="orgx-panel__head">
           <h2 className="orgx-panel__title">Group directory</h2>
@@ -971,9 +1293,19 @@ function DriversBody({ org }: { org: OrgRecord }) {
 
           {managedId ? (
             <DriverDetailPanel
+              key={managedId}
               orgName={org.name}
               managedId={managedId}
               detail={detail}
+              onAccountChanged={async () => {
+                await load();
+                const stub = drivers.find((d) => d.id === managedId);
+                if (stub) {
+                  await openManage(stub);
+                } else {
+                  closeManage();
+                }
+              }}
               detailLoading={detailLoading}
               detailError={detailError}
               editDraft={editDraft}
@@ -1044,6 +1376,7 @@ function DriverDetailPanel({
   onRemovePhoto,
   recentRides,
   onClose,
+  onAccountChanged,
 }: {
   orgName: string;
   managedId: string;
@@ -1061,7 +1394,38 @@ function DriverDetailPanel({
   onRemovePhoto: () => void;
   recentRides: MemberOpsRide[];
   onClose: () => void;
+  onAccountChanged: () => Promise<void>;
 }) {
+  const [renameValue, setRenameValue] = useState(detail?.username ?? "");
+  const [renameSaving, setRenameSaving] = useState(false);
+  const [renameError, setRenameError] = useState("");
+  const [renameNotice, setRenameNotice] = useState("");
+
+  const handleRename = async () => {
+    if (!detail) return;
+    const normalized = normalizeUsername(renameValue);
+    if (!normalized) {
+      setRenameError("Enter a valid username.");
+      return;
+    }
+    setRenameSaving(true);
+    setRenameError("");
+    setRenameNotice("");
+    try {
+      await renameOrgDriver(detail.id, normalized);
+      setRenameNotice(`Username is now @${normalized}.`);
+      await onAccountChanged();
+    } catch (renameFailure) {
+      console.error("Unable to rename driver:", renameFailure);
+      setRenameError(
+        renameFailure instanceof Error
+          ? renameFailure.message
+          : "Unable to change the username. Please try again."
+      );
+    } finally {
+      setRenameSaving(false);
+    }
+  };
   const set = (field: keyof EditDraft) => (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -1186,6 +1550,45 @@ function DriverDetailPanel({
             {photoError ? (
               <p className="form-error-message" role="alert" style={{ marginTop: 8 }}>
                 {photoError}
+              </p>
+            ) : null}
+
+            <p className="section-label" style={{ marginTop: 16 }}>
+              Login username
+            </p>
+            <p className="muted-copy" style={{ marginTop: 0 }}>
+              Usernames are the login identifier. Changes apply immediately
+              and must stay unique across the platform.
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
+              <label className="field-block" style={{ flex: "1 1 200px", marginBottom: 0 }}>
+                <span className="field-label">Username</span>
+                <input
+                  className="input-field"
+                  type="text"
+                  value={renameValue}
+                  onChange={(event) => setRenameValue(event.target.value)}
+                  maxLength={32}
+                  autoComplete="off"
+                />
+              </label>
+              <button
+                type="button"
+                className="btn btn--ghost btn--compact"
+                disabled={renameSaving}
+                onClick={() => void handleRename()}
+              >
+                {renameSaving ? "Saving…" : "Change username"}
+              </button>
+            </div>
+            {renameError ? (
+              <p className="form-error-message" role="alert" style={{ marginTop: 8 }}>
+                {renameError}
+              </p>
+            ) : null}
+            {renameNotice ? (
+              <p className="muted-copy" role="status" style={{ marginTop: 8 }}>
+                {renameNotice}
               </p>
             ) : null}
 

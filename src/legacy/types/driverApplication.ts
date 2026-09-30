@@ -26,6 +26,7 @@ export type DriverApplication = {
   status: DriverApplicationStatus
   created_at: string
   driver_id: string | null
+  org_id: string | null
 }
 
 export type DriverApplicationInsert = Omit<DriverApplication, 'id' | 'status' | 'created_at' | 'driver_id'>

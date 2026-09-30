@@ -30,6 +30,7 @@ type DatabaseDriverApplication = {
   status: DriverApplicationStatus
   created_at: string
   driver_id: string | null
+  org_id?: string | null
 }
 
 function mapApplication(row: DatabaseDriverApplication): DriverApplication {
@@ -52,6 +53,7 @@ function mapApplication(row: DatabaseDriverApplication): DriverApplication {
     status: row.status,
     created_at: row.created_at,
     driver_id: row.driver_id ?? null,
+    org_id: row.org_id ?? null,
   }
 }
 

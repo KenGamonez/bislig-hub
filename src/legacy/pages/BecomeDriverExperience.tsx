@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createDriverApplication } from '../lib/driverApplications'
+import { fetchPublicOrganizations, type PublicOrganization } from '../../org/orgData'
 import {
   buildApplicationFilePaths,
   removeApplicationFile,
@@ -104,7 +105,26 @@ export function BecomeDriverExperience({ onHome }: BecomeDriverExperienceProps) 
   const [submitError, setSubmitError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [orgId, setOrgId] = useState('')
+  const [orgOptions, setOrgOptions] = useState<PublicOrganization[]>([])
   const formRef = useRef<HTMLFormElement | null>(null)
+
+  // Optional target organization. If the directory is unavailable
+  // (backend update pending), the picker stays hidden and the
+  // application lands in the platform pool as before.
+  useEffect(() => {
+    let cancelled = false
+    void fetchPublicOrganizations()
+      .then((rows) => {
+        if (!cancelled) setOrgOptions(rows)
+      })
+      .catch(() => {
+        if (!cancelled) setOrgOptions([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const scrollFormIntoView = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -235,6 +255,7 @@ export function BecomeDriverExperience({ onHome }: BecomeDriverExperienceProps) 
         driving_experience: Number(form.driving_experience), operating_area: form.operating_area.trim(),
         preferred_schedule: form.preferred_schedule, reason: form.reason.trim() || null,
         driver_photo_path: photoPath, drivers_license_path: licensePath,
+        org_id: orgId || null,
       }
       await createDriverApplication(application)
       setSubmitted(true)
@@ -347,6 +368,16 @@ export function BecomeDriverExperience({ onHome }: BecomeDriverExperienceProps) 
         <label className="field-block"><span className="field-label">Preferred Schedule</span><select className={`input-field${errors.preferred_schedule ? ' has-error' : ''}`} value={form.preferred_schedule} onChange={(event) => updateField('preferred_schedule', event.target.value)}><option value="">Select a schedule</option><option>Morning</option><option>Afternoon</option><option>Evening</option><option>Flexible</option></select>{errors.preferred_schedule ? <span className="form-error-message">{errors.preferred_schedule}</span> : null}</label>
       </div>
       <label className="field-block field-wide"><span className="field-label">Why are you interested in joining Bislig Hub? (Optional)</span><textarea className="input-field textarea-field" value={form.reason} onChange={(event) => updateField('reason', event.target.value)} /></label>
+      {orgOptions.length > 0 ? (
+        <label className="field-block field-wide"><span className="field-label">Driving group (Optional)</span>
+          <select className="input-field" value={orgId} onChange={(event) => setOrgId(event.target.value)}>
+            <option value="">No specific group — Bislig Hub pool</option>
+            {orgOptions.map((option) => (
+              <option key={option.id} value={option.id}>{option.name}</option>
+            ))}
+          </select>
+        </label>
+      ) : null}
     </>
   )
 

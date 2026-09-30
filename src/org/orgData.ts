@@ -747,6 +747,146 @@ const ORG_PHOTO_EXTENSIONS: Record<string, string> = {
  * driver's organization plus the driver themself. Legacy admin/<uuid>/...
  * paths stay platform-admin-only and untouched.
  */
+export type PublicOrganization = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+/**
+ * Public organization directory (applicants choose a target org).
+ * Readable anonymously via the directory policy; failures mean the
+ * backend update is not applied yet — callers hide the picker then.
+ */
+export async function fetchPublicOrganizations(): Promise<
+  PublicOrganization[]
+> {
+  const { data, error } = await supabase
+    .from("organizations")
+    .select("id,name,slug")
+    .order("name", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as PublicOrganization[];
+}
+
+export type OrgApplication = {
+  id: string;
+  full_name: string;
+  mobile_number: string;
+  barangay: string;
+  email: string;
+  vehicle_type: string;
+  vehicle_number: string;
+  plate_number: string | null;
+  driving_experience: number;
+  operating_area: string;
+  preferred_schedule: string;
+  reason: string | null;
+  facebook_profile: string;
+  driver_photo_path: string;
+  drivers_license_path: string;
+  status: string;
+  created_at: string;
+  driver_id: string | null;
+  org_id: string | null;
+};
+
+/**
+ * Applications targeted at one organization. Org admins see only their
+ * own org's rows (RLS); platform-pool rows (org_id NULL) stay invisible.
+ */
+export async function fetchOrgApplications(
+  orgId: string
+): Promise<OrgApplication[]> {
+  const { data, error } = await supabase
+    .from("driver_applications")
+    .select(
+      "id,full_name,mobile_number,barangay,email,vehicle_type,vehicle_number,plate_number,driving_experience,operating_area,preferred_schedule,reason,facebook_profile,driver_photo_path,drivers_license_path,status,created_at,driver_id,org_id"
+    )
+    .eq("org_id", orgId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as OrgApplication[];
+}
+
+/**
+ * Organization-scoped application review via the review_org_application
+ * RPC. Only pending → approved/rejected transitions; on approve an
+ * already-provisioned member driver can be linked. Applicant PII columns
+ * can never change through this path (enforced DB-side).
+ */
+export async function reviewOrgApplication(
+  applicationId: string,
+  decision: "approved" | "rejected",
+  driverId?: string | null
+): Promise<void> {
+  const { error } = await supabase.rpc("review_org_application", {
+    p_application_id: applicationId,
+    p_decision: decision,
+    p_driver_id: driverId ?? null,
+  });
+
+  if (error) throw error;
+}
+
+/**
+ * Organization-scoped username rename via the rename_org_driver RPC.
+ * Normalized + globally unique (backstopped by the unique index), members
+ * of the caller's organization only. Auth email is never touched.
+ */
+export async function renameOrgDriver(
+  driverId: string,
+  username: string
+): Promise<void> {
+  const { error } = await supabase.rpc("rename_org_driver", {
+    p_driver_id: driverId,
+    p_username: username,
+  });
+
+  if (error) throw error;
+}
+
+export type AdoptOrgDriverInput = {
+  org_id: string;
+  email: string;
+  full_name: string;
+  username: string;
+  phone: string;
+  vehicle_type: string;
+  vehicle_model: string;
+  plate_number: string;
+  vehicle_capacity?: number | null;
+  vehicle_color?: string | null;
+};
+
+/**
+ * Recovery for the single orphan shape: an auth account that exists but
+ * was never confirmed and never linked (e.g. signup succeeded but
+ * provisioning failed). No password is ever handled — the driver sets
+ * their own through the existing reset flow.
+ */
+export async function adoptOrgDriver(
+  input: AdoptOrgDriverInput
+): Promise<string> {
+  const { data, error } = await supabase.rpc("adopt_unconfirmed_org_driver", {
+    p_org_id: input.org_id,
+    p_email: input.email,
+    p_full_name: input.full_name,
+    p_username: input.username,
+    p_phone: input.phone,
+    p_vehicle_type: input.vehicle_type,
+    p_vehicle_model: input.vehicle_model,
+    p_plate_number: input.plate_number,
+    p_vehicle_capacity: input.vehicle_capacity ?? null,
+    p_vehicle_color: input.vehicle_color ?? null,
+  });
+
+  if (error) throw error;
+  return data as string;
+}
+
 export function buildOrgDriverPhotoPath(driverId: string, file: File): string {
   const ext = ORG_PHOTO_EXTENSIONS[file.type] ?? "img";
   return `org-drivers/${driverId}/profile-photo.${ext}`;
