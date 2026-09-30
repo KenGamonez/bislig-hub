@@ -231,37 +231,37 @@ function ActivityBody({ org }: { org: OrgRecord }) {
   return (
     <>
       <OrgPageHead
-        eyebrow={`${org.name} · Operations`}
-        title="Activity"
-        description={`Live presence for ${org.name} members, refreshed every 15 seconds.`}
+        eyebrow="Activity"
+        title="Operations activity"
+        description={`Live presence and member service operations for ${org.name} — quotes, cancellations, and recent activity in one place.`}
       />
 
-      <div className="orgx-kpis" role="group" aria-label="Live activity figures">
-        <div className="orgx-kpi">
-          <p className="orgx-kpi__label">Online now</p>
-          <p className="orgx-kpi__value">{onlineNow.length}</p>
-          <p className="orgx-kpi__sub">Showing presence</p>
+      <section className="orgx-panel" style={{ marginBottom: 20 }} aria-live="polite">
+        <div className="orgx-panel__head">
+          <h2 className="orgx-panel__title">Live snapshot</h2>
+          <span className="orgx-panel__meta">Refreshes every 15 seconds</span>
         </div>
-        <div className="orgx-kpi">
-          <p className="orgx-kpi__label">On rides</p>
-          <p className="orgx-kpi__value orgx-kpi__value--accent">
-            {onRide.length}
-          </p>
-          <p className="orgx-kpi__sub">Currently engaged</p>
+        <div className="orgx-panel__body">
+          <div className="orgx-statrow">
+            <span className="orgx-statrow__label">Online now</span>
+            <span className="orgx-statrow__value">{onlineNow.length}</span>
+          </div>
+          <div className="orgx-statrow">
+            <span className="orgx-statrow__label">On rides</span>
+            <span className="orgx-statrow__value">{onRide.length}</span>
+          </div>
+          <div className="orgx-statrow">
+            <span className="orgx-statrow__label">Members</span>
+            <span className="orgx-statrow__value">{drivers.length}</span>
+          </div>
+          <div className="orgx-statrow">
+            <span className="orgx-statrow__label">Offline</span>
+            <span className="orgx-statrow__value">
+              {drivers.length - onlineNow.length}
+            </span>
+          </div>
         </div>
-        <div className="orgx-kpi">
-          <p className="orgx-kpi__label">Members</p>
-          <p className="orgx-kpi__value">{drivers.length}</p>
-          <p className="orgx-kpi__sub">In group directory</p>
-        </div>
-        <div className="orgx-kpi">
-          <p className="orgx-kpi__label">Offline</p>
-          <p className="orgx-kpi__value">
-            {drivers.length - onlineNow.length}
-          </p>
-          <p className="orgx-kpi__sub">Not showing presence</p>
-        </div>
-      </div>
+      </section>
 
       <div className="orgx-grid">
         <div className="orgx-col">
@@ -569,12 +569,14 @@ function ManageOpsPanel({
 
   return (
     <div className="orgx-confirm" aria-live="polite">
-      <p style={{ marginTop: 0 }}>
-        <strong>
-          {kind === "pakyawan" ? "Pakyawan booking" : "Delivery"}
+      <p className="orgx-panel__title" style={{ marginBottom: 4 }}>
+        Manage {kind === "pakyawan" ? "booking" : "delivery"}
+      </p>
+      <p className="orgx-cell__secondary" style={{ margin: "0 0 4px" }}>
+        <strong className="orgx-cell__primary">
+          {row.driver_id ? nameOf(row.driver_id) : "Unassigned"}
         </strong>{" "}
-        · {row.driver_id ? nameOf(row.driver_id) : "Unassigned"} ·{" "}
-        {row.status}
+        · {row.status}
       </p>
       {canQuote ? (
         <label className="field-block">
@@ -594,7 +596,7 @@ function ManageOpsPanel({
       ) : null}
       {canCancel ? (
         <label className="field-block">
-          <span className="field-label">Cancellation reason</span>
+          <span className="field-label">Cancellation reason — required</span>
           <input
             className="input-field"
             type="text"
@@ -614,6 +616,13 @@ function ManageOpsPanel({
       {actionError ? (
         <p className="form-error-message" role="alert">
           {actionError}
+        </p>
+      ) : null}
+      {canCancel ? (
+        <p className="muted-copy" role="note">
+          <strong>Warning:</strong> cancelling notifies the workflow
+          immediately and cannot be undone here. Double-check before
+          confirming.
         </p>
       ) : null}
       <div className="orgx-confirm__actions">
