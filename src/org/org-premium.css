@@ -595,6 +595,53 @@
   }
 }
 
+/* ---- Overview hero: row composition above the stacked mobile hero ----
+   .orgx-hero is a single-row flex layout in which the seal and the action
+   block are rigid (flex: 0 0 auto) while .orgx-hero__body is the only
+   shrinkable item (min-width: 0). Without reflow, every horizontal deficit
+   collapses the identity copy into a narrow, word-wrapped column instead of
+   moving the primary action to its own line. Letting the row wrap keeps the
+   text column readable in normal flow. Scoped to >720px so the stacked
+   mobile hero above is untouched. */
+@media (min-width: 721px) {
+  .orgx-hero {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 28px;
+    padding: 26px 30px;
+  }
+
+  .orgx-hero__body {
+    flex: 1 1 360px;
+  }
+}
+
+@media (min-width: 1081px) {
+  /* The Overview console uses more of the canvas than the shared 1120px cap,
+     still bounded so ultra-wide displays stay composed. Only a content
+     column holding the Overview hero matches, so every other admin page
+     keeps the standard width. */
+  .orgx-content:has(> main > .orgx-hero) {
+    max-width: 1440px;
+  }
+
+  /* Single primary action, pinned to the masthead's right edge. */
+  .orgx-hero__actions {
+    margin-left: auto;
+  }
+
+  .orgx-hero__meta {
+    max-width: 62ch;
+  }
+
+  /* Overview workspace proportion only; Activity, Topic, Settings and Chat
+     keep the shared two-column grid. */
+  .orgx-hero ~ .orgx-grid {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 24px;
+  }
+}
+
 /* ---- Dashboard KPI rail: one instrument, not four cards ---- */
 .orgx-kpis--rail {
   background: transparent;
