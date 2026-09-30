@@ -155,8 +155,10 @@ function DashboardBody({ org }: { org: OrgRecord }) {
           />
         </div>
         <div className="orgx-hero__body">
-          <p className="orgx-hero__eyebrow">Organization console</p>
-          <h1 className="orgx-hero__name">{org.name}</h1>
+          <p className="orgx-hero__eyebrow">
+            {org.name} · Operations console
+          </p>
+          <h1 className="orgx-hero__title">Overview</h1>
           <p className="orgx-hero__meta">
             {org.description || "TODA operations console · Bislig City"}
           </p>
@@ -175,14 +177,18 @@ function DashboardBody({ org }: { org: OrgRecord }) {
         </div>
       </section>
 
-      <div className="orgx-kpis" role="group" aria-label="Current group figures">
+      <div
+        className="orgx-kpis orgx-kpis--rail"
+        role="group"
+        aria-label="Current group figures"
+      >
         <div className="orgx-kpi">
-          <p className="orgx-kpi__label">Drivers</p>
+          <p className="orgx-kpi__label">Total Drivers</p>
           <p className="orgx-kpi__value">{drivers.length}</p>
           <p className="orgx-kpi__sub">Group members</p>
         </div>
         <div className="orgx-kpi">
-          <p className="orgx-kpi__label">Online now</p>
+          <p className="orgx-kpi__label">Online</p>
           <p className="orgx-kpi__value">{online.length}</p>
           <p className="orgx-kpi__sub">Showing presence</p>
         </div>
@@ -194,7 +200,7 @@ function DashboardBody({ org }: { org: OrgRecord }) {
           <p className="orgx-kpi__sub">Ready for dispatch</p>
         </div>
         <div className="orgx-kpi">
-          <p className="orgx-kpi__label">On a ride</p>
+          <p className="orgx-kpi__label">On Ride</p>
           <p className="orgx-kpi__value">{onRide.length}</p>
           <p className="orgx-kpi__sub">Currently engaged</p>
         </div>
@@ -253,10 +259,13 @@ function DashboardBody({ org }: { org: OrgRecord }) {
 
           <section className="orgx-panel">
             <div className="orgx-panel__head">
-              <h2 className="orgx-panel__title">On active rides</h2>
+              <h2 className="orgx-panel__title">Current rides</h2>
               <span className="orgx-panel__meta">{onRide.length}</span>
             </div>
             <div className="orgx-panel__body">
+              <p className="orgx-panel__lede">
+                Member drivers currently engaged on a trip.
+              </p>
               {onRide.length === 0 ? (
                 <div className="orgx-empty">
                   <p className="orgx-empty__title">No drivers on rides</p>
@@ -266,7 +275,7 @@ function DashboardBody({ org }: { org: OrgRecord }) {
                 </div>
               ) : (
                 <div className="orgx-tablewrap">
-                  <table className="orgx-table">
+                  <table className="orgx-table orgx-table--roomy">
                     <thead>
                       <tr>
                         <th scope="col">Driver</th>
@@ -337,11 +346,6 @@ function DashboardBody({ org }: { org: OrgRecord }) {
                 {drivers.length} member{drivers.length === 1 ? "" : "s"} ·{" "}
                 {available.length} ready for dispatch
               </p>
-              {org.description ? (
-                <p className="orgx-note" style={{ marginTop: 8 }}>
-                  {org.description}
-                </p>
-              ) : null}
               <p className="orgx-note">
                 Counts reflect {org.name} members only, based on live driver
                 presence.

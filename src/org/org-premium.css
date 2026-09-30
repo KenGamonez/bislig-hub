@@ -479,11 +479,11 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 22px;
   background: var(--orgx-side);
   color: #fff;
   border-radius: var(--radius-md);
-  padding: 22px 24px;
+  padding: 24px 26px;
   margin: 6px 0 20px;
   box-shadow: var(--shadow-xs);
 }
@@ -525,10 +525,10 @@
   margin: 0 0 6px;
 }
 
-.orgx-hero__name {
-  font-size: var(--text-2xl);
+.orgx-hero__title {
+  font-size: 34px;
   line-height: var(--leading-tight);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   font-weight: 750;
   color: #fff;
   margin: 0;
@@ -580,8 +580,8 @@
     height: 64px;
   }
 
-  .orgx-hero__name {
-    font-size: 20px;
+  .orgx-hero__title {
+    font-size: 24px;
   }
 
   .orgx-hero__actions {
@@ -591,6 +591,42 @@
   .orgx-hero__actions .btn {
     flex: 1 1 auto;
   }
+}
+
+/* ---- Dashboard KPI rail: one instrument, not four cards ---- */
+.orgx-kpis--rail {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--orgx-line);
+  border-bottom: 1px solid var(--orgx-line);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.orgx-kpis--rail .orgx-kpi {
+  padding: 16px 20px 14px;
+}
+
+.orgx-kpis--rail .orgx-kpi__value {
+  font-size: 34px;
+}
+
+.orgx-kpis--rail .orgx-kpi__sub {
+  font-size: 12px;
+}
+
+/* ---- Panel lede (section supporting line) ---- */
+.orgx-panel__lede {
+  margin: 0 0 4px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--orgx-ink-3);
+}
+
+/* ---- Roomy tables (primary workspaces) ---- */
+table.orgx-table--roomy td {
+  padding-top: 15px;
+  padding-bottom: 15px;
 }
 
 /* ---- Attention rows (pending applications) ---- */
