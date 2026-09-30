@@ -27,6 +27,7 @@
 
 /* ---- App frame ---- */
 .orgx-shell {
+  min-height: 100vh;
   min-height: 100dvh;
   background: var(--orgx-paper);
   color: var(--orgx-ink-1);
@@ -168,22 +169,6 @@
   height: 18px;
 }
 
-.orgx-nav__count {
-  margin-left: auto;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--orgx-side-muted);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-pill);
-  padding: 2px 8px;
-}
-
-.orgx-nav__item.is-active .orgx-nav__count {
-  color: #fff;
-  background: rgba(255, 138, 0, 0.22);
-}
-
 .orgx-side__foot {
   border-top: 1px solid var(--orgx-side-line);
   padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
@@ -315,26 +300,6 @@
 .orgx-topbar__crumb strong {
   color: var(--orgx-ink-1);
   font-weight: 650;
-}
-
-.orgx-live {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--orgx-ink-2);
-  white-space: nowrap;
-}
-
-.orgx-live__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--orgx-good);
-  box-shadow: 0 0 0 4px rgba(13, 166, 116, 0.14);
 }
 
 .orgx-topbar__logout {
@@ -546,9 +511,7 @@
   padding: 14px 20px 18px;
 }
 
-.orgx-panel__body--flush {
-  padding: 6px 8px 8px;
-}
+
 
 .orgx-note {
   font-size: 12.5px;
@@ -613,7 +576,7 @@
 }
 
 .orgx-badge--busy {
-  color: #b25e00;
+  color: #9a5200;
   background: var(--brand-orange-soft-strong);
   border-color: rgba(255, 138, 0, 0.32);
 }
@@ -734,10 +697,7 @@ table.orgx-table tbody tr:last-child td {
   text-decoration-color: var(--accent-hover);
 }
 
-.orgx-linkbtn--danger:hover {
-  color: var(--orgx-bad);
-  text-decoration-color: var(--orgx-bad);
-}
+
 
 /* ---- Confirm blocks ---- */
 .orgx-confirm {
@@ -757,6 +717,66 @@ table.orgx-table tbody tr:last-child td {
 
 .orgx-confirm__actions {
   display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---- Whole-row links (forum topics) ---- */
+table.orgx-table tr:has(.orgx-rowlink) {
+  position: relative;
+}
+
+.orgx-rowlink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.orgx-rowlink:focus-visible {
+  outline: 2px solid var(--brand-orange);
+  outline-offset: -2px;
+}
+
+/* ---- Confirm modal ---- */
+.orgx-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(7, 16, 18, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.orgx-modal__card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--orgx-card);
+  border: 1px solid var(--orgx-line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+  padding: 22px;
+}
+
+.orgx-modal__title {
+  font-size: var(--text-lg);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  color: var(--orgx-ink-1);
+}
+
+.orgx-modal__body {
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--orgx-ink-2);
+  margin: 0 0 18px;
+}
+
+.orgx-modal__actions {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -788,9 +808,10 @@ table.orgx-table tbody tr:last-child td {
 
 /* ---- Auth ---- */
 .orgx-auth {
+  min-height: 100vh;
   min-height: 100dvh;
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
   background: var(--orgx-paper);
   font-family: var(--font-sans);
 }
@@ -937,10 +958,6 @@ table.orgx-table tbody tr:last-child td {
     margin-left: auto;
   }
 
-  .orgx-live {
-    display: none;
-  }
-
   .orgx-mobiletabs {
     display: flex;
   }
@@ -1011,6 +1028,17 @@ table.orgx-table tbody tr:last-child td {
   table.orgx-table td {
     border-bottom: 0;
     padding: 3px 12px;
+  }
+
+  table.orgx-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orgx-ink-3);
+    margin-bottom: 3px;
   }
 
   table.orgx-table td:first-child {

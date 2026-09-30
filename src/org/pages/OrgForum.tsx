@@ -217,9 +217,10 @@ function ForumBody({ org }: { org: OrgRecord }) {
                     <tbody>
                       {topics.map((topic) => (
                         <tr key={topic.id}>
-                          <td>
+                          <td data-label="Topic">
                             <Link
                               to={`/org/${org.slug}/forum/${topic.id}`}
+                              className="orgx-rowlink"
                               style={{ textDecoration: "none", color: "inherit" }}
                             >
                               <span className="orgx-cell__primary">
@@ -239,12 +240,12 @@ function ForumBody({ org }: { org: OrgRecord }) {
                               ) : null}
                             </p>
                           </td>
-                          <td>
+                          <td data-label="Replies">
                             <span className="orgx-cell__primary">
                               {replyCounts[topic.id] ?? 0}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Last activity">
                             <span className="orgx-cell__secondary">
                               {lastActivity[topic.id]
                                 ? timeAgo(lastActivity[topic.id])

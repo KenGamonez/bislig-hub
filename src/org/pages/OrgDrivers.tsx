@@ -227,28 +227,28 @@ function DriversBody({ org }: { org: OrgRecord }) {
             {results.length > 0 ? (
               <div className="orgx-tablewrap">
                 <table className="orgx-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Driver</th>
-                      <th scope="col">Detail</th>
-                      <th scope="col">
-                        <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {results.map((result) => {
-                      const alreadyMember = memberIds.has(result.id);
-                      return (
-                        <tr key={result.id}>
-                          <td>
-                            <span className="orgx-cell__primary">{result.full_name}</span>
-                            <p className="orgx-cell__secondary">
-                              {result.username ? `@${result.username}` : ""}
-                            </p>
-                          </td>
-                          <td>
-                            <span className="orgx-cell__secondary">
+                    <thead>
+                      <tr>
+                        <th scope="col">Driver</th>
+                        <th scope="col">Details</th>
+                        <th scope="col">
+                          <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.map((result) => {
+                        const alreadyMember = memberIds.has(result.id);
+                        return (
+                          <tr key={result.id}>
+                            <td data-label="Driver">
+                              <span className="orgx-cell__primary">{result.full_name}</span>
+                              <p className="orgx-cell__secondary">
+                                {result.username ? `@${result.username}` : ""}
+                              </p>
+                            </td>
+                            <td data-label="Details">
+                              <span className="orgx-cell__secondary">
                               {[result.vehicle_type, result.status]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -360,7 +360,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                       .join(" · ");
                     return (
                       <tr key={driver.id}>
-                        <td>
+                        <td data-label="Driver">
                           <span className="orgx-cell__primary">{driver.full_name}</span>
                           <p className="orgx-cell__secondary">
                             {[driver.username ? `@${driver.username}` : "", driver.plate_number]
@@ -368,15 +368,15 @@ function DriversBody({ org }: { org: OrgRecord }) {
                               .join(" · ")}
                           </p>
                         </td>
-                        <td>
+                        <td data-label="Vehicle">
                           <span className="orgx-cell__secondary">{vehicle || "—"}</span>
                         </td>
-                        <td>
+                        <td data-label="Status">
                           <span className={`orgx-badge orgx-badge--${status.tone}`}>
                             {status.label}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Last seen">
                           <span className="orgx-cell__secondary">
                             {row?.updated_at
                               ? timeAgo(new Date(row.updated_at).getTime())

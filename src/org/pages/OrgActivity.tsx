@@ -158,17 +158,17 @@ function ActivityBody({ org }: { org: OrgRecord }) {
                     <tbody>
                       {onlineNow.map((row) => (
                         <tr key={row.driver_id}>
-                          <td>
+                          <td data-label="Driver">
                             <span className="orgx-cell__primary">
                               {nameOf(row.driver_id)}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Last seen">
                             <span className="orgx-cell__secondary">
                               {timeAgo(new Date(row.updated_at).getTime())}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <span
                               className={`orgx-badge ${
                                 row.current_ride_id
@@ -215,12 +215,12 @@ function ActivityBody({ org }: { org: OrgRecord }) {
                     <tbody>
                       {onRide.map((row) => (
                         <tr key={row.driver_id}>
-                          <td>
+                          <td data-label="Driver">
                             <span className="orgx-cell__primary">
                               {nameOf(row.driver_id)}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Status">
                             <span className="orgx-badge orgx-badge--busy">
                               On a ride
                             </span>

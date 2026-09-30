@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
+import { OrgConfirm } from "../OrgConfirm";
 import {
   createOrgForumPost,
   deleteOrgForumPost,
@@ -46,6 +47,9 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
   const [editBody, setEditBody] = useState("");
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [editPostBody, setEditPostBody] = useState("");
+  const [pendingDeleteTopic, setPendingDeleteTopic] = useState(false);
+  const [pendingDeletePost, setPendingDeletePost] =
+    useState<OrgForumPost | null>(null);
 
   const isAdmin = session.status === "active";
   const myAuthId =
@@ -163,13 +167,6 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
 
   const handleDeleteTopic = async () => {
     if (!topic) return;
-    if (
-      !window.confirm(
-        `Delete "${topic.title}" and all its replies? This cannot be undone.`
-      )
-    ) {
-      return;
-    }
 
     setSaving(true);
     try {
@@ -209,13 +206,10 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
   };
 
   const handleDeletePost = async (post: OrgForumPost) => {
-    if (!window.confirm("Delete this reply? This cannot be undone.")) {
-      return;
-    }
-
     setSaving(true);
     try {
       await deleteOrgForumPost(post.id);
+      setPendingDeletePost(null);
       await load();
     } catch (deleteError) {
       console.error("Unable to delete reply:", deleteError);
@@ -391,7 +385,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                         type="button"
                         className="btn btn--ghost btn--compact"
                         disabled={saving}
-                        onClick={() => void handleDeleteTopic()}
+                        onClick={() => setPendingDeleteTopic(true)}
                       >
                         Delete
                       </button>
@@ -488,7 +482,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                                         type="button"
                                         className="btn btn--ghost btn--compact"
                                         disabled={saving}
-                                        onClick={() => void handleDeletePost(post)}
+                                        onClick={() => setPendingDeletePost(post)}
                                       >
                                         Delete
                                       </button>
@@ -506,6 +500,32 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
               )}
             </div>
           </section>
+          {pendingDeleteTopic && topic ? (
+            <OrgConfirm
+              title="Delete topic"
+              body={`Delete "${topic.title}" and all its replies? This cannot be undone.`}
+              confirmLabel="Delete"
+              busyLabel="Deleting…"
+              busy={saving}
+              onConfirm={() => void handleDeleteTopic()}
+              onCancel={() => {
+                if (!saving) setPendingDeleteTopic(false);
+              }}
+            />
+          ) : null}
+          {pendingDeletePost ? (
+            <OrgConfirm
+              title="Delete reply"
+              body="Delete this reply? This cannot be undone."
+              confirmLabel="Delete"
+              busyLabel="Deleting…"
+              busy={saving}
+              onConfirm={() => void handleDeletePost(pendingDeletePost)}
+              onCancel={() => {
+                if (!saving) setPendingDeletePost(null);
+              }}
+            />
+          ) : null}
         </div>
 
         <div className="orgx-col">

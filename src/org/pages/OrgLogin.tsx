@@ -39,7 +39,7 @@ export function OrgLogin() {
     if (!isEmail) {
       try {
         resolvedEmail = await resolveDriverCredentials(identifierTrimmed);
-      } catch (resolveError) {
+      } catch {
         // Resolution failed for a username (e.g. unknown driver).
         // Do not fall back to using the username as email; Supabase
         // signInWithPassword requires a valid auth email.

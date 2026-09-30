@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
+import { OrgConfirm } from "../OrgConfirm";
 import {
   createOrgAnnouncement,
   deleteOrgAnnouncement,
@@ -15,6 +16,14 @@ function formatDate(value: string | null): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString();
+}
+
+function excerpt(body: string, maxLength = 90): string {
+  const text = body.trim().replace(/\s+/g, " ");
+  if (text.length <= maxLength) return text;
+  const cut = text.slice(0, maxLength);
+  const boundary = cut.lastIndexOf(" ");
+  return `${(boundary > 0 ? cut.slice(0, boundary) : cut).trimEnd()}…`;
 }
 
 const emptyDraft = { title: "", body: "", image_url: "" };
@@ -38,6 +47,9 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
+  const [pendingDelete, setPendingDelete] = useState<OrgAnnouncement | null>(
+    null
+  );
 
   const load = useCallback(async () => {
     try {
@@ -137,18 +149,13 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
   };
 
   const handleDelete = async (item: OrgAnnouncement) => {
-    if (
-      !window.confirm(`Delete "${item.title}"? This cannot be undone.`)
-    ) {
-      return;
-    }
-
     setSaving(true);
     setFormError("");
 
     try {
       await deleteOrgAnnouncement(item.id);
       if (editingId === item.id) cancelEdit();
+      setPendingDelete(null);
       await load();
     } catch (deleteError) {
       console.error("Unable to delete announcement:", deleteError);
@@ -329,15 +336,13 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                     <tbody>
                       {items.map((item) => (
                         <tr key={item.id}>
-                          <td>
+                          <td data-label="Announcement">
                             <span className="orgx-cell__primary">{item.title}</span>
                             <p className="orgx-cell__secondary">
-                              {item.body.length > 90
-                                ? `${item.body.slice(0, 90)}…`
-                                : item.body}
+                              {excerpt(item.body)}
                             </p>
                           </td>
-                          <td>
+                          <td data-label="Visibility">
                             <span
                               className={`orgx-badge ${
                                 item.published_at
@@ -348,10 +353,10 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                               {item.published_at ? "Published" : "Draft"}
                             </span>
                           </td>
-                          <td>
+                          <td data-label="Date">
                             <span className="orgx-cell__secondary">
                               {item.published_at
-                                ? formatDate(item.published_at)
+                                ? `Published ${formatDate(item.published_at)}`
                                 : `Created ${formatDate(item.created_at)}`}
                             </span>
                           </td>
@@ -378,7 +383,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                               type="button"
                               className="btn btn--ghost btn--compact"
                               disabled={saving}
-                              onClick={() => void handleDelete(item)}
+                              onClick={() => setPendingDelete(item)}
                             >
                               Delete
                             </button>
@@ -391,6 +396,19 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
               )}
             </div>
           </section>
+          {pendingDelete ? (
+            <OrgConfirm
+              title="Delete announcement"
+              body={`Delete "${pendingDelete.title}"? This cannot be undone.`}
+              confirmLabel="Delete"
+              busyLabel="Deleting…"
+              busy={saving}
+              onConfirm={() => void handleDelete(pendingDelete)}
+              onCancel={() => {
+                if (!saving) setPendingDelete(null);
+              }}
+            />
+          ) : null}
         </>
       )}
     </>

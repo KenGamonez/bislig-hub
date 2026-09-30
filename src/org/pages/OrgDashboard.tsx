@@ -321,17 +321,19 @@ function DashboardBody({ org }: { org: OrgRecord }) {
               </Link>
             </div>
             <div className="orgx-panel__body">
-              <div className="orgx-statrow">
-                <span className="orgx-statrow__label">Members</span>
-                <span className="orgx-statrow__value">{drivers.length}</span>
-              </div>
-              <div className="orgx-statrow">
-                <span className="orgx-statrow__label">Online</span>
-                <span className="orgx-statrow__value">{online.length}</span>
-              </div>
+              <p style={{ margin: "0 0 4px", fontSize: 15, lineHeight: 1.6 }}>
+                {drivers.length} member{drivers.length === 1 ? "" : "s"} ·{" "}
+                {available.length} ready for dispatch
+              </p>
               {org.description ? (
-                <p className="orgx-note">{org.description}</p>
+                <p className="orgx-note" style={{ marginTop: 8 }}>
+                  {org.description}
+                </p>
               ) : null}
+              <p className="orgx-note">
+                Counts reflect {org.name} members only, based on live driver
+                presence.
+              </p>
             </div>
           </section>
         </div>
