@@ -89,45 +89,62 @@ function ForumBody({ org }: { org: OrgRecord }) {
   };
 
   return (
-    <div className="container">
-      <section className="driver-card" aria-live="polite">
-        <p className="section-label">Group forum</p>
-        <h3>Forum</h3>
-        {loading ? (
-          <div className="loading-block" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <p>Loading topics…</p>
-          </div>
-        ) : error ? (
-          <>
-            <p className="form-error-message" role="alert">
-              {error}
-            </p>
+    <>
+      <div className="orgx-pagehead">
+        <div>
+          <p className="orgx-eyebrow">{org.name} · Engagement</p>
+          <h1 className="orgx-title">Forum</h1>
+          <p className="orgx-sub">
+            {topics.length} topic{topics.length === 1 ? "" : "s"} · group
+            discussion for {org.name}.
+          </p>
+        </div>
+        <div className="orgx-pagehead__actions">
+          {!loading && !error && !showForm ? (
             <button
               type="button"
-              className="btn btn--ghost btn--block"
-              onClick={() => void load()}
+              className="btn btn--primary btn--compact"
+              onClick={() => {
+                setShowForm(true);
+                setFormError("");
+              }}
             >
-              Retry
+              New topic
             </button>
-          </>
-        ) : (
-          <>
-            {!showForm ? (
+          ) : null}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="loading-block" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
+          <p>Loading topics…</p>
+        </div>
+      ) : error ? (
+        <div className="orgx-panel">
+          <div className="orgx-panel__body">
+            <div className="orgx-error">
+              <p className="form-error-message" role="alert">
+                {error}
+              </p>
               <button
                 type="button"
-                className="btn btn--primary btn--block"
-                onClick={() => {
-                  setShowForm(true);
-                  setFormError("");
-                }}
-                style={{ marginTop: 8 }}
+                className="btn btn--ghost"
+                onClick={() => void load()}
               >
-                New Topic
+                Retry
               </button>
-            ) : (
-              <div style={{ marginTop: 12 }}>
-                <p className="section-label">New topic</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {showForm ? (
+            <section className="orgx-panel" style={{ marginBottom: 20 }}>
+              <div className="orgx-panel__head">
+                <h2 className="orgx-panel__title">New topic</h2>
+              </div>
+              <div className="orgx-panel__body">
                 <label className="field-block">
                   <span className="field-label">Title</span>
                   <input
@@ -155,7 +172,7 @@ function ForumBody({ org }: { org: OrgRecord }) {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className="btn btn--primary btn--compact"
                     disabled={saving}
                     onClick={() => void handleCreate()}
                   >
@@ -163,7 +180,7 @@ function ForumBody({ org }: { org: OrgRecord }) {
                   </button>
                   <button
                     type="button"
-                    className="btn btn--ghost"
+                    className="btn btn--ghost btn--compact"
                     disabled={saving}
                     onClick={() => setShowForm(false)}
                   >
@@ -171,58 +188,79 @@ function ForumBody({ org }: { org: OrgRecord }) {
                   </button>
                 </div>
               </div>
-            )}
+            </section>
+          ) : null}
 
-            {topics.length === 0 ? (
-              <p className="muted-copy" style={{ marginTop: 12 }}>
-                No topics yet. Start the first discussion above.
-              </p>
-            ) : (
-              <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0 }}>
-                {topics.map((topic) => (
-                  <li
-                    key={topic.id}
-                    style={{
-                      padding: "10px 0",
-                      borderBottom: "1px solid var(--border)",
-                    }}
-                  >
-                    <Link
-                      to={`/org/${org.slug}/forum/${topic.id}`}
-                      style={{ textDecoration: "none", color: "inherit" }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 8,
-                          alignItems: "baseline",
-                        }}
-                      >
-                        <strong>{topic.title}</strong>
-                        {topic.is_pinned ? (
-                          <span className="muted-copy">· Pinned</span>
-                        ) : null}
-                        {topic.is_closed ? (
-                          <span className="muted-copy">· Closed</span>
-                        ) : null}
-                      </div>
-                      <p className="muted-copy" style={{ margin: "2px 0 0" }}>
-                        {replyCounts[topic.id] ?? 0}{" "}
-                        {(replyCounts[topic.id] ?? 0) === 1
-                          ? "reply"
-                          : "replies"}
-                        {lastActivity[topic.id]
-                          ? ` · active ${timeAgo(lastActivity[topic.id])}`
-                          : ""}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </section>
-    </div>
+          <section className="orgx-panel" aria-live="polite">
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">Topics</h2>
+              <span className="orgx-panel__meta">{topics.length}</span>
+            </div>
+            <div className="orgx-panel__body">
+              {topics.length === 0 ? (
+                <div className="orgx-empty">
+                  <p className="orgx-empty__title">No topics yet</p>
+                  <p className="orgx-empty__text">
+                    Start the first discussion with “New topic” above.
+                  </p>
+                </div>
+              ) : (
+                <div className="orgx-tablewrap">
+                  <table className="orgx-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Topic</th>
+                        <th scope="col">Replies</th>
+                        <th scope="col">Last activity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topics.map((topic) => (
+                        <tr key={topic.id}>
+                          <td>
+                            <Link
+                              to={`/org/${org.slug}/forum/${topic.id}`}
+                              style={{ textDecoration: "none", color: "inherit" }}
+                            >
+                              <span className="orgx-cell__primary">
+                                {topic.title}
+                              </span>
+                            </Link>
+                            <p className="orgx-cell__secondary">
+                              {topic.is_pinned ? (
+                                <span className="orgx-badge orgx-badge--flag">
+                                  Pinned
+                                </span>
+                              ) : null}
+                              {topic.is_closed ? (
+                                <span className="orgx-badge orgx-badge--draft">
+                                  Closed
+                                </span>
+                              ) : null}
+                            </p>
+                          </td>
+                          <td>
+                            <span className="orgx-cell__primary">
+                              {replyCounts[topic.id] ?? 0}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="orgx-cell__secondary">
+                              {lastActivity[topic.id]
+                                ? timeAgo(lastActivity[topic.id])
+                                : "—"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+    </>
   );
 }

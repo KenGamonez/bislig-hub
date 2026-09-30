@@ -158,45 +158,64 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
     }
   };
 
-  return (
-    <div className="container">
-      <section className="driver-card" aria-live="polite">
-        <p className="section-label">Group announcements</p>
-        <h3>Announcements</h3>
-        {loading ? (
-          <div className="loading-block" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <p>Loading announcements…</p>
-          </div>
-        ) : error ? (
-          <>
-            <p className="form-error-message" role="alert">
-              {error}
-            </p>
-            <button
-              type="button"
-              className="btn btn--ghost btn--block"
-              onClick={() => void load()}
-            >
-              Retry
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              type="button"
-              className="btn btn--primary btn--block"
-              onClick={startCreate}
-              style={{ marginTop: 8 }}
-            >
-              Create announcement
-            </button>
+  const published = items.filter((item) => item.published_at).length;
 
-            {showForm && (
-              <div style={{ marginTop: 12 }}>
-                <p className="section-label">
+  return (
+    <>
+      <div className="orgx-pagehead">
+        <div>
+          <p className="orgx-eyebrow">{org.name} · Engagement</p>
+          <h1 className="orgx-title">Announcements</h1>
+          <p className="orgx-sub">
+            {items.length} total · {published} published ·{" "}
+            {items.length - published} drafts.
+          </p>
+        </div>
+        <div className="orgx-pagehead__actions">
+          {!loading && !error && !showForm ? (
+            <button
+              type="button"
+              className="btn btn--primary btn--compact"
+              onClick={startCreate}
+            >
+              New announcement
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="loading-block" aria-live="polite">
+          <span className="spinner" aria-hidden="true" />
+          <p>Loading announcements…</p>
+        </div>
+      ) : error ? (
+        <div className="orgx-panel">
+          <div className="orgx-panel__body">
+            <div className="orgx-error">
+              <p className="form-error-message" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => void load()}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {showForm ? (
+            <section className="orgx-panel" style={{ marginBottom: 20 }}>
+              <div className="orgx-panel__head">
+                <h2 className="orgx-panel__title">
                   {editingId ? "Edit announcement" : "New announcement"}
-                </p>
+                </h2>
+              </div>
+              <div className="orgx-panel__body">
                 <label className="field-block">
                   <span className="field-label">Title</span>
                   <input
@@ -249,7 +268,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className="btn btn--primary btn--compact"
                     disabled={saving}
                     onClick={() => void handleSave(true)}
                   >
@@ -257,7 +276,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                   </button>
                   <button
                     type="button"
-                    className="btn btn--ghost"
+                    className="btn btn--ghost btn--compact"
                     disabled={saving}
                     onClick={() => void handleSave(false)}
                   >
@@ -265,7 +284,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                   </button>
                   <button
                     type="button"
-                    className="btn btn--ghost"
+                    className="btn btn--ghost btn--compact"
                     disabled={saving}
                     onClick={cancelEdit}
                   >
@@ -273,78 +292,107 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                   </button>
                 </div>
               </div>
-            )}
+            </section>
+          ) : null}
 
-            {items.length === 0 ? (
-              <p className="muted-copy" style={{ marginTop: 12 }}>
-                No announcements yet. Create the first one above.
-              </p>
-            ) : (
-              <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0 }}>
-                {items.map((item) => (
-                  <li
-                    key={item.id}
-                    style={{
-                      padding: "10px 0",
-                      borderBottom: "1px solid var(--border)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: 8,
-                        alignItems: "baseline",
-                      }}
-                    >
-                      <strong>{item.title}</strong>
-                      <span className="muted-copy">
-                        {item.published_at ? "Published" : "Draft"}
-                      </span>
-                    </div>
-                    <p className="muted-copy" style={{ margin: "2px 0 0" }}>
-                      {item.published_at
-                        ? formatDate(item.published_at)
-                        : `Created ${formatDate(item.created_at)}`}
-                    </p>
-                    <p style={{ margin: "6px 0" }}>{item.body}</p>
-                    <div
-                      style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                    >
-                      <button
-                        type="button"
-                        className="btn btn--ghost btn--compact"
-                        disabled={saving}
-                        onClick={() => startEdit(item)}
-                      >
-                        Edit
-                      </button>
-                      {item.published_at ? (
-                        <button
-                          type="button"
-                          className="btn btn--ghost btn--compact"
-                          disabled={saving}
-                          onClick={() => void handleUnpublish(item)}
-                        >
-                          Unpublish
-                        </button>
-                      ) : null}
-                      <button
-                        type="button"
-                        className="btn btn--ghost btn--compact"
-                        disabled={saving}
-                        onClick={() => void handleDelete(item)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </section>
-    </div>
+          <section className="orgx-panel" aria-live="polite">
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">All announcements</h2>
+              <span className="orgx-panel__meta">{items.length}</span>
+            </div>
+            <div className="orgx-panel__body">
+              {formError && !showForm ? (
+                <p className="form-error-message" role="alert">
+                  {formError}
+                </p>
+              ) : null}
+              {items.length === 0 ? (
+                <div className="orgx-empty">
+                  <p className="orgx-empty__title">No announcements yet</p>
+                  <p className="orgx-empty__text">
+                    Create the first one with “New announcement” above.
+                  </p>
+                </div>
+              ) : (
+                <div className="orgx-tablewrap">
+                  <table className="orgx-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Announcement</th>
+                        <th scope="col">Visibility</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">
+                          <span className="orgx-cell__actions" style={{ display: "block" }}>Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map((item) => (
+                        <tr key={item.id}>
+                          <td>
+                            <span className="orgx-cell__primary">{item.title}</span>
+                            <p className="orgx-cell__secondary">
+                              {item.body.length > 90
+                                ? `${item.body.slice(0, 90)}…`
+                                : item.body}
+                            </p>
+                          </td>
+                          <td>
+                            <span
+                              className={`orgx-badge ${
+                                item.published_at
+                                  ? "orgx-badge--pub"
+                                  : "orgx-badge--draft"
+                              }`}
+                            >
+                              {item.published_at ? "Published" : "Draft"}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="orgx-cell__secondary">
+                              {item.published_at
+                                ? formatDate(item.published_at)
+                                : `Created ${formatDate(item.created_at)}`}
+                            </span>
+                          </td>
+                          <td className="orgx-cell__actions">
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--compact"
+                              disabled={saving}
+                              onClick={() => startEdit(item)}
+                            >
+                              Edit
+                            </button>{" "}
+                            {item.published_at ? (
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--compact"
+                                disabled={saving}
+                                onClick={() => void handleUnpublish(item)}
+                              >
+                                Unpublish
+                              </button>
+                            ) : null}{" "}
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--compact"
+                              disabled={saving}
+                              onClick={() => void handleDelete(item)}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+    </>
   );
 }

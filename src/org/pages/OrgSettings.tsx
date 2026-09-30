@@ -80,73 +80,124 @@ export function OrgSettings() {
   }, [slug]);
 
   if (loading) {
-    return <div className="container">Loading organization settings…</div>;
+    return (
+      <div className="loading-block" aria-live="polite">
+        <span className="spinner" aria-hidden="true" />
+        <p>Loading organization settings…</p>
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="container"><p className="form-error-message" role="alert">{error}</p></div>;
+  if (error && !organization) {
+    return (
+      <div className="orgx-panel">
+        <div className="orgx-panel__body">
+          <div className="orgx-error">
+            <p className="form-error-message" role="alert">{error}</p>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => void loadOrganization()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!organization) {
-    return <div className="container">Organization not found.</div>;
+    return (
+      <div className="orgx-panel">
+        <div className="orgx-panel__body">
+          <div className="orgx-empty">
+            <p className="orgx-empty__title">Organization not found</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container">
-      <h3>{organization.name} — Organization Settings</h3>
-
-      {error ? (
-        <p className="form-error-message" role="alert">{error}</p>
-      ) : null}
-
-      {saving ? (
-        <p>Saving…</p>
-      ) : null}
-
-      <form onSubmit={(event) => void handleSave(event)}>
+    <>
+      <div className="orgx-pagehead">
         <div>
-          <label>Name
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              maxLength={128}
-            />
-          </label>
+          <p className="orgx-eyebrow">{organization.name} · Organization</p>
+          <h1 className="orgx-title">Settings</h1>
+          <p className="orgx-sub">
+            Public identity for {organization.name} as shown to members.
+          </p>
         </div>
+      </div>
 
-        <div>
-          <label>Description
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength={512}
-            />
-          </label>
-        </div>
+      <div className="orgx-grid orgx-grid--single">
+        <section className="orgx-panel">
+          <div className="orgx-panel__head">
+            <h2 className="orgx-panel__title">Profile</h2>
+          </div>
+          <div className="orgx-panel__body">
+            {error ? (
+              <p className="form-error-message" role="alert">{error}</p>
+            ) : null}
 
-        <div>
-          <label>Logo URL
-            <input
-              value={logoUrl}
-              onChange={(event) => setLogoUrl(event.target.value)}
-              placeholder="https://example.com/logo.png"
-              disabled
-            />
-            <span className="muted-copy">Read-only (media management not yet implemented)</span>
-          </label>
-        </div>
+            {saving ? (
+              <div className="loading-block" aria-live="polite">
+                <span className="spinner" aria-hidden="true" />
+                <p>Saving…</p>
+              </div>
+            ) : null}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
-          <button type="submit" disabled={saving}>{saving ? "Saving…" : "Save Changes"}</button>
-          <button
-            type="button"
-            className="btn btn--ghost"
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
+            <form onSubmit={(event) => void handleSave(event)}>
+              <label className="field-block">
+                <span className="field-label">Organization name</span>
+                <input
+                  className="input-field"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={128}
+                />
+              </label>
+
+              <label className="field-block">
+                <span className="field-label">Description</span>
+                <textarea
+                  className="input-field"
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  maxLength={512}
+                  rows={4}
+                />
+              </label>
+
+              <label className="field-block">
+                <span className="field-label">Logo URL</span>
+                <input
+                  className="input-field"
+                  value={logoUrl}
+                  onChange={(event) => setLogoUrl(event.target.value)}
+                  placeholder="https://example.com/logo.png"
+                  disabled
+                />
+                <span className="muted-copy">Read-only (media management not yet implemented)</span>
+              </label>
+
+              <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+                <button type="submit" className="btn btn--primary btn--compact" disabled={saving}>
+                  {saving ? "Saving…" : "Save changes"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--compact"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }

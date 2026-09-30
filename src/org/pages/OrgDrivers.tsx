@@ -15,14 +15,19 @@ import {
 } from "../orgData";
 import { timeAgo } from "../../notifications/notifications";
 
-function presenceLabel(presence: MemberPresence | undefined): string {
+type PresenceTone = "online" | "busy" | "off";
+
+function presenceOf(presence: MemberPresence | undefined): {
+  label: string;
+  tone: PresenceTone;
+} {
   if (!presence || !presence.is_online) {
-    return "Offline";
+    return { label: "Offline", tone: "off" };
   }
   if (presence.current_ride_id) {
-    return "On a ride";
+    return { label: "On a ride", tone: "busy" };
   }
-  return "Online";
+  return { label: "Online", tone: "online" };
 }
 
 export function OrgDrivers() {
@@ -151,62 +156,50 @@ function DriversBody({ org }: { org: OrgRecord }) {
   };
 
   return (
-    <div className="container">
-      <section className="driver-card" aria-live="polite">
-        <p className="section-label">Group directory</p>
-        <h3>
-          {drivers.length} driver{drivers.length === 1 ? "" : "s"}
-        </h3>
-        {notice ? (
-          <p className="muted-copy" role="status">
-            {notice}
+    <>
+      <div className="orgx-pagehead">
+        <div>
+          <p className="orgx-eyebrow">{org.name} · People</p>
+          <h1 className="orgx-title">Drivers</h1>
+          <p className="orgx-sub">
+            {drivers.length} member{drivers.length === 1 ? "" : "s"} · live
+            presence from driver locations.
           </p>
-        ) : null}
-        {actionError ? (
-          <p className="form-error-message" role="alert">
-            {actionError}
-          </p>
-        ) : null}
-        {loading ? (
-          <div className="loading-block" aria-live="polite">
-            <span className="spinner" aria-hidden="true" />
-            <p>Loading drivers…</p>
-          </div>
-        ) : error ? (
-          <>
-            <p className="form-error-message" role="alert">
-              {error}
-            </p>
+        </div>
+        <div className="orgx-pagehead__actions">
+          {!loading && !error ? (
             <button
               type="button"
-              className="btn btn--ghost btn--block"
-              onClick={() => void load()}
+              className="btn btn--primary btn--compact"
+              onClick={() => {
+                setShowAdd((current) => !current);
+                setConfirmAdd(null);
+                setActionError("");
+              }}
             >
-              Retry
+              {showAdd ? "Close" : "Add driver"}
             </button>
-          </>
-        ) : drivers.length === 0 && !showAdd ? (
-          <p className="muted-copy">No drivers in this group yet.</p>
-        ) : null}
+          ) : null}
+        </div>
+      </div>
 
-        {!loading && !error ? (
-          <button
-            type="button"
-            className="btn btn--primary btn--block"
-            onClick={() => {
-              setShowAdd((current) => !current);
-              setConfirmAdd(null);
-              setActionError("");
-            }}
-            style={{ marginTop: 8 }}
-          >
-            {showAdd ? "Close" : "Add Driver"}
-          </button>
-        ) : null}
+      {notice ? (
+        <p className="muted-copy" role="status" style={{ marginBottom: 12 }}>
+          {notice}
+        </p>
+      ) : null}
+      {actionError ? (
+        <p className="form-error-message" role="alert" style={{ marginBottom: 12 }}>
+          {actionError}
+        </p>
+      ) : null}
 
-        {showAdd ? (
-          <div style={{ marginTop: 12 }}>
-            <p className="section-label">Add existing driver</p>
+      {showAdd ? (
+        <section className="orgx-panel" style={{ marginBottom: 20 }}>
+          <div className="orgx-panel__head">
+            <h2 className="orgx-panel__title">Add existing driver</h2>
+          </div>
+          <div className="orgx-panel__body">
             <label className="field-block">
               <span className="field-label">Username starts with</span>
               <input
@@ -232,64 +225,67 @@ function DriversBody({ org }: { org: OrgRecord }) {
               </p>
             ) : null}
             {results.length > 0 ? (
-              <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0 }}>
-                {results.map((result) => {
-                  const alreadyMember = memberIds.has(result.id);
-                  return (
-                    <li
-                      key={result.id}
-                      style={{
-                        padding: "8px 0",
-                        borderBottom: "1px solid var(--border)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 8,
-                          alignItems: "baseline",
-                        }}
-                      >
-                        <strong>{result.full_name}</strong>
-                        <span className="muted-copy">
-                          {result.username ? `@${result.username}` : ""}
-                        </span>
-                      </div>
-                      <p className="muted-copy" style={{ margin: "2px 0 0" }}>
-                        {[result.vehicle_type, result.status]
-                          .filter(Boolean)
-                          .join(" · ")}
-                        {result.has_other_membership && !alreadyMember
-                          ? " · Member of another driver organization"
-                          : ""}
-                        {alreadyMember ? " · Already a member" : ""}
-                      </p>
-                      {!alreadyMember ? (
-                        <button
-                          type="button"
-                          className="btn btn--ghost btn--compact"
-                          disabled={actionBusy}
-                          onClick={() => setConfirmAdd(result)}
-                          style={{ marginTop: 4 }}
-                        >
-                          Select
-                        </button>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="orgx-tablewrap">
+                <table className="orgx-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Driver</th>
+                      <th scope="col">Detail</th>
+                      <th scope="col">
+                        <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((result) => {
+                      const alreadyMember = memberIds.has(result.id);
+                      return (
+                        <tr key={result.id}>
+                          <td>
+                            <span className="orgx-cell__primary">{result.full_name}</span>
+                            <p className="orgx-cell__secondary">
+                              {result.username ? `@${result.username}` : ""}
+                            </p>
+                          </td>
+                          <td>
+                            <span className="orgx-cell__secondary">
+                              {[result.vehicle_type, result.status]
+                                .filter(Boolean)
+                                .join(" · ")}
+                              {result.has_other_membership && !alreadyMember
+                                ? " · Member elsewhere"
+                                : ""}
+                              {alreadyMember ? " · Already a member" : ""}
+                            </span>
+                          </td>
+                          <td className="orgx-cell__actions">
+                            {!alreadyMember ? (
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--compact"
+                                disabled={actionBusy}
+                                onClick={() => setConfirmAdd(result)}
+                              >
+                                Select
+                              </button>
+                            ) : null}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             ) : null}
             {confirmAdd ? (
-              <div style={{ marginTop: 12 }}>
+              <div className="orgx-confirm">
                 <p>
                   Add <strong>{confirmAdd.full_name}</strong> to {org.name}?
                 </p>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <div className="orgx-confirm__actions">
                   <button
                     type="button"
-                    className="btn btn--primary"
+                    className="btn btn--primary btn--compact"
                     disabled={actionBusy}
                     onClick={() => void handleConfirmAdd()}
                   >
@@ -297,7 +293,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                   </button>
                   <button
                     type="button"
-                    className="btn btn--ghost"
+                    className="btn btn--ghost btn--compact"
                     disabled={actionBusy}
                     onClick={() => setConfirmAdd(null)}
                   >
@@ -307,93 +303,141 @@ function DriversBody({ org }: { org: OrgRecord }) {
               </div>
             ) : null}
           </div>
-        ) : null}
+        </section>
+      ) : null}
 
-        {drivers.length > 0 ? (
-          <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0 }}>
-            {drivers.map((driver) => {
-              const row = presenceByDriver.get(driver.id);
-              const status = presenceLabel(row);
-              const vehicle = [driver.vehicle_type, driver.vehicle_model]
-                .filter(Boolean)
-                .join(" · ");
-              return (
-                <li
-                  key={driver.id}
-                  style={{
-                    padding: "10px 0",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 8,
-                      alignItems: "baseline",
-                    }}
-                  >
-                    <strong>{driver.full_name}</strong>
-                    <span className="muted-copy">{status}</span>
-                  </div>
-                  <p className="muted-copy" style={{ margin: "2px 0 0" }}>
-                    {[driver.username ? `@${driver.username}` : "", vehicle, driver.plate_number]
+      <section className="orgx-panel" aria-live="polite">
+        <div className="orgx-panel__head">
+          <h2 className="orgx-panel__title">Group directory</h2>
+          <span className="orgx-panel__meta">{drivers.length}</span>
+        </div>
+        <div className="orgx-panel__body">
+          {loading ? (
+            <div className="loading-block" aria-live="polite">
+              <span className="spinner" aria-hidden="true" />
+              <p>Loading drivers…</p>
+            </div>
+          ) : error ? (
+            <div className="orgx-error">
+              <p className="form-error-message" role="alert">
+                {error}
+              </p>
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => void load()}
+              >
+                Retry
+              </button>
+            </div>
+          ) : drivers.length === 0 ? (
+            <div className="orgx-empty">
+              <p className="orgx-empty__title">No drivers yet</p>
+              <p className="orgx-empty__text">
+                Add the first member with “Add driver” above.
+              </p>
+            </div>
+          ) : (
+            <div className="orgx-tablewrap">
+              <table className="orgx-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Driver</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Last seen</th>
+                    <th scope="col">
+                      <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {drivers.map((driver) => {
+                    const row = presenceByDriver.get(driver.id);
+                    const status = presenceOf(row);
+                    const vehicle = [driver.vehicle_type, driver.vehicle_model]
                       .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                  {row?.updated_at ? (
-                    <p className="muted-copy" style={{ margin: "2px 0 0" }}>
-                      Last seen {timeAgo(new Date(row.updated_at).getTime())}
-                    </p>
-                  ) : null}
-                  {confirmRemove?.id === driver.id ? (
-                    <div style={{ marginTop: 4 }}>
-                      <p>
-                        Remove <strong>{driver.full_name}</strong> from{" "}
-                        {org.name}? Their driver account stays unchanged.
-                      </p>
-                      <div
-                        style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                      >
-                        <button
-                          type="button"
-                          className="btn btn--primary"
-                          disabled={actionBusy}
-                          onClick={() => void handleConfirmRemove()}
-                        >
-                          {actionBusy ? "Removing…" : "Confirm"}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn--ghost"
-                          disabled={actionBusy}
-                          onClick={() => setConfirmRemove(null)}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className="btn btn--ghost btn--compact"
-                      disabled={actionBusy}
-                      onClick={() => setConfirmRemove(driver)}
-                      style={{ marginTop: 4 }}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        ) : null}
-        <p className="muted-copy" style={{ marginTop: 12 }}>
-          Only {org.name} members are listed here. Contact details and trip
-          history are not shown in this view.
-        </p>
+                      .join(" · ");
+                    return (
+                      <tr key={driver.id}>
+                        <td>
+                          <span className="orgx-cell__primary">{driver.full_name}</span>
+                          <p className="orgx-cell__secondary">
+                            {[driver.username ? `@${driver.username}` : "", driver.plate_number]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </p>
+                        </td>
+                        <td>
+                          <span className="orgx-cell__secondary">{vehicle || "—"}</span>
+                        </td>
+                        <td>
+                          <span className={`orgx-badge orgx-badge--${status.tone}`}>
+                            {status.label}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="orgx-cell__secondary">
+                            {row?.updated_at
+                              ? timeAgo(new Date(row.updated_at).getTime())
+                              : "—"}
+                          </span>
+                        </td>
+                        <td className="orgx-cell__actions">
+                          {confirmRemove?.id === driver.id ? (
+                            <span className="orgx-cell__secondary">Confirm below</span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn--ghost btn--compact"
+                              disabled={actionBusy}
+                              onClick={() => setConfirmRemove(driver)}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {confirmRemove ? (
+            <div className="orgx-confirm">
+              <p>
+                Remove <strong>{confirmRemove.full_name}</strong> from{" "}
+                {org.name}? Their driver account stays unchanged.
+              </p>
+              <div className="orgx-confirm__actions">
+                <button
+                  type="button"
+                  className="btn btn--primary btn--compact"
+                  disabled={actionBusy}
+                  onClick={() => void handleConfirmRemove()}
+                >
+                  {actionBusy ? "Removing…" : "Confirm"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--compact"
+                  disabled={actionBusy}
+                  onClick={() => setConfirmRemove(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          <p className="orgx-note">
+            Only {org.name} members are listed here. Contact details and trip
+            history are not shown in this view.
+          </p>
+        </div>
       </section>
-    </div>
+    </>
   );
 }

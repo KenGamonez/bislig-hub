@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../legacy/lib/supabase";
 import { resolveDriverCredentials } from "../../legacy/lib/driverAuth";
 import { fetchMyOrgAdminRows, fetchOrganization } from "../orgData";
+import "../org-premium.css";
 
 /**
  * Organization sign-in. Mirrors the AdminLogin pattern (email + password,
@@ -86,66 +87,74 @@ export function OrgLogin() {
   };
 
   return (
-    <div className="app-shell">
-      <div className="app-canvas">
-        <main className="page" id="main-content">
-          <div className="container">
-            <div className="auth-card">
-              <Link
-                to="/"
-                className="secondary-action compact-button auth-back"
-              >
-                Back to Home
-              </Link>
-              <div className="auth-header">
-                <img
-                  src="/assets/bislig-hub-logo.png"
-                  alt="Bislig Hub"
-                  className="hub-auth-logo"
-                />
-                <p className="eyebrow auth-eyebrow">Organization Admin</p>
-                <h2>Sign in to manage your organization.</h2>
-              </div>
-              <form className="auth-card" onSubmit={(event) => void handleLogin(event)}>
-                <label className="field-block">
-                  <span className="field-label">USERNAME OR EMAIL</span>
-                  <input
-                    className="input-field"
-                    type="text"
-                    value={identifier}
-                    onChange={(event) => setIdentifier(event.target.value)}
-                    placeholder="e.g. kolot or organization email"
-                    autoComplete="username"
-                  />
-                </label>
-                <label className="field-block">
-                  <span className="field-label">Password</span>
-                  <input
-                    className="input-field"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                  />
-                </label>
-                {error ? (
-                  <p className="form-error-message" role="alert">
-                    {error}
-                  </p>
-                ) : null}
-                <button
-                  type="submit"
-                  className="btn btn--primary btn--block"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Signing in…" : "Sign in"}
-                </button>
-              </form>
-            </div>
-          </div>
-        </main>
-      </div>
+    <div className="orgx orgx-auth">
+      <aside className="orgx-auth__brand" aria-hidden="true">
+        <img src="/assets/bislig-hub-logo.png" alt="" decoding="async" />
+        <div>
+          <p className="orgx-auth__org">Bislig Hub · Org Console</p>
+          <p className="orgx-auth__headline">
+            Run your transport group like an operation, not a chat thread.
+          </p>
+          <p className="orgx-auth__lede">
+            Live driver presence, group directory, announcements, and
+            coordination — in one calm, scannable console.
+          </p>
+        </div>
+        <p className="orgx-auth__foot">
+          Restricted to authorized organization administrators.
+        </p>
+      </aside>
+      <main className="orgx-auth__formwrap" id="main-content">
+        <div className="orgx-auth__form">
+          <Link
+            to="/"
+            className="secondary-action compact-button auth-back orgx-auth__back"
+          >
+            Back to Home
+          </Link>
+          <p className="orgx-eyebrow">Organization Admin</p>
+          <h1 className="orgx-auth__title">Sign in to your console.</h1>
+          <p className="orgx-auth__sub">
+            Use your Bislig Hub driver username or email.
+          </p>
+          <form onSubmit={(event) => void handleLogin(event)}>
+            <label className="field-block">
+              <span className="field-label">Username or email</span>
+              <input
+                className="input-field"
+                type="text"
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
+                placeholder="e.g. kolot or organization email"
+                autoComplete="username"
+              />
+            </label>
+            <label className="field-block">
+              <span className="field-label">Password</span>
+              <input
+                className="input-field"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+              />
+            </label>
+            {error ? (
+              <p className="form-error-message" role="alert">
+                {error}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              className="btn btn--primary btn--block"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }

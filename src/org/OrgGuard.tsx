@@ -5,29 +5,28 @@ import type { ReactNode } from "react";
 
 function LoadingBlock({ label }: { label: string }) {
   return (
-    <div className="container">
-      <div className="loading-block" aria-live="polite">
-        <span className="spinner" aria-hidden="true" />
-        <p>{label}</p>
-      </div>
+    <div className="loading-block" aria-live="polite">
+      <span className="spinner" aria-hidden="true" />
+      <p>{label}</p>
     </div>
   );
 }
 
 function Denied({ signedIn }: { signedIn: boolean }) {
   return (
-    <div className="container">
-      <div className="notice-card" role="alert">
-        <h1 className="notice-card__title">No organization access</h1>
-        <p className="notice-card__text">
-          {signedIn
-            ? "This account is not an administrator of this organization."
-            : "Sign in with an organization administrator account to continue."}
-        </p>
-        <Link to="/org/login" className="btn btn--primary">
-          Go to organization sign in
-        </Link>
-      </div>
+    <div className="orgx-denied" role="alert">
+      <p className="orgx-eyebrow" style={{ justifyContent: "center" }}>
+        Restricted area
+      </p>
+      <h1 className="orgx-denied__title">No organization access</h1>
+      <p className="orgx-denied__text">
+        {signedIn
+          ? "This account is not an administrator of this organization."
+          : "Sign in with an organization administrator account to continue."}
+      </p>
+      <Link to="/org/login" className="btn btn--primary">
+        Go to organization sign in
+      </Link>
     </div>
   );
 }

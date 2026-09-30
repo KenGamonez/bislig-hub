@@ -231,276 +231,330 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
   const canDeleteTopic = canEditTopic;
   const canReply = topic !== null && !topic.is_closed;
 
-  return (
-    <div className="container">
-      <Link
-        to={`/org/${org.slug}/forum`}
-        className="secondary-action compact-button"
-      >
-        ← All topics
-      </Link>
-      {loading ? (
-        <div className="loading-block" aria-live="polite" style={{ marginTop: 12 }}>
-          <span className="spinner" aria-hidden="true" />
-          <p>Loading topic…</p>
+  if (loading) {
+    return (
+      <div className="loading-block" aria-live="polite">
+        <span className="spinner" aria-hidden="true" />
+        <p>Loading topic…</p>
+      </div>
+    );
+  }
+
+  if (error || !topic) {
+    return (
+      <div className="orgx-panel">
+        <div className="orgx-panel__body">
+          <div className="orgx-error">
+            <p className="form-error-message" role="alert">
+              {error || "Topic not found."}
+            </p>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => void load()}
+            >
+              Retry
+            </button>
+          </div>
         </div>
-      ) : error || !topic ? (
-        <section className="driver-card" style={{ marginTop: 12 }}>
-          <p className="form-error-message" role="alert">
-            {error || "Topic not found."}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="orgx-pagehead">
+        <div>
+          <p className="orgx-eyebrow">
+            <Link
+              to={`/org/${org.slug}/forum`}
+              style={{ color: "inherit", textDecoration: "none" }}
+            >
+              {org.name} · Forum
+            </Link>
           </p>
-          <button
-            type="button"
-            className="btn btn--ghost btn--block"
-            onClick={() => void load()}
-          >
-            Retry
-          </button>
-        </section>
-      ) : (
-        <section className="driver-card" aria-live="polite" style={{ marginTop: 12 }}>
-          <p className="section-label">
-            Topic{topic.is_pinned ? " · Pinned" : ""}
+          <h1 className="orgx-title">{topic.title}</h1>
+          <p className="orgx-sub">
+            {topic.author_auth_user_id === myAuthId ? "You" : "Group member"} ·{" "}
+            {formatStamp(topic.created_at)} · {posts.length}{" "}
+            {posts.length === 1 ? "reply" : "replies"}
+            {topic.is_pinned ? " · Pinned" : ""}
             {topic.is_closed ? " · Closed" : ""}
           </p>
-          {editingTopic ? (
-            <>
-              <label className="field-block">
-                <span className="field-label">Title</span>
-                <input
-                  className="input-field"
-                  type="text"
-                  value={editTitle}
-                  onChange={(event) => setEditTitle(event.target.value)}
-                  maxLength={120}
-                />
-              </label>
-              <label className="field-block">
-                <span className="field-label">Message</span>
-                <textarea
-                  className="input-field"
-                  value={editBody}
-                  onChange={(event) => setEditBody(event.target.value)}
-                  rows={4}
-                />
-              </label>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="btn btn--primary"
-                  disabled={saving}
-                  onClick={() => void handleSaveTopic()}
-                >
-                  {saving ? "Saving…" : "Save"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  disabled={saving}
-                  onClick={() => setEditingTopic(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h3>{topic.title}</h3>
-              <p style={{ margin: "6px 0" }}>{topic.body}</p>
-              <p className="muted-copy">
-                {topic.author_auth_user_id === myAuthId ? "You" : "Group member"} ·{" "}
-                {formatStamp(topic.created_at)}
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  flexWrap: "wrap",
-                  marginTop: 8,
-                }}
-              >
-                {canEditTopic ? (
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--compact"
-                    disabled={saving}
-                    onClick={() => {
-                      setEditTitle(topic.title);
-                      setEditBody(topic.body);
-                      setEditingTopic(true);
-                    }}
-                  >
-                    Edit
-                  </button>
-                ) : null}
-                {isAdmin ? (
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--compact"
-                    disabled={saving}
-                    onClick={() => void handleTogglePin()}
-                  >
-                    {topic.is_pinned ? "Unpin" : "Pin"}
-                  </button>
-                ) : null}
-                {isAdmin ? (
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--compact"
-                    disabled={saving}
-                    onClick={() => void handleToggleClose()}
-                  >
-                    {topic.is_closed ? "Reopen" : "Close"}
-                  </button>
-                ) : null}
-                {canDeleteTopic ? (
-                  <button
-                    type="button"
-                    className="btn btn--ghost btn--compact"
-                    disabled={saving}
-                    onClick={() => void handleDeleteTopic()}
-                  >
-                    Delete
-                  </button>
-                ) : null}
-              </div>
-            </>
-          )}
+        </div>
+        <div className="orgx-pagehead__actions">
+          <Link
+            to={`/org/${org.slug}/forum`}
+            className="btn btn--ghost btn--compact"
+          >
+            ← All topics
+          </Link>
+        </div>
+      </div>
 
-          <p className="section-label" style={{ marginTop: 16 }}>
-            Replies ({posts.length})
-          </p>
-          {posts.length === 0 ? (
-            <p className="muted-copy">No replies yet.</p>
-          ) : (
-            <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0 }}>
-              {posts.map((post) => {
-                const mine =
-                  myAuthId !== null &&
-                  post.author_auth_user_id === myAuthId;
-                const canModerate = isAdmin || mine;
-                return (
-                  <li
-                    key={post.id}
-                    style={{
-                      padding: "8px 0",
-                      borderBottom: "1px solid var(--border)",
-                    }}
-                  >
-                    {editingPostId === post.id ? (
-                      <>
-                        <label className="field-block">
-                          <span className="field-label">Edit reply</span>
-                          <textarea
-                            className="input-field"
-                            value={editPostBody}
-                            onChange={(event) =>
-                              setEditPostBody(event.target.value)
-                            }
-                            rows={3}
-                          />
-                        </label>
-                        <div
-                          style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                        >
-                          <button
-                            type="button"
-                            className="btn btn--primary btn--compact"
-                            disabled={saving}
-                            onClick={() => void handleSavePost(post)}
-                          >
-                            {saving ? "Saving…" : "Save"}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn--ghost btn--compact"
-                            disabled={saving}
-                            onClick={() => setEditingPostId(null)}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p style={{ margin: "0 0 2px" }}>{post.body}</p>
-                        <p className="muted-copy" style={{ margin: 0 }}>
-                          {mine ? "You" : "Group member"} ·{" "}
-                          {formatStamp(post.created_at)}
-                        </p>
-                        {canModerate ? (
-                          <div
-                            style={{
-                              display: "flex",
-                              gap: 8,
-                              marginTop: 4,
-                            }}
-                          >
-                            <button
-                              type="button"
-                              className="btn btn--ghost btn--compact"
-                              disabled={saving}
-                              onClick={() => startEditPost(post)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn--ghost btn--compact"
-                              disabled={saving}
-                              onClick={() => void handleDeletePost(post)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        ) : null}
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {canReply ? (
-            <div style={{ marginTop: 12 }}>
-              <label className="field-block">
-                <span className="field-label">Write a reply</span>
-                <textarea
-                  className="input-field"
-                  value={reply}
-                  onChange={(event) => setReply(event.target.value)}
-                  rows={3}
-                />
-              </label>
-              {replyError ? (
-                <p className="form-error-message" role="alert">
-                  {replyError}
-                </p>
-              ) : null}
-              <button
-                type="button"
-                className="btn btn--primary btn--block"
-                disabled={saving}
-                onClick={() => void handleReply()}
-              >
-                {saving ? "Posting…" : "Post reply"}
-              </button>
+      <div className="orgx-grid">
+        <div className="orgx-col">
+          <section className="orgx-panel" aria-live="polite">
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">Discussion</h2>
             </div>
-          ) : (
-            <>
-              <p className="muted-copy" style={{ marginTop: 12 }}>
-                This topic is closed. No new replies can be added.
-              </p>
-              {replyError ? (
-                <p className="form-error-message" role="alert">
-                  {replyError}
-                </p>
-              ) : null}
-            </>
-          )}
-        </section>
-      )}
-    </div>
+            <div className="orgx-panel__body">
+              {editingTopic ? (
+                <>
+                  <label className="field-block">
+                    <span className="field-label">Title</span>
+                    <input
+                      className="input-field"
+                      type="text"
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      maxLength={120}
+                    />
+                  </label>
+                  <label className="field-block">
+                    <span className="field-label">Message</span>
+                    <textarea
+                      className="input-field"
+                      value={editBody}
+                      onChange={(event) => setEditBody(event.target.value)}
+                      rows={4}
+                    />
+                  </label>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      className="btn btn--primary btn--compact"
+                      disabled={saving}
+                      onClick={() => void handleSaveTopic()}
+                    >
+                      {saving ? "Saving…" : "Save"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn--ghost btn--compact"
+                      disabled={saving}
+                      onClick={() => setEditingTopic(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ margin: "0 0 4px", fontSize: 15, lineHeight: 1.6 }}>
+                    {topic.body}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      flexWrap: "wrap",
+                      marginTop: 12,
+                    }}
+                  >
+                    {canEditTopic ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--compact"
+                        disabled={saving}
+                        onClick={() => {
+                          setEditTitle(topic.title);
+                          setEditBody(topic.body);
+                          setEditingTopic(true);
+                        }}
+                      >
+                        Edit
+                      </button>
+                    ) : null}
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--compact"
+                        disabled={saving}
+                        onClick={() => void handleTogglePin()}
+                      >
+                        {topic.is_pinned ? "Unpin" : "Pin"}
+                      </button>
+                    ) : null}
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--compact"
+                        disabled={saving}
+                        onClick={() => void handleToggleClose()}
+                      >
+                        {topic.is_closed ? "Reopen" : "Close"}
+                      </button>
+                    ) : null}
+                    {canDeleteTopic ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--compact"
+                        disabled={saving}
+                        onClick={() => void handleDeleteTopic()}
+                      >
+                        Delete
+                      </button>
+                    ) : null}
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className="orgx-panel">
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">Replies</h2>
+              <span className="orgx-panel__meta">{posts.length}</span>
+            </div>
+            <div className="orgx-panel__body">
+              {posts.length === 0 ? (
+                <div className="orgx-empty">
+                  <p className="orgx-empty__title">No replies yet</p>
+                  <p className="orgx-empty__text">
+                    Be the first to respond below.
+                  </p>
+                </div>
+              ) : (
+                <div className="orgx-tablewrap">
+                  <table className="orgx-table">
+                    <tbody>
+                      {posts.map((post) => {
+                        const mine =
+                          myAuthId !== null &&
+                          post.author_auth_user_id === myAuthId;
+                        const canModerate = isAdmin || mine;
+                        return (
+                          <tr key={post.id}>
+                            <td>
+                              {editingPostId === post.id ? (
+                                <>
+                                  <label className="field-block">
+                                    <span className="field-label">Edit reply</span>
+                                    <textarea
+                                      className="input-field"
+                                      value={editPostBody}
+                                      onChange={(event) =>
+                                        setEditPostBody(event.target.value)
+                                      }
+                                      rows={3}
+                                    />
+                                  </label>
+                                  <div
+                                    style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
+                                  >
+                                    <button
+                                      type="button"
+                                      className="btn btn--primary btn--compact"
+                                      disabled={saving}
+                                      onClick={() => void handleSavePost(post)}
+                                    >
+                                      {saving ? "Saving…" : "Save"}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn btn--ghost btn--compact"
+                                      disabled={saving}
+                                      onClick={() => setEditingPostId(null)}
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <p style={{ margin: "0 0 2px" }}>{post.body}</p>
+                                  <p className="orgx-cell__secondary" style={{ margin: 0 }}>
+                                    {mine ? "You" : "Group member"} ·{" "}
+                                    {formatStamp(post.created_at)}
+                                  </p>
+                                  {canModerate ? (
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: 8,
+                                        marginTop: 6,
+                                      }}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="btn btn--ghost btn--compact"
+                                        disabled={saving}
+                                        onClick={() => startEditPost(post)}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        className="btn btn--ghost btn--compact"
+                                        disabled={saving}
+                                        onClick={() => void handleDeletePost(post)}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  ) : null}
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        <div className="orgx-col">
+          <section className="orgx-panel">
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">Reply</h2>
+            </div>
+            <div className="orgx-panel__body">
+              {canReply ? (
+                <>
+                  <label className="field-block">
+                    <span className="field-label">Write a reply</span>
+                    <textarea
+                      className="input-field"
+                      value={reply}
+                      onChange={(event) => setReply(event.target.value)}
+                      rows={3}
+                    />
+                  </label>
+                  {replyError ? (
+                    <p className="form-error-message" role="alert">
+                      {replyError}
+                    </p>
+                  ) : null}
+                  <button
+                    type="button"
+                    className="btn btn--primary btn--block"
+                    disabled={saving}
+                    onClick={() => void handleReply()}
+                  >
+                    {saving ? "Posting…" : "Post reply"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="orgx-note" style={{ marginTop: 0 }}>
+                    This topic is closed. No new replies can be added.
+                  </p>
+                  {replyError ? (
+                    <p className="form-error-message" role="alert">
+                      {replyError}
+                    </p>
+                  ) : null}
+                </>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
+    </>
   );
 }
