@@ -28,18 +28,26 @@ export function OrgLogin() {
     setError("");
     setIsSubmitting(true);
 
-    let resolvedEmail = identifier.trim();
+    const identifierTrimmed = identifier.trim();
+    // Determine if identifier is an email address or a username.
+    const isEmail = identifierTrimmed.includes("@");
+    let resolvedEmail = identifierTrimmed;
 
     // Resolve username to authentication email using the existing
     // platform credential-resolution mechanism (same as /driver/login).
-    try {
-      resolvedEmail = await resolveDriverCredentials(identifier.trim());
-    } catch (resolveError) {
-      // If resolution fails (e.g. unknown username), fall back to using
-      // the identifier as-is; Supabase signInWithPassword will handle
-      // invalid credentials consistently.
-      resolvedEmail = identifier.trim();
+    if (!isEmail) {
+      try {
+        resolvedEmail = await resolveDriverCredentials(identifierTrimmed);
+      } catch (resolveError) {
+        // Resolution failed for a username (e.g. unknown driver).
+        // Do not fall back to using the username as email; Supabase
+        // signInWithPassword requires a valid auth email.
+        setError("Username not recognized. Please check your username or email and try again.");
+        setIsSubmitting(false);
+        return;
+      }
     }
+    // If identifier is an email, use it directly; no resolution needed.
 
     try {
       const { data, error: signInError } =
