@@ -144,24 +144,36 @@ function DashboardBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · Operations</p>
-          <h1 className="orgx-title">Overview</h1>
-          <p className="orgx-sub">
-            Live group presence and aggregate ride performance for {org.name}{" "}
-            members only.
+      <section className="orgx-hero" aria-label={`${org.name} overview`}>
+        <div className="orgx-hero__logo">
+          <img
+            src="/assets/btrp-toda-logo.png"
+            alt={`${org.name} official seal`}
+            width={176}
+            height={176}
+            decoding="async"
+          />
+        </div>
+        <div className="orgx-hero__body">
+          <p className="orgx-hero__eyebrow">Organization console</p>
+          <h1 className="orgx-hero__name">{org.name}</h1>
+          <p className="orgx-hero__meta">
+            {org.description || "TODA operations console · Bislig City"}
+          </p>
+          <p className="orgx-hero__live">
+            <span className="orgx-hero__live-dot" aria-hidden="true" />
+            Live · refreshes every 15 seconds
           </p>
         </div>
-        <div className="orgx-pagehead__actions">
+        <div className="orgx-hero__actions">
           <Link
             to={`/org/${org.slug}/drivers`}
-            className="btn btn--ghost btn--compact"
+            className="btn btn--primary btn--compact"
           >
             Manage drivers
           </Link>
         </div>
-      </div>
+      </section>
 
       <div className="orgx-kpis" role="group" aria-label="Current group figures">
         <div className="orgx-kpi">

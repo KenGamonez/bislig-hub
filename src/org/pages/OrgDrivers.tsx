@@ -1079,7 +1079,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                   {pendingApplications.map((application) => {
                     const expanded = expandedAppId === application.id;
                     return (
-                      <tr key={application.id}>
+                      <tr key={application.id} className="orgx-row--attention">
                         <td data-label="Applicant">
                           <span className="orgx-cell__primary">
                             {application.full_name}
