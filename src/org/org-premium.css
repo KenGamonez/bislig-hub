@@ -1077,6 +1077,29 @@ li:has(.orgx-rowlink) {
   overflow-wrap: break-word;
 }
 
+/* ---- Constrained forms (settings-style single column) ---- */
+.orgx-form--constrained {
+  max-width: 640px;
+}
+
+/* ---- Managed logo preview (read-only brand reference) ---- */
+.orgx-logo-preview {
+  display: inline-flex;
+  padding: 12px;
+  border: 1px solid var(--orgx-line);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.orgx-logo-preview img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 220px;
+  max-height: 120px;
+  object-fit: contain;
+}
+
 /* ---- Confirm modal ---- */
 .orgx-modal {
   position: fixed;

@@ -15,6 +15,7 @@ export function OrgSettings() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [savedNotice, setSavedNotice] = useState(false);
 
   const loadOrganization = async () => {
     setLoading(true);
@@ -66,6 +67,7 @@ export function OrgSettings() {
       setName(data.name ?? "");
       setDescription(data.description ?? "");
       setLogoUrl(data.logo_url ?? "");
+      setSavedNotice(true);
 
       setError("");
     } catch (saveError) {
@@ -145,13 +147,19 @@ export function OrgSettings() {
               </div>
             ) : null}
 
-            <form onSubmit={(event) => void handleSave(event)}>
+            <form
+              className="orgx-form--constrained"
+              onSubmit={(event) => void handleSave(event)}
+            >
               <label className="field-block">
                 <span className="field-label">Organization name</span>
                 <input
                   className="input-field"
                   value={name}
-                  onChange={(event) => setName(event.target.value)}
+                  onChange={(event) => {
+                    setName(event.target.value);
+                    setSavedNotice(false);
+                  }}
                   maxLength={128}
                 />
               </label>
@@ -161,23 +169,41 @@ export function OrgSettings() {
                 <textarea
                   className="input-field"
                   value={description}
-                  onChange={(event) => setDescription(event.target.value)}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                    setSavedNotice(false);
+                  }}
                   maxLength={512}
                   rows={4}
                 />
               </label>
 
-              <label className="field-block">
-                <span className="field-label">Logo URL</span>
-                <input
-                  className="input-field"
-                  value={logoUrl}
-                  onChange={(event) => setLogoUrl(event.target.value)}
-                  placeholder="https://example.com/logo.png"
-                  disabled
-                />
-                <span className="muted-copy">Read-only (media management not yet implemented)</span>
-              </label>
+              <p className="orgx-fieldset-label">Organization logo</p>
+              {logoUrl ? (
+                <>
+                  <div className="orgx-logo-preview">
+                    <img
+                      src={logoUrl}
+                      alt={`${organization.name} logo`}
+                      loading="lazy"
+                    />
+                  </div>
+                  <p className="muted-copy">
+                    Logo artwork is managed by the platform — contact Bislig
+                    Hub to change it.
+                  </p>
+                </>
+              ) : (
+                <p className="muted-copy">
+                  No logo set. Logo artwork is managed by the platform.
+                </p>
+              )}
+
+              {savedNotice && !saving ? (
+                <p className="muted-copy" role="status">
+                  Changes saved.
+                </p>
+              ) : null}
 
               <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
                 <button type="submit" className="btn btn--primary btn--compact" disabled={saving}>
@@ -186,7 +212,9 @@ export function OrgSettings() {
                 <button
                   type="button"
                   className="btn btn--ghost btn--compact"
-                  onClick={() => navigate(-1)}
+                  onClick={() =>
+                    navigate(`/org/${slug}/dashboard`, { replace: true })
+                  }
                 >
                   Cancel
                 </button>
