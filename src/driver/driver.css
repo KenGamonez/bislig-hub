@@ -1546,6 +1546,70 @@
   margin: 0 0 var(--driver-space-2);
 }
 
+.hub-driver__push-text {
+  font-size: var(--driver-font-sm);
+  color: var(--driver-text-muted);
+  margin: 0 0 var(--driver-space-2);
+}
+
+/* ---- Status hero card ---- */
+.hub-driver__card--status {
+  position: relative;
+  overflow: hidden;
+}
+
+.hub-driver__card--status::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--driver-orange-soft) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hub-driver__status-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--driver-space-3);
+  position: relative;
+  z-index: 1;
+}
+
+.hub-driver__status-icon {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--driver-radius-lg);
+  background: var(--status-color);
+  color: #fff;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hub-driver__status-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.hub-driver__status-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hub-driver__status-label {
+  font-size: var(--driver-font-lg);
+  font-weight: 750;
+  color: var(--driver-text);
+  margin: 0 0 var(--driver-space-1);
+}
+
+.hub-driver__status-guide {
+  font-size: var(--driver-font-sm);
+  color: var(--driver-text-muted);
+  line-height: var(--driver-leading-relaxed);
+  margin: 0;
+}
+
 @media (max-width: 428px) {
   .hub-driver__identity-facts {
     grid-template-columns: repeat(2, 1fr);

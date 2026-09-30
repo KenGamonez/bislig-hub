@@ -6,7 +6,6 @@ import { LoadingState } from "../components/LoadingState";
 import { ActiveJobActions } from "../components/ActiveJobActions";
 import { ActiveJobCancel } from "../components/ActiveJobCancel";
 import { ActiveJobCustomer } from "../components/ActiveJobCustomer";
-import { ActiveJobHeader } from "../components/ActiveJobHeader";
 import { ActiveJobRoute } from "../components/ActiveJobRoute";
 import { DeliveryActiveView } from "../components/DeliveryActiveView";
 import { JourneySteps } from "../components/JourneySteps";
@@ -223,6 +222,57 @@ export function ActiveJobPage() {
     }
   };
 
+  const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
+    accepted: {
+      color: "var(--driver-orange)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      ),
+    },
+    arrived: {
+      color: "var(--driver-orange)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+          <line x1="9" y1="9" x2="9.01" y2="9" />
+          <line x1="15" y1="9" x2="15.01" y2="9" />
+        </svg>
+      ),
+    },
+    in_progress: {
+      color: "var(--driver-success)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      ),
+    },
+    completed: {
+      color: "var(--driver-success)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      ),
+    },
+    cancelled: {
+      color: "var(--driver-danger)",
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="15" y1="9" x2="9" y2="15" />
+          <line x1="9" y1="9" x2="15" y2="15" />
+        </svg>
+      ),
+    },
+  };
+
+  const config = statusConfig[ride.status] || { color: "var(--driver-text-muted)", icon: null };
+
   return (
     <DriverPage title="Active" kicker="Current job">
       {job.error ? (
@@ -238,19 +288,18 @@ export function ActiveJobPage() {
         </p>
       ) : null}
 
-      <div className="hub-driver__card">
-        <ActiveJobHeader status={ride.status} />
+      {/* Status hero card */}
+      <div className="hub-driver__card hub-driver__card--status">
+        <div className="hub-driver__status-hero" style={{ "--status-color": config.color } as React.CSSProperties}>
+          <div className="hub-driver__status-icon" aria-hidden="true">
+            {config.icon}
+          </div>
+          <div className="hub-driver__status-content">
+            <p className="hub-driver__status-label">{RIDE_GUIDE[ride.status]?.title || ride.status}</p>
+            <p className="hub-driver__status-guide">{RIDE_GUIDE[ride.status]?.guide}</p>
+          </div>
+        </div>
         <JourneySteps status={ride.status} />
-        {RIDE_GUIDE[ride.status] ? (
-          <>
-            <p className="hub-driver__card-title">
-              {RIDE_GUIDE[ride.status].title}
-            </p>
-            <p className="hub-driver__card-sub">
-              {RIDE_GUIDE[ride.status].guide}
-            </p>
-          </>
-        ) : null}
         <ActiveJobRoute
           pickup={ride.pickup_address}
           destination={ride.destination_address}
