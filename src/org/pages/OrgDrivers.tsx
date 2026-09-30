@@ -659,8 +659,8 @@ function DriversBody({ org }: { org: OrgRecord }) {
     <>
       <OrgPageHead
         eyebrow={`${org.name} · People`}
-        title="Drivers"
-        description={`${drivers.length} member${drivers.length === 1 ? "" : "s"} · live presence from driver locations.`}
+        title="Driver operations"
+        description={`Manage the ${org.name} driver roster and accounts — ${drivers.length} member${drivers.length === 1 ? "" : "s"} with live presence.`}
         actions={
           !loading && !error ? (
             <>
@@ -703,7 +703,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
       ) : null}
 
       {provisioned ? (
-        <section className="orgx-panel" style={{ marginBottom: 20 }} aria-live="polite">
+        <section className="orgx-panel orgx-panel--highlight" style={{ marginBottom: 20 }} aria-live="polite">
           <div className="orgx-panel__head">
             <h2 className="orgx-panel__title">Account created — share once</h2>
           </div>
@@ -751,6 +751,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
             <h2 className="orgx-panel__title">Provision new driver</h2>
           </div>
           <div className="orgx-panel__body">
+            <p className="orgx-fieldset-label">Account identity</p>
             <label className="field-block">
               <span className="field-label">Full name</span>
               <input
@@ -785,6 +786,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 autoComplete="off"
               />
             </label>
+            <p className="orgx-fieldset-label">Temporary access</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
               <button
                 type="button"
@@ -823,6 +825,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 </tbody>
               </table>
             </div>
+            <p className="orgx-fieldset-label">Profile</p>
             <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Phone</span>
@@ -847,6 +850,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 />
               </label>
             </div>
+            <p className="orgx-fieldset-label">Vehicle</p>
             <div className="orgx-formgrid">
               <label className="field-block">
                 <span className="field-label">Vehicle type</span>
@@ -900,6 +904,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                   Cancel
                 </button>
             </div>
+            <p className="orgx-fieldset-label">Account recovery</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               <button
                 type="button"
@@ -1112,7 +1117,22 @@ function DriversBody({ org }: { org: OrgRecord }) {
                             {new Date(application.created_at).toLocaleDateString()}
                           </span>
                         </td>
-                        <td className="orgx-cell__actions">
+                        <td className="orgx-cell__actions orgx-cell__actions--stack">
+                          <button
+                            type="button"
+                            className="btn btn--primary btn--compact"
+                            disabled={reviewingId === application.id}
+                            onClick={() => void handleApproveApplication(application)}
+                          >
+                            {reviewingId === application.id ? "Working…" : "Approve"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn--ghost btn--compact"
+                            onClick={() => handleProvisionFromApplication(application)}
+                          >
+                            Provision
+                          </button>
                           <button
                             type="button"
                             className="btn btn--ghost btn--compact"
@@ -1121,29 +1141,14 @@ function DriversBody({ org }: { org: OrgRecord }) {
                             }
                           >
                             {expanded ? "Hide" : "Review"}
-                          </button>{" "}
+                          </button>
                           <button
                             type="button"
-                            className="btn btn--ghost btn--compact"
-                            disabled={reviewingId === application.id}
-                            onClick={() => void handleApproveApplication(application)}
-                          >
-                            {reviewingId === application.id ? "Working…" : "Approve"}
-                          </button>{" "}
-                          <button
-                            type="button"
-                            className="btn btn--ghost btn--compact"
+                            className="btn btn--ghost btn--compact orgx-btn-danger"
                             disabled={reviewingId === application.id}
                             onClick={() => setRejectTarget(application)}
                           >
                             Reject
-                          </button>{" "}
-                          <button
-                            type="button"
-                            className="btn btn--primary btn--compact"
-                            onClick={() => handleProvisionFromApplication(application)}
-                          >
-                            Provision
                           </button>
                         </td>
                       </tr>
@@ -1181,7 +1186,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
 
       <section className="orgx-panel" aria-live="polite">
         <div className="orgx-panel__head">
-          <h2 className="orgx-panel__title">Group directory</h2>
+          <h2 className="orgx-panel__title">Driver directory</h2>
           <span className="orgx-panel__meta">{drivers.length}</span>
         </div>
         <div className="orgx-panel__body">

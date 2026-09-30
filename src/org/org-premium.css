@@ -951,6 +951,35 @@ table.orgx-table tbody tr:last-child td {
   flex-wrap: wrap;
 }
 
+/* ---- Drivers workspace: stacked action cells ---- */
+.orgx-cell__actions--stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  text-align: left;
+  min-width: 148px;
+}
+
+/* ---- Drivers workspace: form group labels ---- */
+.orgx-fieldset-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--orgx-ink-3);
+  margin: 16px 0 2px;
+}
+
+.orgx-fieldset-label:first-child {
+  margin-top: 0;
+}
+
+/* ---- Drivers workspace: important (credentials-once) panel ---- */
+.orgx-panel--highlight {
+  border-left: 3px solid var(--orgx-gold);
+}
+
 /* ---- Whole-row links (forum topics) ---- */
 table.orgx-table tr:has(.orgx-rowlink) {
   position: relative;
