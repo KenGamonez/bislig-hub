@@ -403,93 +403,85 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                   </p>
                 </div>
               ) : (
-                <div className="orgx-tablewrap">
-                  <table className="orgx-table">
-                    <tbody>
-                      {posts.map((post) => {
-                        const mine =
-                          myAuthId !== null &&
-                          post.author_auth_user_id === myAuthId;
-                        const canModerate = isAdmin || mine;
-                        return (
-                          <tr key={post.id}>
-                            <td>
-                              {editingPostId === post.id ? (
-                                <>
-                                  <label className="field-block">
-                                    <span className="field-label">Edit reply</span>
-                                    <textarea
-                                      className="input-field"
-                                      value={editPostBody}
-                                      onChange={(event) =>
-                                        setEditPostBody(event.target.value)
-                                      }
-                                      rows={3}
-                                    />
-                                  </label>
-                                  <div
-                                    style={{ display: "flex", gap: 8, flexWrap: "wrap" }}
-                                  >
-                                    <button
-                                      type="button"
-                                      className="btn btn--primary btn--compact"
-                                      disabled={saving}
-                                      onClick={() => void handleSavePost(post)}
-                                    >
-                                      {saving ? "Saving…" : "Save"}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="btn btn--ghost btn--compact"
-                                      disabled={saving}
-                                      onClick={() => setEditingPostId(null)}
-                                    >
-                                      Cancel
-                                    </button>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <p style={{ margin: "0 0 2px" }}>{post.body}</p>
-                                  <p className="orgx-cell__secondary" style={{ margin: 0 }}>
-                                    {mine ? "You" : "Group member"} ·{" "}
-                                    {formatStamp(post.created_at)}
-                                  </p>
-                                  {canModerate ? (
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: 8,
-                                        marginTop: 6,
-                                      }}
-                                    >
-                                      <button
-                                        type="button"
-                                        className="btn btn--ghost btn--compact"
-                                        disabled={saving}
-                                        onClick={() => startEditPost(post)}
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="btn btn--ghost btn--compact orgx-btn-danger"
-                                        disabled={saving}
-                                        onClick={() => setPendingDeletePost(post)}
-                                      >
-                                        Delete
-                                      </button>
-                                    </div>
-                                  ) : null}
-                                </>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <ul className="orgx-archive">
+                  {posts.map((post) => {
+                    const mine =
+                      myAuthId !== null &&
+                      post.author_auth_user_id === myAuthId;
+                    const canModerate = isAdmin || mine;
+                    return (
+                      <li key={post.id} className="orgx-archive__item">
+                        {editingPostId === post.id ? (
+                          <>
+                            <label className="field-block">
+                              <span className="field-label">Edit reply</span>
+                              <textarea
+                                className="input-field"
+                                value={editPostBody}
+                                onChange={(event) =>
+                                  setEditPostBody(event.target.value)
+                                }
+                                rows={3}
+                              />
+                            </label>
+                            <div className="orgx-archive__actions">
+                              <button
+                                type="button"
+                                className="btn btn--primary btn--compact"
+                                disabled={saving}
+                                onClick={() => void handleSavePost(post)}
+                              >
+                                {saving ? "Saving…" : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn--ghost btn--compact"
+                                disabled={saving}
+                                onClick={() => setEditingPostId(null)}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="orgx-archive__head">
+                              <span className="orgx-archive__title">
+                                {mine ? "You" : "Group member"}
+                              </span>
+                              <span className="orgx-archive__meta">
+                                {formatStamp(post.created_at)}
+                              </span>
+                            </div>
+                            <p className="orgx-archive__excerpt">
+                              {post.body}
+                            </p>
+                            {canModerate ? (
+                              <div className="orgx-archive__actions">
+                                <button
+                                  type="button"
+                                  className="btn btn--ghost btn--compact"
+                                  disabled={saving}
+                                  onClick={() => startEditPost(post)}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn--ghost btn--compact orgx-btn-danger"
+                                  disabled={saving}
+                                  onClick={() => void handleDeletePost(post)}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            ) : null}
+                          </>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
               )}
             </div>
           </section>
@@ -556,8 +548,9 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                 </>
               ) : (
                 <>
-                  <p className="orgx-note" style={{ marginTop: 0 }}>
-                    This topic is closed. No new replies can be added.
+                  <p className="orgx-notebox" role="note">
+                    <strong>Closed.</strong> This topic no longer accepts
+                    new replies.
                   </p>
                   {replyError ? (
                     <p className="form-error-message" role="alert">

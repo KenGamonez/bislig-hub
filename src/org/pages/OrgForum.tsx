@@ -222,58 +222,50 @@ function ForumBody({ org }: { org: OrgRecord }) {
                   </p>
                 </div>
               ) : (
-                <div className="orgx-tablewrap">
-                  <table className="orgx-table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Topic</th>
-                        <th scope="col">Replies</th>
-                        <th scope="col">Last activity</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {topics.map((topic) => (
-                        <tr key={topic.id}>
-                          <td data-label="Topic">
-                            <Link
-                              to={`/org/${org.slug}/forum/${topic.id}`}
-                              className="orgx-rowlink"
-                              style={{ textDecoration: "none", color: "inherit" }}
-                            >
-                              <span className="orgx-cell__primary">
-                                {topic.title}
+                <ul className="orgx-archive">
+                  {topics.map((topic) => (
+                    <li key={topic.id} className="orgx-archive__item">
+                      <div className="orgx-archive__head">
+                        <Link
+                          to={`/org/${org.slug}/forum/${topic.id}`}
+                          className="orgx-rowlink orgx-archive__title"
+                          style={{ textDecoration: "none" }}
+                        >
+                          {topic.title}
+                        </Link>
+                        {(topic.is_pinned || topic.is_closed) && (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              gap: 6,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {topic.is_pinned ? (
+                              <span className="orgx-badge orgx-badge--flag">
+                                Pinned
                               </span>
-                            </Link>
-                            <p className="orgx-cell__secondary">
-                              {topic.is_pinned ? (
-                                <span className="orgx-badge orgx-badge--flag">
-                                  Pinned
-                                </span>
-                              ) : null}
-                              {topic.is_closed ? (
-                                <span className="orgx-badge orgx-badge--draft">
-                                  Closed
-                                </span>
-                              ) : null}
-                            </p>
-                          </td>
-                          <td data-label="Replies">
-                            <span className="orgx-cell__primary">
-                              {replyCounts[topic.id] ?? 0}
-                            </span>
-                          </td>
-                          <td data-label="Last activity">
-                            <span className="orgx-cell__secondary">
-                              {lastActivity[topic.id]
-                                ? timeAgo(lastActivity[topic.id])
-                                : "—"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                            ) : null}
+                            {topic.is_closed ? (
+                              <span className="orgx-badge orgx-badge--draft">
+                                Closed
+                              </span>
+                            ) : null}
+                          </span>
+                        )}
+                      </div>
+                      <p className="orgx-archive__meta">
+                        {replyCounts[topic.id] ?? 0}{" "}
+                        {(replyCounts[topic.id] ?? 0) === 1
+                          ? "reply"
+                          : "replies"}
+                        {lastActivity[topic.id]
+                          ? ` · active ${timeAgo(lastActivity[topic.id])}`
+                          : ""}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </section>

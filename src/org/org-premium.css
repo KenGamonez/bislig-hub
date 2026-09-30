@@ -985,6 +985,23 @@ table.orgx-table tr:has(.orgx-rowlink) {
   position: relative;
 }
 
+li:has(.orgx-rowlink) {
+  position: relative;
+}
+
+/* ---- Restrained inline notice (e.g. closed topic) ---- */
+.orgx-notebox {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--orgx-ink-2);
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--orgx-line);
+  border-left: 3px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
 .orgx-rowlink::after {
   content: "";
   position: absolute;
