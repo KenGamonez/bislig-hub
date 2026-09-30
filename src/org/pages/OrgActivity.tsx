@@ -2,12 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
 import {
+  cancelOrgDelivery,
+  cancelOrgPakyawan,
   fetchMemberDrivers,
   fetchMemberPresence,
   fetchMemberRecentDeliveries,
   fetchMemberRecentPakyawan,
   fetchMemberRecentRides,
   fetchOrgMembers,
+  quoteOrgPakyawan,
   type MemberDriver,
   type MemberOpsBooking,
   type MemberOpsRide,
@@ -17,6 +20,19 @@ import {
 import { timeAgo } from "../../notifications/notifications";
 
 const POLL_MS = 15000;
+
+const PAKYAWAN_CANCELLABLE = [
+  "pending",
+  "quoted",
+  "scheduled",
+  "driver_on_way",
+  "driver_arrived",
+  "in_progress",
+];
+
+function isDeliveryCancellable(status: string): boolean {
+  return status !== "delivered" && status !== "cancelled";
+}
 
 export function OrgActivity() {
   const { slug } = useParams();
@@ -37,6 +53,16 @@ function ActivityBody({ org }: { org: OrgRecord }) {
   const [recentPakyawan, setRecentPakyawan] = useState<MemberOpsBooking[]>([]);
   const [recentDeliveries, setRecentDeliveries] = useState<MemberOpsBooking[]>([]);
   const [opsError, setOpsError] = useState("");
+  const [managed, setManaged] = useState<
+    | { kind: "pakyawan"; row: MemberOpsBooking }
+    | { kind: "delivery"; row: MemberOpsBooking }
+    | null
+  >(null);
+  const [pricePesos, setPricePesos] = useState("");
+  const [reason, setReason] = useState("");
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [actionNotice, setActionNotice] = useState("");
 
   const load = useCallback(async () => {
     try {
@@ -85,6 +111,91 @@ function ActivityBody({ org }: { org: OrgRecord }) {
 
   const onlineNow = presence.filter((row) => row.is_online);
   const onRide = presence.filter((row) => row.current_ride_id);
+
+  const openManage = (
+    kind: "pakyawan" | "delivery",
+    row: MemberOpsBooking
+  ) => {
+    setManaged({ kind, row } as
+      | { kind: "pakyawan"; row: MemberOpsBooking }
+      | { kind: "delivery"; row: MemberOpsBooking });
+    setPricePesos("");
+    setReason("");
+    setActionError("");
+    setActionNotice("");
+  };
+
+  const closeManage = () => {
+    if (actionBusy) return;
+    setManaged(null);
+    setPricePesos("");
+    setReason("");
+    setActionError("");
+  };
+
+  const handleQuote = async () => {
+    if (!managed || managed.kind !== "pakyawan") return;
+    const pesos = Number.parseFloat(pricePesos);
+    if (!Number.isFinite(pesos) || pesos <= 0) {
+      setActionError("Enter a valid quoted price in pesos.");
+      return;
+    }
+    setActionBusy(true);
+    setActionError("");
+    setActionNotice("");
+    try {
+      await quoteOrgPakyawan(managed.row.id, Math.round(pesos * 100));
+      setActionNotice(
+        `Quoted ₱${pesos.toFixed(2)} for this Pakyawan booking.`
+      );
+      setManaged(null);
+      setPricePesos("");
+      await load();
+    } catch (quoteFailure) {
+      console.error("Unable to quote booking:", quoteFailure);
+      setActionError(
+        quoteFailure instanceof Error
+          ? quoteFailure.message
+          : "Unable to quote this booking. Please try again."
+      );
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!managed) return;
+    if (!reason.trim()) {
+      setActionError("A cancellation reason is required.");
+      return;
+    }
+    setActionBusy(true);
+    setActionError("");
+    setActionNotice("");
+    try {
+      const result =
+        managed.kind === "pakyawan"
+          ? await cancelOrgPakyawan(managed.row.id, reason.trim())
+          : await cancelOrgDelivery(managed.row.id, reason.trim());
+      setActionNotice(
+        result.already_cancelled
+          ? "This booking was already cancelled."
+          : `Cancelled (was ${result.previous_status}).`
+      );
+      setManaged(null);
+      setReason("");
+      await load();
+    } catch (cancelFailure) {
+      console.error("Unable to cancel booking:", cancelFailure);
+      setActionError(
+        cancelFailure instanceof Error
+          ? cancelFailure.message
+          : "Unable to cancel this booking. Please try again."
+      );
+    } finally {
+      setActionBusy(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -285,8 +396,14 @@ function ActivityBody({ org }: { org: OrgRecord }) {
             </p>
           ) : (
             <div className="orgx-grid orgx-grid--single" style={{ gap: 0 }}>
+              {actionNotice ? (
+                <p className="muted-copy" role="status">
+                  {actionNotice}
+                </p>
+              ) : null}
               <OpsTable
                 title="Ride Now"
+                kind="ride"
                 rows={recentRides.map((row) => ({
                   id: row.id,
                   status: row.status,
@@ -297,14 +414,34 @@ function ActivityBody({ org }: { org: OrgRecord }) {
               />
               <OpsTable
                 title="Pakyawan"
+                kind="pakyawan"
                 rows={recentPakyawan}
                 nameOf={nameOf}
+                onManage={(row) => openManage("pakyawan", row)}
               />
               <OpsTable
                 title="Deliveries"
+                kind="delivery"
                 rows={recentDeliveries}
                 nameOf={nameOf}
+                onManage={(row) => openManage("delivery", row)}
               />
+              {managed ? (
+                <ManageOpsPanel
+                  kind={managed.kind}
+                  row={managed.row}
+                  nameOf={nameOf}
+                  pricePesos={pricePesos}
+                  setPricePesos={setPricePesos}
+                  reason={reason}
+                  setReason={setReason}
+                  actionBusy={actionBusy}
+                  actionError={actionError}
+                  onQuote={() => void handleQuote()}
+                  onCancel={() => void handleCancel()}
+                  onClose={closeManage}
+                />
+              ) : null}
             </div>
           )}
         </div>
@@ -313,14 +450,31 @@ function ActivityBody({ org }: { org: OrgRecord }) {
   );
 }
 
+function isRowActionable(
+  kind: "ride" | "pakyawan" | "delivery",
+  status: string
+): boolean {
+  if (kind === "pakyawan") {
+    return status === "pending" || PAKYAWAN_CANCELLABLE.includes(status);
+  }
+  if (kind === "delivery") {
+    return isDeliveryCancellable(status);
+  }
+  return false;
+}
+
 function OpsTable({
   title,
+  kind,
   rows,
   nameOf,
+  onManage,
 }: {
   title: string;
+  kind: "ride" | "pakyawan" | "delivery";
   rows: Array<{ id: string; status: string; created_at: string; driver_id: string | null }>;
   nameOf: (driverId: string) => string;
+  onManage?: (row: MemberOpsBooking) => void;
 }) {
   return (
     <div style={{ marginBottom: 4 }}>
@@ -337,6 +491,9 @@ function OpsTable({
                 <th scope="col">Driver</th>
                 <th scope="col">Status</th>
                 <th scope="col">Date</th>
+                <th scope="col">
+                  <span className="orgx-cell__actions" style={{ display: "block" }}>Action</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -355,12 +512,148 @@ function OpsTable({
                       {new Date(row.created_at).toLocaleString()}
                     </span>
                   </td>
+                  <td className="orgx-cell__actions">
+                    {onManage && isRowActionable(kind, row.status) ? (
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--compact"
+                        onClick={() =>
+                          onManage(row as MemberOpsBooking)
+                        }
+                      >
+                        Manage
+                      </button>
+                    ) : (
+                      <span className="orgx-cell__secondary">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+function ManageOpsPanel({
+  kind,
+  row,
+  nameOf,
+  pricePesos,
+  setPricePesos,
+  reason,
+  setReason,
+  actionBusy,
+  actionError,
+  onQuote,
+  onCancel,
+  onClose,
+}: {
+  kind: "pakyawan" | "delivery";
+  row: MemberOpsBooking;
+  nameOf: (driverId: string) => string;
+  pricePesos: string;
+  setPricePesos: (value: string) => void;
+  reason: string;
+  setReason: (value: string) => void;
+  actionBusy: boolean;
+  actionError: string;
+  onQuote: () => void;
+  onCancel: () => void;
+  onClose: () => void;
+}) {
+  const canQuote = kind === "pakyawan" && row.status === "pending";
+  const canCancel =
+    kind === "pakyawan"
+      ? PAKYAWAN_CANCELLABLE.includes(row.status)
+      : isDeliveryCancellable(row.status);
+
+  return (
+    <div className="orgx-confirm" aria-live="polite">
+      <p style={{ marginTop: 0 }}>
+        <strong>
+          {kind === "pakyawan" ? "Pakyawan booking" : "Delivery"}
+        </strong>{" "}
+        · {row.driver_id ? nameOf(row.driver_id) : "Unassigned"} ·{" "}
+        {row.status}
+      </p>
+      {canQuote ? (
+        <label className="field-block">
+          <span className="field-label">Quoted price (₱)</span>
+          <input
+            className="input-field"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step="0.01"
+            value={pricePesos}
+            onChange={(event) => setPricePesos(event.target.value)}
+            placeholder="e.g. 150"
+            disabled={actionBusy}
+          />
+        </label>
+      ) : null}
+      {canCancel ? (
+        <label className="field-block">
+          <span className="field-label">Cancellation reason</span>
+          <input
+            className="input-field"
+            type="text"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            placeholder="e.g. customer requested cancellation"
+            maxLength={200}
+            disabled={actionBusy}
+          />
+        </label>
+      ) : (
+        <p className="muted-copy">
+          This {kind === "pakyawan" ? "booking" : "delivery"} can no longer be
+          changed (status: {row.status}).
+        </p>
+      )}
+      {actionError ? (
+        <p className="form-error-message" role="alert">
+          {actionError}
+        </p>
+      ) : null}
+      <div className="orgx-confirm__actions">
+        {canQuote ? (
+          <button
+            type="button"
+            className="btn btn--primary btn--compact"
+            disabled={actionBusy}
+            onClick={onQuote}
+          >
+            {actionBusy ? "Working…" : "Quote"}
+          </button>
+        ) : null}
+        {canCancel ? (
+          <button
+            type="button"
+            className="btn btn--primary btn--compact"
+            disabled={actionBusy}
+            onClick={onCancel}
+          >
+            {actionBusy ? "Working…" : "Cancel booking"}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="btn btn--ghost btn--compact"
+          disabled={actionBusy}
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+      <p className="orgx-note">
+        Actions apply only to this organization&apos;s assigned{" "}
+        {kind === "pakyawan" ? "booking" : "delivery"} and are recorded under
+        your admin account.
+      </p>
     </div>
   );
 }

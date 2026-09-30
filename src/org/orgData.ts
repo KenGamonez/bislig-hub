@@ -733,6 +733,73 @@ export async function fetchMemberRecentDeliveries(
   return (data ?? []) as MemberOpsBooking[];
 }
 
+export type OrgCancelResult = {
+  booking_id?: string;
+  delivery_id?: string;
+  success: boolean;
+  already_cancelled: boolean;
+  previous_status: string;
+  new_status: string;
+  reason: string;
+};
+
+/**
+ * Organization-scoped Pakyawan quoting via the quote_org_pakyawan RPC.
+ * Moves exactly one pending member-driver booking to quoted. Authorization
+ * (caller administers the booking driver's organization; assigned driver
+ * required) is enforced DB-side — never trust client state.
+ */
+export async function quoteOrgPakyawan(
+  bookingId: string,
+  priceCents: number
+): Promise<void> {
+  const { error } = await supabase.rpc("quote_org_pakyawan", {
+    p_booking_id: bookingId,
+    p_price_cents: priceCents,
+  });
+
+  if (error) throw error;
+}
+
+/**
+ * Organization-scoped Pakyawan cancellation via the cancel_org_pakyawan
+ * RPC. Same cancellable statuses, offer withdrawal, and ledger behavior
+ * as the Founder flow; scoped to member-driver bookings DB-side.
+ */
+export async function cancelOrgPakyawan(
+  bookingId: string,
+  reason: string
+): Promise<OrgCancelResult> {
+  const { data, error } = await supabase.rpc("cancel_org_pakyawan", {
+    p_booking_id: bookingId,
+    p_reason: reason,
+  });
+
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as OrgCancelResult;
+  return row;
+}
+
+/**
+ * Organization-scoped Delivery cancellation via the cancel_org_delivery
+ * RPC. Same cancellable statuses (everything except delivered/cancelled),
+ * offer withdrawal, and ledger behavior as the Founder flow; scoped to
+ * member-driver deliveries DB-side.
+ */
+export async function cancelOrgDelivery(
+  deliveryId: string,
+  reason: string
+): Promise<OrgCancelResult> {
+  const { data, error } = await supabase.rpc("cancel_org_delivery", {
+    p_delivery_id: deliveryId,
+    p_reason: reason,
+  });
+
+  if (error) throw error;
+  const row = (Array.isArray(data) ? data[0] : data) as OrgCancelResult;
+  return row;
+}
+
 const ORG_PHOTO_EXTENSIONS: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
