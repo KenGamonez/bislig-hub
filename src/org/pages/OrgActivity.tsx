@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
+import { OrgPageHead } from "../components/OrgPageHead";
 import {
   cancelOrgDelivery,
   cancelOrgPakyawan,
@@ -229,15 +230,11 @@ function ActivityBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · Operations</p>
-          <h1 className="orgx-title">Activity</h1>
-          <p className="orgx-sub">
-            Live presence for {org.name} members, refreshed every 15 seconds.
-          </p>
-        </div>
-      </div>
+      <OrgPageHead
+        eyebrow={`${org.name} · Operations`}
+        title="Activity"
+        description={`Live presence for ${org.name} members, refreshed every 15 seconds.`}
+      />
 
       <div className="orgx-kpis" role="group" aria-label="Live activity figures">
         <div className="orgx-kpi">
@@ -478,7 +475,7 @@ function OpsTable({
 }) {
   return (
     <div style={{ marginBottom: 4 }}>
-      <p className="section-label" style={{ margin: "12px 0 0" }}>
+      <p className="orgx-panel__title" style={{ margin: "12px 0 0" }}>
         {title} ({rows.length})
       </p>
       {rows.length === 0 ? (
@@ -633,7 +630,7 @@ function ManageOpsPanel({
         {canCancel ? (
           <button
             type="button"
-            className="btn btn--primary btn--compact"
+            className="btn btn--ghost btn--compact orgx-btn-danger"
             disabled={actionBusy}
             onClick={onCancel}
           >

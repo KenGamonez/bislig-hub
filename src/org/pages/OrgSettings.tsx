@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../legacy/lib/supabase";
+import { OrgPageHead } from "../components/OrgPageHead";
 import { fetchOrganization } from "../orgData";
 import type { OrgRecord } from "../orgData";
 
@@ -121,15 +122,11 @@ export function OrgSettings() {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{organization.name} · Organization</p>
-          <h1 className="orgx-title">Settings</h1>
-          <p className="orgx-sub">
-            Public identity for {organization.name} as shown to members.
-          </p>
-        </div>
-      </div>
+      <OrgPageHead
+        eyebrow={`${organization.name} · Organization`}
+        title="Settings"
+        description={`Public identity for ${organization.name} as shown to members.`}
+      />
 
       <div className="orgx-grid orgx-grid--single">
         <section className="orgx-panel">

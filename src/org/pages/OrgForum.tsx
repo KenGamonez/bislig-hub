@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChatRoom } from "../../components/ChatRoom";
 import { OrgGuard } from "../OrgGuard";
+import { OrgPageHead } from "../components/OrgPageHead";
 import { useOrgAdmin } from "../useOrgAdmin";
 import {
   createOrgForumTopic,
@@ -95,17 +96,12 @@ function ForumBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · Engagement</p>
-          <h1 className="orgx-title">Forum</h1>
-          <p className="orgx-sub">
-            {topics.length} topic{topics.length === 1 ? "" : "s"} · group
-            discussion for {org.name}.
-          </p>
-        </div>
-        <div className="orgx-pagehead__actions">
-          {!loading && !error && !showForm ? (
+      <OrgPageHead
+        eyebrow={`${org.name} · Engagement`}
+        title="Forum"
+        description={`${topics.length} topic${topics.length === 1 ? "" : "s"} · group discussion for ${org.name}.`}
+        actions={
+          !loading && !error && !showForm ? (
             <button
               type="button"
               className="btn btn--primary btn--compact"
@@ -116,9 +112,9 @@ function ForumBody({ org }: { org: OrgRecord }) {
             >
               New topic
             </button>
-          ) : null}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <div className="loading-block" aria-live="polite">

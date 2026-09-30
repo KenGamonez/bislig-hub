@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
 import { OrgConfirm } from "../OrgConfirm";
+import { OrgPageHead } from "../components/OrgPageHead";
 import {
   createOrgForumPost,
   deleteOrgForumPost,
@@ -257,34 +258,26 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">
-            <Link
-              to={`/org/${org.slug}/forum`}
-              style={{ color: "inherit", textDecoration: "none" }}
-            >
-              {org.name} · Forum
-            </Link>
-          </p>
-          <h1 className="orgx-title">{topic.title}</h1>
-          <p className="orgx-sub">
-            {topic.author_auth_user_id === myAuthId ? "You" : "Group member"} ·{" "}
-            {formatStamp(topic.created_at)} · {posts.length}{" "}
-            {posts.length === 1 ? "reply" : "replies"}
-            {topic.is_pinned ? " · Pinned" : ""}
-            {topic.is_closed ? " · Closed" : ""}
-          </p>
-        </div>
-        <div className="orgx-pagehead__actions">
+      <OrgPageHead
+        eyebrow={
+          <Link
+            to={`/org/${org.slug}/forum`}
+            style={{ color: "inherit", textDecoration: "none" }}
+          >
+            {org.name} · Forum
+          </Link>
+        }
+        title={topic.title}
+        description={`${topic.author_auth_user_id === myAuthId ? "You" : "Group member"} · ${formatStamp(topic.created_at)} · ${posts.length} ${posts.length === 1 ? "reply" : "replies"}${topic.is_pinned ? " · Pinned" : ""}${topic.is_closed ? " · Closed" : ""}`}
+        actions={
           <Link
             to={`/org/${org.slug}/forum`}
             className="btn btn--ghost btn--compact"
           >
             ← All topics
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <div className="orgx-grid">
         <div className="orgx-col">
@@ -383,7 +376,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                     {canDeleteTopic ? (
                       <button
                         type="button"
-                        className="btn btn--ghost btn--compact"
+                        className="btn btn--ghost btn--compact orgx-btn-danger"
                         disabled={saving}
                         onClick={() => setPendingDeleteTopic(true)}
                       >
@@ -480,7 +473,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
                                       </button>
                                       <button
                                         type="button"
-                                        className="btn btn--ghost btn--compact"
+                                        className="btn btn--ghost btn--compact orgx-btn-danger"
                                         disabled={saving}
                                         onClick={() => setPendingDeletePost(post)}
                                       >
@@ -507,6 +500,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
               confirmLabel="Delete"
               busyLabel="Deleting…"
               busy={saving}
+              danger
               onConfirm={() => void handleDeleteTopic()}
               onCancel={() => {
                 if (!saving) setPendingDeleteTopic(false);
@@ -520,6 +514,7 @@ function TopicBody({ org, topicId }: { org: OrgRecord; topicId: string | undefin
               confirmLabel="Delete"
               busyLabel="Deleting…"
               busy={saving}
+              danger
               onConfirm={() => void handleDeletePost(pendingDeletePost)}
               onCancel={() => {
                 if (!saving) setPendingDeletePost(null);

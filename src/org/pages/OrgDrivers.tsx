@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
 import { OrgConfirm } from "../OrgConfirm";
+import { OrgPageHead } from "../components/OrgPageHead";
 import {
   addOrganizationMember,
   adoptOrgDriver,
@@ -656,17 +657,12 @@ function DriversBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · People</p>
-          <h1 className="orgx-title">Drivers</h1>
-          <p className="orgx-sub">
-            {drivers.length} member{drivers.length === 1 ? "" : "s"} · live
-            presence from driver locations.
-          </p>
-        </div>
-        <div className="orgx-pagehead__actions">
-          {!loading && !error ? (
+      <OrgPageHead
+        eyebrow={`${org.name} · People`}
+        title="Drivers"
+        description={`${drivers.length} member${drivers.length === 1 ? "" : "s"} · live presence from driver locations.`}
+        actions={
+          !loading && !error ? (
             <>
               <button
                 type="button"
@@ -691,9 +687,9 @@ function DriversBody({ org }: { org: OrgRecord }) {
                 {showAdd ? "Close" : "Add existing"}
               </button>
             </>
-          ) : null}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       {notice ? (
         <p className="muted-copy" role="status" style={{ marginBottom: 12 }}>
@@ -1276,7 +1272,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
                           ) : (
                             <button
                               type="button"
-                              className="btn btn--ghost btn--compact"
+                              className="btn btn--ghost btn--compact orgx-btn-danger"
                               disabled={actionBusy}
                               onClick={() => setConfirmRemove(driver)}
                             >
@@ -1330,6 +1326,7 @@ function DriversBody({ org }: { org: OrgRecord }) {
               confirmLabel="Remove"
               busyLabel="Removing…"
               busy={actionBusy}
+              danger
               onConfirm={() => void handleConfirmRemove()}
               onCancel={() => {
                 if (!actionBusy) setConfirmRemove(null);
@@ -1563,7 +1560,7 @@ function DriverDetailPanel({
                 {detail.profile_photo_url ? (
                   <button
                     type="button"
-                    className="btn btn--ghost btn--compact"
+                    className="btn btn--ghost btn--compact orgx-btn-danger"
                     disabled={photoBusy}
                     onClick={onRemovePhoto}
                   >
@@ -1578,7 +1575,7 @@ function DriverDetailPanel({
               </p>
             ) : null}
 
-            <p className="section-label" style={{ marginTop: 16 }}>
+            <p className="orgx-panel__title" style={{ marginTop: 16 }}>
               Login username
             </p>
             <p className="muted-copy" style={{ marginTop: 0 }}>
@@ -1617,7 +1614,7 @@ function DriverDetailPanel({
               </p>
             ) : null}
 
-            <p className="section-label" style={{ marginTop: 16 }}>
+            <p className="orgx-panel__title" style={{ marginTop: 16 }}>
               Password reset
             </p>
             <p className="muted-copy" style={{ marginTop: 0 }}>
@@ -1646,7 +1643,7 @@ function DriverDetailPanel({
               </p>
             ) : null}
 
-            <p className="section-label" style={{ marginTop: 16 }}>
+            <p className="orgx-panel__title" style={{ marginTop: 16 }}>
               Profile &amp; vehicle
             </p>
             <div className="orgx-formgrid">
@@ -1773,7 +1770,7 @@ function DriverDetailPanel({
               </button>
             </div>
 
-            <p className="section-label" style={{ marginTop: 16 }}>
+            <p className="orgx-panel__title" style={{ marginTop: 16 }}>
               Recent rides
             </p>
             {recentRides.length === 0 ? (

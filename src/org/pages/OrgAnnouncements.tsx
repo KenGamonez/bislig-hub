@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { OrgGuard } from "../OrgGuard";
 import { OrgConfirm } from "../OrgConfirm";
+import { OrgPageHead } from "../components/OrgPageHead";
 import {
   createOrgAnnouncement,
   deleteOrgAnnouncement,
@@ -169,17 +170,12 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · Engagement</p>
-          <h1 className="orgx-title">Announcements</h1>
-          <p className="orgx-sub">
-            {items.length} total · {published} published ·{" "}
-            {items.length - published} drafts.
-          </p>
-        </div>
-        <div className="orgx-pagehead__actions">
-          {!loading && !error && !showForm ? (
+      <OrgPageHead
+        eyebrow={`${org.name} · Engagement`}
+        title="Announcements"
+        description={`${items.length} total · ${published} published · ${items.length - published} drafts.`}
+        actions={
+          !loading && !error && !showForm ? (
             <button
               type="button"
               className="btn btn--primary btn--compact"
@@ -187,9 +183,9 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
             >
               New announcement
             </button>
-          ) : null}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <div className="loading-block" aria-live="polite">
@@ -381,7 +377,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
                             ) : null}{" "}
                             <button
                               type="button"
-                              className="btn btn--ghost btn--compact"
+                              className="btn btn--ghost btn--compact orgx-btn-danger"
                               disabled={saving}
                               onClick={() => setPendingDelete(item)}
                             >
@@ -403,6 +399,7 @@ function AnnouncementsBody({ org }: { org: OrgRecord }) {
               confirmLabel="Delete"
               busyLabel="Deleting…"
               busy={saving}
+              danger
               onConfirm={() => void handleDelete(pendingDelete)}
               onCancel={() => {
                 if (!saving) setPendingDelete(null);

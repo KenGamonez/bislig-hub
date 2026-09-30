@@ -1,6 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { ChatRoom } from "../../components/ChatRoom";
 import { OrgGuard } from "../OrgGuard";
+import { OrgPageHead } from "../components/OrgPageHead";
 import { useOrgAdmin } from "../useOrgAdmin";
 import type { OrgRecord } from "../orgData";
 
@@ -26,23 +27,19 @@ function ChatBody({ org }: { org: OrgRecord }) {
 
   return (
     <>
-      <div className="orgx-pagehead">
-        <div>
-          <p className="orgx-eyebrow">{org.name} · Engagement</p>
-          <h1 className="orgx-title">Chat</h1>
-          <p className="orgx-sub">
-            Live room for member drivers and organization admins.
-          </p>
-        </div>
-        <div className="orgx-pagehead__actions">
+      <OrgPageHead
+        eyebrow={`${org.name} · Engagement`}
+        title="Chat"
+        description="Live room for member drivers and organization admins."
+        actions={
           <Link
             to={`/org/${org.slug}/forum`}
             className="btn btn--ghost btn--compact"
           >
             Discussion topics
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <div className="orgx-grid orgx-grid--single">
         <section className="orgx-panel">

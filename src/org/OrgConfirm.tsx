@@ -20,6 +20,7 @@ export function OrgConfirm({
   busy,
   onConfirm,
   onCancel,
+  danger = false,
 }: {
   title: string;
   body: string;
@@ -28,6 +29,7 @@ export function OrgConfirm({
   busy: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  danger?: boolean;
 }) {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
@@ -85,7 +87,11 @@ export function OrgConfirm({
           </button>
           <button
             type="button"
-            className="btn btn--primary btn--compact"
+            className={
+              danger
+                ? "btn btn--ghost btn--compact orgx-btn-danger"
+                : "btn btn--primary btn--compact"
+            }
             disabled={busy}
             onClick={onConfirm}
           >
