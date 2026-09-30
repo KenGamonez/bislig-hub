@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ChatRoom } from "../../components/ChatRoom";
 import { OrgGuard } from "../OrgGuard";
+import { useOrgAdmin } from "../useOrgAdmin";
 import {
   createOrgForumTopic,
   fetchOrgForumPosts,
@@ -21,6 +23,9 @@ export function OrgForum() {
 }
 
 function ForumBody({ org }: { org: OrgRecord }) {
+  const session = useOrgAdmin();
+  const authUserId =
+    session.status === "active" ? session.authUserId : null;
   const [topics, setTopics] = useState<OrgForumTopic[]>([]);
   const [replyCounts, setReplyCounts] = useState<Record<string, number>>({});
   const [lastActivity, setLastActivity] = useState<Record<string, number>>({});
@@ -190,6 +195,22 @@ function ForumBody({ org }: { org: OrgRecord }) {
               </div>
             </section>
           ) : null}
+
+          <section className="orgx-panel" style={{ marginBottom: 20 }}>
+            <div className="orgx-panel__head">
+              <h2 className="orgx-panel__title">Organization chatroom · Live</h2>
+            </div>
+            <div className="orgx-panel__body">
+              <ChatRoom
+                orgId={org.id}
+                orgName={org.name}
+                authUserId={authUserId}
+                isAdmin
+                heading="TODA Chat"
+                description="Live room for member drivers and organization admins. Messages expire after 24 hours."
+              />
+            </div>
+          </section>
 
           <section className="orgx-panel" aria-live="polite">
             <div className="orgx-panel__head">

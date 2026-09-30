@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { LanguageToggle } from "../../legacy/components/LanguageToggle";
 import { NotificationBell } from "../../notifications/NotificationCenter";
+import { DriverHamburger } from "./DriverHamburger";
 
 export function DriverHeader({
   name,
@@ -11,6 +12,7 @@ export function DriverHeader({
 }) {
   return (
     <header className="hub-driver__header" role="banner">
+      <DriverHamburger />
       <Link to="/" className="hub-driver__brand" aria-label="Bislig Hub — Home">
         <img
           src="/assets/bislig-hub-logo.png"

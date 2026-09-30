@@ -954,6 +954,72 @@ export async function adoptOrgDriver(
   return data as string;
 }
 
+export type ChatMessage = {
+  id: string;
+  org_id: string;
+  sender_auth_id: string;
+  sender_name: string;
+  sender_role: "driver" | "admin";
+  message: string;
+  created_at: string;
+};
+
+const CHAT_RETENTION_HOURS = 24;
+
+/**
+ * Shared organization chatroom reads. Always scoped to one org and to the
+ * trailing 24-hour window (server-side pg_cron deletes expired rows; the
+ * window keeps reads correct even without the scheduler). RLS restricts
+ * rows to that org's members and admins.
+ */
+export async function fetchChatMessages(
+  orgId: string
+): Promise<ChatMessage[]> {
+  const since = new Date(
+    Date.now() - CHAT_RETENTION_HOURS * 60 * 60 * 1000
+  ).toISOString();
+  const { data, error } = await supabase
+    .from("btrp_chat_messages")
+    .select("id,org_id,sender_auth_id,sender_name,sender_role,message,created_at")
+    .eq("org_id", orgId)
+    .gte("created_at", since)
+    .order("created_at", { ascending: true })
+    .limit(200);
+
+  if (error) throw error;
+  return (data ?? []) as ChatMessage[];
+}
+
+/**
+ * Send through the send_org_chat_message RPC, which resolves membership +
+ * display identity server-side. Clients never supply org/sender identity.
+ */
+export async function sendChatMessage(
+  orgId: string,
+  message: string
+): Promise<ChatMessage> {
+  const { data, error } = await supabase.rpc("send_org_chat_message", {
+    p_org_id: orgId,
+    p_message: message,
+  });
+
+  if (error) throw error;
+  return data as ChatMessage;
+}
+
+/**
+ * Organization-admin moderation delete. RLS allows only admins of the
+ * message's organization; everyone else gets a denial error.
+ */
+export async function deleteChatMessage(id: string): Promise<void> {
+  const { error } = await supabase
+    .from("btrp_chat_messages")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw error;
+}
+
 export function buildOrgDriverPhotoPath(driverId: string, file: File): string {
   const ext = ORG_PHOTO_EXTENSIONS[file.type] ?? "img";
   return `org-drivers/${driverId}/profile-photo.${ext}`;

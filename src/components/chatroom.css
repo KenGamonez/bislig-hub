@@ -1,0 +1,222 @@
+/* BTRP TODA shared chatroom — used by the driver app and the org console.
+   Neutral surfaces, navy text, gold identity tick, blue admin accents.
+   Mobile-first; composer respects bottom safe-area. */
+
+.btrp-chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.btrp-chat__head {
+  margin-bottom: 12px;
+}
+
+.btrp-chat__eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btrp-chat__eyebrow::after {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: var(--brand-orange, #ff8a00);
+  border-radius: 2px;
+}
+
+.btrp-chat__title {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.btrp-chat__sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.btrp-chat__list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 46vh;
+  min-height: 180px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.btrp-chat__msg {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border-soft, #eef1f3);
+}
+
+.btrp-chat__msg:last-child {
+  border-bottom: 0;
+}
+
+.btrp-chat__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.btrp-chat__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btrp-chat__role {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btrp-chat__role--driver {
+  color: #3c4e56;
+  background: #f1f3f5;
+  border-color: #e6eaed;
+}
+
+.btrp-chat__role--admin {
+  color: #1a44b4;
+  background: rgba(36, 86, 214, 0.09);
+  border-color: rgba(36, 86, 214, 0.28);
+}
+
+.btrp-chat__time {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.btrp-chat__text {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+}
+
+.btrp-chat__mine {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+
+.btrp-chat__msg-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btrp-chat__action {
+  background: none;
+  border: 0;
+  padding: 10px 4px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btrp-chat__composer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.btrp-chat__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--border, #e6eaed);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 15px;
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.btrp-chat__input:focus {
+  outline: 2px solid var(--brand-orange, #ff8a00);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.btrp-chat__send {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #0a1218;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btrp-chat__send:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btrp-chat__error {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--danger, #e03a3e);
+}
+
+.btrp-chat__empty {
+  padding: 22px 16px;
+  text-align: center;
+}
+
+.btrp-chat__empty-title {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 0 0 6px;
+  color: var(--text-primary);
+}
+
+.btrp-chat__empty-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btrp-chat__list {
+    -webkit-overflow-scrolling: auto;
+  }
+}
