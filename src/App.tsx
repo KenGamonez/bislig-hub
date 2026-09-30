@@ -47,6 +47,9 @@ const OrgAnnouncements = lazy(() =>
 const OrgForum = lazy(() =>
   import("./org/pages/OrgForum").then((m) => ({ default: m.OrgForum }))
 );
+const OrgChat = lazy(() =>
+  import("./org/pages/OrgChat").then((m) => ({ default: m.OrgChat }))
+);
 const OrgTopic = lazy(() =>
   import("./org/pages/OrgTopic").then((m) => ({ default: m.OrgTopic }))
 );
@@ -239,6 +242,14 @@ export default function App() {
                 element={
                   <OrgShell>
                     <OrgForum />
+                  </OrgShell>
+                }
+              />
+              <Route
+                path="/org/:slug/chat"
+                element={
+                  <OrgShell>
+                    <OrgChat />
                   </OrgShell>
                 }
               />

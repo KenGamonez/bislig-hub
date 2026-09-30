@@ -67,33 +67,23 @@ function IconSettings() {
   );
 }
 
-type NavItem = { to: (slug: string) => string; label: string; icon: ReactNode };
-type NavGroup = { label: string; items: NavItem[] };
+type NavItem = {
+  to: (slug: string) => string;
+  label: string;
+  icon: ReactNode;
+  exact?: boolean;
+};
 
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Overview",
-    items: [{ to: (slug) => `/org/${slug}/dashboard`, label: "Overview", icon: <IconOverview /> }],
-  },
-  {
-    label: "Operations",
-    items: [{ to: (slug) => `/org/${slug}/activity`, label: "Activity", icon: <IconActivity /> }],
-  },
-  {
-    label: "People",
-    items: [{ to: (slug) => `/org/${slug}/drivers`, label: "Drivers", icon: <IconDrivers /> }],
-  },
-  {
-    label: "Engagement",
-    items: [
-      { to: (slug) => `/org/${slug}/announcements`, label: "Announcements", icon: <IconAnnouncements /> },
-      { to: (slug) => `/org/${slug}/forum`, label: "Forum", icon: <IconForum /> },
-    ],
-  },
-  {
-    label: "Organization",
-    items: [{ to: (slug) => `/org/${slug}/settings`, label: "Settings", icon: <IconSettings /> }],
-  },
+// Flat product navigation: Overview, Activity, Drivers, Announcements,
+// Chat, Settings. Chat opens the forum route, whose first panel is the
+// live organization chatroom; topics remain below on the same page.
+const NAV_ITEMS: NavItem[] = [
+  { to: (slug) => `/org/${slug}/dashboard`, label: "Overview", icon: <IconOverview />, exact: true },
+  { to: (slug) => `/org/${slug}/activity`, label: "Activity", icon: <IconActivity /> },
+  { to: (slug) => `/org/${slug}/drivers`, label: "Drivers", icon: <IconDrivers /> },
+  { to: (slug) => `/org/${slug}/announcements`, label: "Announcements", icon: <IconAnnouncements /> },
+  { to: (slug) => `/org/${slug}/chat`, label: "Chat", icon: <IconForum /> },
+  { to: (slug) => `/org/${slug}/settings`, label: "Settings", icon: <IconSettings /> },
 ];
 
 function orgInitials(name: string): string {
@@ -103,32 +93,25 @@ function orgInitials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-function OrgNavGroups({ slug, onNavigate }: { slug: string; onNavigate?: () => void }) {
+function OrgNavItems({ slug, onNavigate }: { slug: string; onNavigate?: () => void }) {
   return (
-    <>
-      {NAV_GROUPS.map((group) => (
-        <div key={group.label}>
-          <p className="orgx-nav__group-label">{group.label}</p>
-          <ul className="orgx-nav__items">
-            {group.items.map((item) => (
-              <li key={item.label}>
-                <NavLink
-                  to={item.to(slug)}
-                  end={item.label === "Overview"}
-                  className={({ isActive }) =>
-                    `orgx-nav__item${isActive ? " is-active" : ""}`
-                  }
-                  onClick={onNavigate}
-                >
-                  <span className="orgx-nav__icon">{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <ul className="orgx-nav__items">
+      {NAV_ITEMS.map((item) => (
+        <li key={item.label}>
+          <NavLink
+            to={item.to(slug)}
+            end={item.exact}
+            className={({ isActive }) =>
+              `orgx-nav__item${isActive ? " is-active" : ""}`
+            }
+            onClick={onNavigate}
+          >
+            <span className="orgx-nav__icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        </li>
       ))}
-    </>
+    </ul>
   );
 }
 
@@ -184,7 +167,7 @@ export function OrgShell({ children }: { children: ReactNode }) {
               </div>
             </div>
             <nav className="orgx-nav" aria-label="Organization sections">
-              <OrgNavGroups slug={slug} />
+              <OrgNavItems slug={slug} />
             </nav>
             <div className="orgx-side__foot">
               <div className="orgx-orgcard">
@@ -280,7 +263,7 @@ export function OrgShell({ children }: { children: ReactNode }) {
                   </button>
                 </div>
                 <nav className="orgx-nav orgx-drawer__nav" aria-label="Organization sections">
-                  <OrgNavGroups slug={slug} onNavigate={closeMenu} />
+                  <OrgNavItems slug={slug} onNavigate={closeMenu} />
                 </nav>
                 <div className="orgx-drawer__foot">
                   <button
