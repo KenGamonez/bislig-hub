@@ -118,23 +118,49 @@ export function NewsPage() {
     );
   }
 
+  const [latest, ...rest] = items;
+
   return (
-    <DriverPage title="News" kicker="Driver">
-      {items.map((item) => (
-        <article key={item.id} className="hub-driver__card">
-          <p className="hub-driver__panel-label">
-            {item.published_at ? formatStamp(item.published_at) : ""}
+    <DriverPage title="News" kicker="BTRP TODA notices">
+      <article className="hub-driver__card hub-driver__notice hub-driver__notice--latest" aria-label="Latest notice">
+        <p className="hub-driver__notice-eyebrow">
+          <span className="hub-driver__notice-badge">Latest</span>
+          {latest.published_at ? (
+            <time className="hub-driver__notice-time">
+              {formatStamp(latest.published_at)}
+            </time>
+          ) : null}
+        </p>
+        <h2 className="hub-driver__notice-title">{latest.title}</h2>
+        <p className="hub-driver__notice-body">{latest.body}</p>
+        {latest.image_url ? (
+          <img
+            src={latest.image_url}
+            alt=""
+            loading="lazy"
+            className="hub-driver__notice-image"
+          />
+        ) : null}
+      </article>
+
+      {rest.map((item) => (
+        <article key={item.id} className="hub-driver__card hub-driver__notice" aria-label={item.title}>
+          <p className="hub-driver__notice-eyebrow">
+            <span className="hub-driver__notice-org">BTRP TODA</span>
+            {item.published_at ? (
+              <time className="hub-driver__notice-time">
+                {formatStamp(item.published_at)}
+              </time>
+            ) : null}
           </p>
-          <h3 style={{ margin: "4px 0 8px" }}>{item.title}</h3>
-          <p style={{ margin: "0 0 4px", whiteSpace: "pre-wrap" }}>
-            {item.body}
-          </p>
+          <h3 className="hub-driver__notice-title hub-driver__notice-title--sm">{item.title}</h3>
+          <p className="hub-driver__notice-body">{item.body}</p>
           {item.image_url ? (
             <img
               src={item.image_url}
               alt=""
               loading="lazy"
-              style={{ width: "100%", borderRadius: 12, marginTop: 8 }}
+              className="hub-driver__notice-image"
             />
           ) : null}
         </article>

@@ -1833,3 +1833,81 @@
     animation: none;
   }
 }
+
+/* ---- BTRP TODA official notices (driver news) ---- */
+.hub-driver__notice {
+  gap: var(--driver-space-1);
+}
+
+.hub-driver__notice--latest {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid var(--driver-gold);
+}
+
+.hub-driver__notice-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--driver-space-2);
+  margin: 0 0 var(--driver-space-1);
+}
+
+.hub-driver__notice-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--driver-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--driver-radius-pill);
+  background: var(--driver-orange);
+  color: var(--driver-slate);
+}
+
+.hub-driver__notice-org {
+  font-size: var(--driver-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--driver-gold);
+}
+
+.hub-driver__notice-time {
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.hub-driver__notice-title {
+  font-size: var(--driver-font-xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: var(--driver-leading-tight);
+  color: var(--driver-text);
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.hub-driver__notice-title--sm {
+  font-size: var(--driver-font-lg);
+}
+
+.hub-driver__notice-body {
+  margin: 0;
+  font-size: var(--driver-font-md);
+  line-height: var(--driver-leading-relaxed);
+  color: var(--driver-text);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.hub-driver__notice-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--driver-radius-md);
+  margin-top: var(--driver-space-2);
+  border: 1px solid var(--driver-border-soft);
+}
