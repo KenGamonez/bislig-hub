@@ -1911,3 +1911,41 @@
   margin-top: var(--driver-space-2);
   border: 1px solid var(--driver-border-soft);
 }
+
+/* ---- Driver shared-chat presentation (scoped; shared ChatRoom untouched) ---- */
+.hub-driver__chat-room {
+  gap: var(--driver-space-3);
+}
+
+.hub-driver__chat-banner {
+  background: var(--driver-surface-soft);
+  border: 1px solid var(--driver-border-soft);
+  border-left: 3px solid var(--driver-gold);
+  border-radius: var(--driver-radius-md);
+  padding: var(--driver-space-3) var(--driver-space-4);
+}
+
+.hub-driver__chat-banner-title {
+  margin: 0 0 2px;
+  font-size: var(--driver-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--driver-text);
+}
+
+.hub-driver__chat-banner-text {
+  margin: 0;
+  font-size: var(--driver-font-sm);
+  line-height: var(--driver-leading-relaxed);
+  color: var(--driver-text-muted);
+}
+
+.hub-driver .btrp-chat__list {
+  max-height: 52vh;
+  min-height: 220px;
+}
+
+.hub-driver .btrp-chat__text {
+  font-size: 15px;
+}

@@ -127,15 +127,22 @@ export function ChatPage() {
   }
 
   return (
-    <DriverPage title="Chat" kicker="Driver">
-      <div className="hub-driver__card">
+    <DriverPage title="Chat" kicker="BTRP TODA chat">
+      <div className="hub-driver__card hub-driver__chat-room">
+        <div className="hub-driver__chat-banner" role="note">
+          <p className="hub-driver__chat-banner-title">Shared BTRP TODA room</p>
+          <p className="hub-driver__chat-banner-text">
+            Every message here is visible to all BTRP TODA member drivers
+            and organization admins.
+          </p>
+        </div>
         <ChatRoom
           orgId={orgId}
           orgName={orgName || "Organization chatroom"}
           authUserId={authUserId}
           isAdmin={false}
           heading="TODA Chat"
-          description="Live room for member drivers and organization admins. Messages expire after 24 hours."
+          description="One shared live room for member drivers and organization admins. Messages expire after 24 hours."
         />
       </div>
     </DriverPage>
