@@ -911,7 +911,7 @@
   grid-template-columns: auto 1fr;
   gap: 10px;
   align-items: center;
-  margin-top: 4px;
+  margin: 4px 0 0;
 }
 
 .hub-driver__services dt {
@@ -1910,6 +1910,44 @@
   border-radius: var(--driver-radius-md);
   margin-top: var(--driver-space-2);
   border: 1px solid var(--driver-border-soft);
+}
+
+/* ---- Profile photo control ---- */
+.hub-driver__photo-row {
+  display: flex;
+  gap: var(--driver-space-3);
+  align-items: center;
+  margin-top: var(--driver-space-2);
+}
+
+.hub-driver__photo-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.hub-driver__photo-fallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--driver-surface-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--driver-text-muted);
+  flex-shrink: 0;
+}
+
+.hub-driver__photo-input {
+  display: none;
+}
+
+.hub-driver__photo-msg {
+  margin-top: var(--driver-space-2);
 }
 
 /* ---- Driver shared-chat presentation (scoped; shared ChatRoom untouched) ---- */

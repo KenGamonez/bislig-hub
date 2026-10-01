@@ -50,33 +50,17 @@ export function DriverPhotoControl() {
   return (
     <div className="hub-driver__card">
       <p className="hub-driver__panel-label">PROFILE PHOTO</p>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8 }}>
+      <div className="hub-driver__photo-row">
         {photoUrl ? (
           <img
             src={photoUrl}
             alt={`${driver.full_name} profile photo`}
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
+            className="hub-driver__photo-thumb"
           />
         ) : (
           <span
             aria-hidden="true"
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: "50%",
-              background: "var(--bg-surface-soft)",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 20,
-              color: "var(--text-muted)",
-            }}
+            className="hub-driver__photo-fallback"
           >
             {driver.full_name.slice(0, 1).toUpperCase()}
           </span>
@@ -94,19 +78,19 @@ export function DriverPhotoControl() {
             ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif"
-            style={{ display: "none" }}
+            className="hub-driver__photo-input"
             disabled={busy}
             onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
           />
         </div>
       </div>
       {error ? (
-        <p className="form-error-message" role="alert" style={{ marginTop: 8 }}>
+        <p className="form-error-message hub-driver__photo-msg" role="alert">
           {error}
         </p>
       ) : null}
       {notice ? (
-        <p className="hub-driver__success" role="status" style={{ marginTop: 8 }}>
+        <p className="hub-driver__success hub-driver__photo-msg" role="status">
           {notice}
         </p>
       ) : null}

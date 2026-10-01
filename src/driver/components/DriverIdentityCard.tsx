@@ -77,7 +77,7 @@ export function DriverIdentityCard({
         </div>
       </dl>
 
-      <div className="hub-driver__services">
+      <dl className="hub-driver__services">
         <dt>Services</dt>
         <dd className="hub-driver__service-row">
           <span className={`hub-driver__service-badge${canAcceptPakyawan ? " is-enabled" : ""}`}>
@@ -87,7 +87,7 @@ export function DriverIdentityCard({
             Delivery
           </span>
         </dd>
-      </div>
+      </dl>
     </div>
   );
 }
