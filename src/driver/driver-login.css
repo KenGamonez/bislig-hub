@@ -1,0 +1,132 @@
+/* ============================================================
+   BISLIG HUB — DRIVER LOGIN SKIN (Phase H)
+   Premium presentation for the driver sign-in screen.
+   All rules scoped under .hub-driver-login so nothing leaks
+   into customer/admin/legacy surfaces.
+   AUTH LOGIC IS UNTOUCHED — the legacy DriverLogin form keeps
+   its markup, handlers, group gate, and recovery flows.
+   ============================================================ */
+
+.hub-driver-login {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg-page);
+  padding: 36px 20px 64px;
+}
+
+.hub-driver-login__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+  margin-bottom: 4px;
+}
+
+.hub-driver-login__seal {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.hub-driver-login__eyebrow {
+  margin: 12px 0 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand-orange);
+}
+
+.hub-driver-login__tag {
+  margin: 6px 0 0;
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.hub-driver-login .auth-shell.driver-auth-shell {
+  width: min(100%, 460px);
+  padding: 18px 0 0;
+}
+
+.hub-driver-login .auth-card.driver-auth-card {
+  gap: 16px;
+  padding: 26px 24px 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.hub-driver-login .auth-card .auth-eyebrow {
+  color: #e8a90c;
+  letter-spacing: 0.2em;
+}
+
+.hub-driver-login .auth-card .auth-header h2 {
+  text-transform: none;
+  letter-spacing: -0.02em;
+}
+
+.hub-driver-login .auth-card .auth-subtitle {
+  color: var(--text-muted);
+}
+
+.hub-driver-login .auth-card .input-field {
+  min-height: var(--touch-comfort);
+  border-radius: var(--radius-md);
+}
+
+.hub-driver-login .auth-card .password-method {
+  display: grid;
+  gap: 8px;
+}
+
+.hub-driver-login .auth-card .form-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: var(--touch-min);
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+
+.hub-driver-login .auth-card .form-check input {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--brand-orange);
+  flex-shrink: 0;
+}
+
+.hub-driver-login .auth-card .primary-action.request-ride-action {
+  min-height: 52px;
+  font-size: var(--text-md);
+  border-radius: var(--radius-md);
+}
+
+.hub-driver-login .auth-card .auth-links {
+  align-items: center;
+}
+
+.hub-driver-login .auth-card .link-button {
+  min-height: var(--touch-min);
+}
+
+.hub-driver-login .auth-card .auth-back {
+  align-self: flex-start;
+  min-height: var(--touch-min);
+}
+
+@media (max-width: 428px) {
+  .hub-driver-login {
+    padding: 28px 16px 56px;
+  }
+
+  .hub-driver-login .auth-card.driver-auth-card {
+    padding: 22px 18px 24px;
+  }
+}
