@@ -175,7 +175,7 @@
 
 .hub-driver__header .language-option {
   min-width: 36px;
-  min-height: 28px;
+  min-height: var(--driver-touch-min);
   padding: 0 8px;
   border: 0;
   border-radius: var(--driver-radius-pill);
