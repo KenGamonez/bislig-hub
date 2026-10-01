@@ -90,7 +90,7 @@ export function MustChangePasswordPage() {
 
   return (
     <DriverPage title="Welcome" kicker="Driver">
-      <div className="hub-driver__card">
+      <div className="hub-driver__card hub-driver__card--hero">
         <p className="hub-driver__panel-label">FIRST SIGN IN</p>
         <h3 style={{ margin: "4px 0 8px" }}>
           Set your own password, {session.driver.full_name.split(" ")[0]}.

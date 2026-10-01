@@ -103,8 +103,10 @@ export function YouPage() {
 
       <DriverPhotoControl />
 
+      <p className="hub-driver__section-label">Account &amp; security</p>
       <DriverAccountActions onCloseChangePassword={() => {}} />
 
+      <p className="hub-driver__section-label">Notifications</p>
       <DriverPushControl />
 
       <Link to="/driver/history" className="btn btn--primary btn--block hub-driver__history-link">

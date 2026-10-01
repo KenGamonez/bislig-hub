@@ -36,7 +36,7 @@ export function DriverVehicleCard({
           <dd>{capacity != null ? `${capacity}` : "—"}</dd>
         </div>
       </dl>
-      <div className="hub-driver__services">
+      <dl className="hub-driver__services">
         <dt>Enabled services</dt>
         <dd className="hub-driver__service-row">
           <span className={`hub-driver__service-badge${canAcceptPakyawan ? " is-enabled" : ""}`}>
@@ -46,7 +46,7 @@ export function DriverVehicleCard({
             Delivery
           </span>
         </dd>
-      </div>
+      </dl>
     </div>
   );
 }

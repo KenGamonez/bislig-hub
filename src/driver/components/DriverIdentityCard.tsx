@@ -29,7 +29,7 @@ export function DriverIdentityCard({
   const initial = name.charAt(0).toUpperCase();
 
   return (
-    <div className="hub-driver__card hub-driver__identity">
+    <div className="hub-driver__card hub-driver__identity hub-driver__card--profile">
       <div className="hub-driver__identity-top">
         <div className="hub-driver__avatar" aria-hidden="true">
           {initial}

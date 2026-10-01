@@ -58,6 +58,9 @@ export function DriverHistoryPage() {
 
   return (
     <DriverPage title="History" kicker="Trip History">
+      <p className="hub-driver__history-count" role="status">
+        {allHistory.length} trip{allHistory.length === 1 ? "" : "s"}
+      </p>
       <div className="hub-driver__history-list" role="list" aria-label="Trip history">
         {allHistory.map((item) => (
           <DriverHistoryCard key={item.id} item={item} />

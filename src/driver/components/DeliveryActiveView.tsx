@@ -141,12 +141,30 @@ export function DeliveryActiveView({
 
   const action = NEXT_ACTION[booking.status] ?? null;
 
+  const stageColor =
+    booking.status === "delivered"
+      ? "var(--driver-success)"
+      : booking.status === "cancelled"
+        ? "var(--driver-danger)"
+        : "var(--driver-orange)";
+
   return (
-    <div className="hub-driver__card">
+    <div className="hub-driver__card hub-driver__card--status">
+      <div className="hub-driver__status-hero" style={{ "--status-color": stageColor } as React.CSSProperties}>
+        <div className="hub-driver__status-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <path d="M3.3 7 12 12l8.7-5M12 22V12" />
+          </svg>
+        </div>
+        <div className="hub-driver__status-content">
+          <p className="hub-driver__status-label">{STAGE_LABEL[booking.status] ?? booking.status}</p>
+          <p className="hub-driver__status-guide">
+            Delivery · {booking.package_type} · {booking.package_size}
+          </p>
+        </div>
+      </div>
       <ActiveJobHeader status={booking.status} service="Delivery" />
-      <p className="hub-driver__card-sub">
-        {STAGE_LABEL[booking.status] ?? booking.status}
-      </p>
 
       {TRIP_INDEX[booking.status] !== undefined ? (
         <JourneySteps steps={TRIP_STEPS} currentIndex={TRIP_INDEX[booking.status]} status={booking.status} />

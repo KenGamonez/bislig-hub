@@ -77,34 +77,6 @@
   }
 }
 
-/* ---- Design token utilities (internal use only) ---- */
-.hub-driver .driver-text-xs { font-size: var(--driver-font-xs); }
-.hub-driver .driver-text-sm { font-size: var(--driver-font-sm); }
-.hub-driver .driver-text-md { font-size: var(--driver-font-md); }
-.hub-driver .driver-text-lg { font-size: var(--driver-font-lg); }
-.hub-driver .driver-text-xl { font-size: var(--driver-font-xl); }
-.hub-driver .driver-text-2xl { font-size: var(--driver-font-2xl); }
-.hub-driver .driver-font-semibold { font-weight: 600; }
-.hub-driver .driver-font-bold { font-weight: 700; }
-.hub-driver .driver-font-extrabold { font-weight: 800; }
-.hub-driver .driver-kicker {
-  font-size: var(--driver-font-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--driver-gold);
-}
-.hub-driver .driver-title {
-  font-size: var(--driver-font-2xl);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--driver-text);
-}
-.hub-driver .driver-body { font-size: var(--driver-font-md); line-height: var(--driver-leading-normal); color: var(--driver-text); }
-.hub-driver .driver-caption { font-size: var(--driver-font-sm); color: var(--driver-text-muted); }
-.hub-driver .driver-muted { color: var(--driver-text-muted); }
-.hub-driver .driver-faint { color: var(--driver-text-faint); }
-
 /* ---- Header: compact brand + identity + EN/BI ---- */
 .hub-driver__header {
   position: sticky;
@@ -118,6 +90,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 var(--driver-content-pad);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hub-driver__brand {
@@ -145,10 +118,14 @@
   font-size: var(--driver-font-sm);
   font-weight: 700;
   color: var(--text-on-dark);
-  max-width: 120px;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--driver-radius-pill);
+  padding: 6px 10px;
 }
 
 .hub-driver__dot {
@@ -349,6 +326,7 @@
   bottom: 0;
   z-index: 30;
   background: var(--driver-slate);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -384,8 +362,9 @@
 }
 
 .hub-driver__nav-item.is-active {
-  color: var(--driver-orange);
-  background: var(--driver-orange-soft);
+  color: var(--driver-gold);
+  background: var(--driver-gold-soft);
+  font-weight: 700;
 }
 
 .hub-driver__nav-icon {
@@ -864,6 +843,21 @@
   text-align: center;
 }
 
+.hub-driver__card--profile {
+  position: relative;
+  overflow: hidden;
+  border-left: 3px solid var(--driver-gold);
+}
+
+.hub-driver__section-label {
+  font-size: var(--driver-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--driver-text-faint);
+  margin: 8px 2px -4px;
+}
+
 .hub-driver__identity-top {
   display: flex;
   flex-direction: column;
@@ -872,15 +866,16 @@
 }
 
 .hub-driver__avatar {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 999px;
-  background: var(--brand-slate-deep);
+  background: var(--driver-slate);
   color: var(--text-on-dark);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 800;
   display: grid;
   place-items: center;
+  box-shadow: 0 0 0 3px var(--driver-gold-soft);
 }
 
 .hub-driver__identity-name {
@@ -1088,6 +1083,13 @@
 .hub-driver__history-list {
   display: grid;
   gap: 8px;
+}
+
+.hub-driver__history-count {
+  margin: 0 2px;
+  font-size: var(--driver-font-sm);
+  font-weight: 600;
+  color: var(--driver-text-muted);
 }
 
 .hub-driver__history-card {
@@ -1525,33 +1527,6 @@
   font-weight: 700;
 }
 
-/* ---- Push control ---- */
-.hub-driver__push {
-  background: var(--driver-surface-soft);
-  border: 1px solid var(--driver-border-soft);
-  border-radius: var(--driver-radius-md);
-  padding: var(--driver-space-3);
-}
-
-.hub-driver__push-title {
-  font-size: var(--driver-font-sm);
-  font-weight: 700;
-  color: var(--driver-text);
-  margin: 0 0 var(--driver-space-1);
-}
-
-.hub-driver__push-text {
-  font-size: var(--driver-font-sm);
-  color: var(--driver-text-muted);
-  margin: 0 0 var(--driver-space-2);
-}
-
-.hub-driver__push-text {
-  font-size: var(--driver-font-sm);
-  color: var(--driver-text-muted);
-  margin: 0 0 var(--driver-space-2);
-}
-
 /* ---- Status hero card ---- */
 .hub-driver__card--status {
   position: relative;
@@ -1722,6 +1697,20 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+.hub-driver__drawer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--driver-gold-soft);
+  border: 1px solid rgba(232, 169, 12, 0.4);
+  color: var(--driver-gold);
+  font-size: 18px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
 .hub-driver__drawer-identity {
   flex: 1 1 auto;
   min-width: 0;
@@ -1802,7 +1791,7 @@
 .hub-driver__drawer-item.is-active {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 3px 0 0 var(--brand-orange);
+  box-shadow: inset 3px 0 0 var(--driver-gold);
 }
 
 .hub-driver__drawer-foot {

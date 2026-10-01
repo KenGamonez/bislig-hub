@@ -94,12 +94,30 @@ export function PakyawanActiveView({
       ? { label: "On my way", next: "driver_on_way" as const }
       : (NEXT_ACTION[booking.status] ?? null);
 
+  const stageColor =
+    booking.status === "completed"
+      ? "var(--driver-success)"
+      : booking.status === "cancelled"
+        ? "var(--driver-danger)"
+        : "var(--driver-orange)";
+
   return (
-    <div className="hub-driver__card">
+    <div className="hub-driver__card hub-driver__card--status">
+      <div className="hub-driver__status-hero" style={{ "--status-color": stageColor } as React.CSSProperties}>
+        <div className="hub-driver__status-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <path d="M16 2v4M8 2v4M3 10h18" />
+          </svg>
+        </div>
+        <div className="hub-driver__status-content">
+          <p className="hub-driver__status-label">{STAGE_LABEL[booking.status] ?? booking.status}</p>
+          <p className="hub-driver__status-guide">
+            Pakyawan trip · {booking.passengers} passenger{booking.passengers === 1 ? "" : "s"} · {booking.trip_type}
+          </p>
+        </div>
+      </div>
       <ActiveJobHeader status={booking.status} service="Pakyawan" />
-      <p className="hub-driver__card-sub">
-        {STAGE_LABEL[booking.status] ?? booking.status}
-      </p>
 
       {TRIP_INDEX[booking.status] !== undefined ? (
         <JourneySteps

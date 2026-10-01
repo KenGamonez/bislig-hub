@@ -87,6 +87,9 @@ export function DriverHamburger() {
             aria-label="Driver menu"
           >
             <div className="hub-driver__drawer-head">
+              <span className="hub-driver__drawer-avatar" aria-hidden="true">
+                {(firstName ?? "D").charAt(0).toUpperCase()}
+              </span>
               <div className="hub-driver__drawer-identity">
                 <p className="hub-driver__drawer-eyebrow">Bislig Hub · Driver</p>
                 <p className="hub-driver__drawer-name">
