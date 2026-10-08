@@ -1,5 +1,6 @@
 import { AdminExperience } from "../legacy/pages/AdminExperience";
 import { LegacyShell, useLegacyViewChange } from "../components/LegacyShell";
+import "../styles/owner-console.css";
 
 /**
  * Admin entry. AdminExperience self-gates via AdminLogin and the existing

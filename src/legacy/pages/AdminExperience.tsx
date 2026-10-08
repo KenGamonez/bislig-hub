@@ -292,6 +292,40 @@ export function AdminExperience({
   const [rideSearch, setRideSearch] = useState('')
   const [paymentSearch, setPaymentSearch] = useState('')
   const [selectedDriverId, setSelectedDriverId] = useState('')
+  const [detailOpen, setDetailOpen] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(min-width: 1024px)').matches,
+  )
+  const [detailTab, setDetailTab] = useState<'overview' | 'account' | 'activity'>('overview')
+
+  // Keep the detail drawer on its overview segment whenever another
+  // driver is selected. UI-only state; no business logic affected.
+  useEffect(() => {
+    setDetailTab('overview')
+  }, [selectedDriverId])
+
+  // Lock background scroll while the full-screen mobile sheet is open.
+  useEffect(() => {
+    if (!detailOpen) return
+    if (typeof window === 'undefined') return
+    if (!window.matchMedia('(max-width: 1023.98px)').matches) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [detailOpen])
+
+  // Close the detail drawer with Escape.
+  useEffect(() => {
+    if (!detailOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDetailOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [detailOpen])
   const [selectedRideId, setSelectedRideId] = useState('')
   const [showAddDriver, setShowAddDriver] = useState(false)
   const [driverDraft, setDriverDraft] = useState<DriverDraft>(emptyDriverDraft)
@@ -1795,7 +1829,7 @@ useEffect(() => {
 
   return (
     <>
-    <div className="admin-shell">
+      <div className="admin-shell owner-console">
       <button type="button" className="secondary-action compact-button admin-back-button" onClick={onBack}>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M19 12H5" />
@@ -1911,8 +1945,8 @@ useEffect(() => {
       ) : null}
 
       {activeTab === 'drivers' ? (
-        <section className="admin-layout admin-grid-two">
-          <div className="admin-panel">
+        <section className={`admin-layout admin-grid-two owner-drivers-workspace${detailOpen ? '' : ' is-closed'}`}>
+          <div className="admin-panel owner-drivers-list">
             <div className="panel-header-row">
               <h3>Drivers</h3>
               <button type="button" className="secondary-action compact-button" onClick={() => { setShowAddDriver((current) => !current); setCreatedAccount(null); setDriverError('') }}>
@@ -2223,7 +2257,7 @@ useEffect(() => {
                   <tbody>
                     {filteredDrivers.map((driver) => (
                       <tr key={driver.id}>
-                        <td>
+                        <td data-label="Driver">
                           <div className="driver-cell">
                             <img src={driver.profilePhoto} alt={driver.name} className="table-avatar" />
                             <div>
@@ -2232,15 +2266,15 @@ useEffect(() => {
                             </div>
                           </div>
                         </td>
-                        <td>{driver.phone}</td>
-                        <td>{driver.vehicleType}<br />{driver.vehicleModel}<br /><span className="muted-copy">{driver.vehicleCapacity ? formatVehicleCapacity(driver.vehicleCapacity) : 'Capacity not set'}</span></td>
-                        <td>{driver.plateNumber}</td>
-                        <td>
+                        <td data-label="Phone">{driver.phone}</td>
+                        <td data-label="Vehicle">{driver.vehicleType}<br />{driver.vehicleModel}<br /><span className="muted-copy">{driver.vehicleCapacity ? formatVehicleCapacity(driver.vehicleCapacity) : 'Capacity not set'}</span></td>
+                        <td data-label="Plate">{driver.plateNumber}</td>
+                        <td data-label="Account">
                           <span className={driver.status === 'Active' ? 'status-pill online' : 'status-pill offline'}>
                             {driver.status}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Profile / Presence">
                           <span className="muted-copy">Profile</span>
                           <select
                             className="inline-select"
@@ -2257,12 +2291,12 @@ useEffect(() => {
                             {presenceStatus(driver.id)}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Login">
                           <span className={`status-pill ${driver.authUserId ? 'online' : 'offline'}`}>
                             {driver.authUserId ? 'Active' : 'No login'}
                           </span>
                         </td>
-                        <td>
+                        <td data-label="Pakyawan">
                           <button
                             type="button"
                             className={driver.canAcceptPakyawan ? 'pakyawan-toggle enabled' : 'pakyawan-toggle'}
@@ -2271,7 +2305,7 @@ useEffect(() => {
                             {driver.canAcceptPakyawan ? 'Enabled' : 'Enable'}
                           </button>
                         </td>
-                        <td>
+                        <td data-label="Pa-Deliver">
                           <button
                             type="button"
                             className={(driver as unknown as { canAcceptDeliveries: boolean }).canAcceptDeliveries ? 'pakyawan-toggle enabled' : 'pakyawan-toggle'}
@@ -2280,11 +2314,11 @@ useEffect(() => {
                             {(driver as unknown as { canAcceptDeliveries: boolean }).canAcceptDeliveries ? 'Enabled' : 'Enable'}
                           </button>
                         </td>
-                        <td className="action-buttons-cell">
-                          <button type="button" className="ghost-button" onClick={() => { setSelectedDriverId(driver.id); setHoldMessage(''); setHoldError(''); openManageAccount(driver) }}>
+                        <td data-label="Actions" className="action-buttons-cell">
+                          <button type="button" className="ghost-button" onClick={() => { setSelectedDriverId(driver.id); setDetailTab('account'); setDetailOpen(true); setHoldMessage(''); setHoldError(''); openManageAccount(driver) }}>
                             Manage
                           </button>
-                          <button type="button" className="ghost-button" onClick={() => { setSelectedDriverId(driver.id); setHoldMessage(''); setHoldError('') }}>
+                          <button type="button" className="ghost-button" onClick={() => { setSelectedDriverId(driver.id); setDetailOpen(true); setHoldMessage(''); setHoldError('') }}>
                             View
                           </button>
                           {driver.status !== 'Active' && (
@@ -2313,12 +2347,30 @@ useEffect(() => {
             )}
           </div>
 
-          <aside className="admin-panel detail-panel">
+          <div className={detailOpen ? 'owner-drawer is-open' : 'owner-drawer'}>
+            <button type="button" className="owner-drawer__backdrop" aria-label="Close driver details" onClick={() => setDetailOpen(false)} />
+          <aside className="admin-panel detail-panel owner-drawer__panel" aria-label="Driver details">
             {selectedDriver ? (
               <>
                 <div className="panel-header-row">
                   <h3>Driver Details</h3>
+                  <button type="button" className="owner-drawer__close" aria-label="Close driver details" onClick={() => setDetailOpen(false)}>
+                    ×
+                  </button>
                 </div>
+                <div className="owner-segments" role="tablist" aria-label="Driver detail sections">
+                  <button type="button" role="tab" aria-selected={detailTab === 'overview'} className={detailTab === 'overview' ? 'owner-segment is-active' : 'owner-segment'} onClick={() => setDetailTab('overview')}>
+                    Overview
+                  </button>
+                  <button type="button" role="tab" aria-selected={detailTab === 'account'} className={detailTab === 'account' ? 'owner-segment is-active' : 'owner-segment'} onClick={() => setDetailTab('account')}>
+                    Account
+                  </button>
+                  <button type="button" role="tab" aria-selected={detailTab === 'activity'} className={detailTab === 'activity' ? 'owner-segment is-active' : 'owner-segment'} onClick={() => setDetailTab('activity')}>
+                    Activity
+                  </button>
+                </div>
+                {detailTab === 'overview' ? (
+                <>
                 <div className="detail-profile">
                   <img src={selectedDriver.profilePhoto} alt={selectedDriver.name} className="detail-avatar" />
                   <div>
@@ -2386,7 +2438,9 @@ useEffect(() => {
                   }}
                   onError={(message) => setDriverError(message)}
                 />
-
+                </>
+                ) : null}
+                {detailTab === 'account' ? (
                 <div className="manage-account-box">
                   <div className="panel-header-row">
                     <h4>Login account</h4>
@@ -2542,7 +2596,8 @@ useEffect(() => {
                     </form>
                   ) : null}
                 </div>
-
+                ) : null}
+                {detailTab === 'activity' ? (
                 <div className="mini-list-wrap">
                   <h4>Recent rides</h4>
                   <ul className="mini-list compact-list">
@@ -2557,6 +2612,7 @@ useEffect(() => {
                     ))}
                   </ul>
                 </div>
+                ) : null}
               </>
             ) : (
               <div className="empty-state-box">
@@ -2564,6 +2620,7 @@ useEffect(() => {
               </div>
             )}
           </aside>
+          </div>
         </section>
       ) : null}
 
@@ -2957,7 +3014,7 @@ useEffect(() => {
             <div className="quote-box">
               <span className="field-label">Linked driver</span>
               <p className="field-note">{drivers.find((driver) => driver.id === selectedApplication.driver_id)?.name ?? 'Linked driver'}</p>
-              <button type="button" className="secondary-action compact-button" onClick={() => { setActiveTab('drivers'); setSelectedDriverId(selectedApplication.driver_id as string) }}>
+              <button type="button" className="secondary-action compact-button" onClick={() => { setActiveTab('drivers'); setSelectedDriverId(selectedApplication.driver_id as string); setDetailOpen(true) }}>
                 View driver
               </button>
             </div>
