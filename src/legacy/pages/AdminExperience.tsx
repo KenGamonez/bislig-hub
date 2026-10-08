@@ -292,11 +292,7 @@ export function AdminExperience({
   const [rideSearch, setRideSearch] = useState('')
   const [paymentSearch, setPaymentSearch] = useState('')
   const [selectedDriverId, setSelectedDriverId] = useState('')
-  const [detailOpen, setDetailOpen] = useState(
-    () =>
-      typeof window !== 'undefined' &&
-      window.matchMedia('(min-width: 1024px)').matches,
-  )
+  const [detailOpen, setDetailOpen] = useState(false)
   const [detailTab, setDetailTab] = useState<'overview' | 'account' | 'activity'>('overview')
 
   // Keep the detail drawer on its overview segment whenever another
@@ -305,11 +301,10 @@ export function AdminExperience({
     setDetailTab('overview')
   }, [selectedDriverId])
 
-  // Lock background scroll while the full-screen mobile sheet is open.
+  // Lock background scroll while the takeover overlay is open.
   useEffect(() => {
     if (!detailOpen) return
     if (typeof window === 'undefined') return
-    if (!window.matchMedia('(max-width: 1023.98px)').matches) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -520,7 +515,6 @@ useEffect(() => {
       .then((items) => {
         const mappedDrivers = items.map(mapDriverRecord)
         setDrivers(mappedDrivers)
-        setSelectedDriverId((current) => current || mappedDrivers[0]?.id || '')
       })
       .catch((error) => {
         console.error('Unable to load drivers:', error)
@@ -954,7 +948,7 @@ useEffect(() => {
     )
   }, [cancellations, cancellationFilter])
 
-  const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? drivers[0]
+  const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId)
   const selectedRide = liveRides.find((ride) => ride.id === selectedRideId) ?? liveRides.find((ride) => ['accepted', 'arrived', 'in_progress'].includes(ride.status)) ?? liveRides[0]
   const selectedRideOffer = selectedRide && (selectedRide.status === 'requested' || selectedRide.status === 'no_driver') && !selectedRide.driverId
     ? liveRideOffers[selectedRide.id] ?? null
@@ -1945,7 +1939,7 @@ useEffect(() => {
       ) : null}
 
       {activeTab === 'drivers' ? (
-        <section className={`admin-layout admin-grid-two owner-drivers-workspace${detailOpen ? '' : ' is-closed'}`}>
+        <section className="admin-layout admin-grid-two owner-drivers-workspace">
           <div className="admin-panel owner-drivers-list">
             <div className="panel-header-row">
               <h3>Drivers</h3>
@@ -2261,7 +2255,9 @@ useEffect(() => {
                           <div className="driver-cell">
                             <img src={driver.profilePhoto} alt={driver.name} className="table-avatar" />
                             <div>
-                              <strong>{driver.name}</strong>
+                              <button type="button" className="owner-row-open" onClick={() => { setSelectedDriverId(driver.id); setDetailTab('overview'); setDetailOpen(true); setHoldMessage(''); setHoldError('') }} aria-label={`View details for ${driver.name}`}>
+                                {driver.name}
+                              </button>
                               <span>{driver.email}</span>
                             </div>
                           </div>
@@ -2347,7 +2343,8 @@ useEffect(() => {
             )}
           </div>
 
-          <div className={detailOpen ? 'owner-drawer is-open' : 'owner-drawer'}>
+          {detailOpen && selectedDriver ? (
+          <div className="owner-drawer is-open">
             <button type="button" className="owner-drawer__backdrop" aria-label="Close driver details" onClick={() => setDetailOpen(false)} />
           <aside className="admin-panel detail-panel owner-drawer__panel" aria-label="Driver details">
             {selectedDriver ? (
@@ -2621,6 +2618,7 @@ useEffect(() => {
             )}
           </aside>
           </div>
+          ) : null}
         </section>
       ) : null}
 

@@ -313,21 +313,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------------- Drivers workspace ---------------- */
+/* ---------------- Drivers workspace: full-width list ----------------
+   The detail experience is a click-to-open takeover overlay, so the
+   workspace is always a single full-width column. */
 .owner-console .owner-drivers-workspace {
   display: grid;
   gap: 14px;
   align-items: start;
-}
-
-@media (min-width: 1024px) {
-  .owner-console .owner-drivers-workspace {
-    grid-template-columns: minmax(0, 1fr) var(--owner-drawer-w);
-  }
-
-  .owner-console .owner-drivers-workspace.is-closed {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .owner-console .owner-drivers-list {
@@ -405,6 +398,32 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
+}
+
+.owner-console .owner-row-open {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--owner-ink);
+  cursor: pointer;
+  text-align: left;
+  overflow-wrap: break-word;
+  border-radius: 6px;
+}
+
+.owner-console .owner-row-open:hover {
+  color: var(--owner-accent-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.owner-console .owner-row-open:focus-visible {
+  outline: 2px solid var(--owner-accent);
+  outline-offset: 2px;
 }
 
 .owner-console .table-avatar {
@@ -493,69 +512,67 @@
   }
 }
 
-/* ---------------- Detail drawer ---------------- */
-.owner-console .owner-drawer__backdrop {
+/* ---------------- Detail takeover: click-to-open overlay ----------------
+   The detail surface renders only after a driver is clicked. It takes
+   over the screen above an inactive dashboard: large centered panel on
+   desktop, full-screen sheet on mobile. Page scroll locks while open. */
+.owner-console .owner-drawer {
   display: none;
 }
 
-.owner-console .owner-drawer__panel {
-  min-width: 0;
+.owner-console .owner-drawer.is-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  padding: 30px 40px;
 }
 
-@media (min-width: 1024px) {
-  .owner-console .owner-drivers-workspace:not(.is-closed) .owner-drawer__panel {
-    position: sticky;
-    top: 12px;
-    max-height: calc(100vh - 24px);
-    overflow-y: auto;
-  }
+.owner-console .owner-drawer__backdrop {
+  display: block;
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(7, 16, 18, 0.55);
+  cursor: pointer;
+}
 
-  .owner-console .owner-drivers-workspace.is-closed .owner-drawer {
-    display: none;
+.owner-console .owner-drawer__panel {
+  position: relative;
+  width: min(1400px, calc(100vw - 80px));
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+  margin: 0;
+  animation: owner-drawer-in 220ms ease;
+}
+
+@keyframes owner-drawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
 @media (max-width: 1023.98px) {
-  .owner-console .owner-drawer {
-    display: none;
-  }
-
   .owner-console .owner-drawer.is-open {
-    display: block;
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-  }
-
-  .owner-console .owner-drawer__backdrop {
-    display: block;
-    position: absolute;
-    inset: 0;
-    border: 0;
     padding: 0;
-    background: rgba(7, 16, 18, 0.5);
-    cursor: pointer;
+    align-items: stretch;
   }
 
   .owner-console .owner-drawer__panel {
-    position: absolute;
-    inset: 0;
+    width: auto;
+    max-height: none;
+    min-height: 100%;
     border-radius: 0;
     border: 0;
-    overflow-y: auto;
     padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    animation: owner-drawer-in 220ms ease;
-  }
-
-  @keyframes owner-drawer-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
   }
 }
 
