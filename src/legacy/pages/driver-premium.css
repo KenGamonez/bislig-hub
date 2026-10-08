@@ -622,6 +622,187 @@
   }
 }
 
+/* ============================================================
+   PROFILE REFINEMENT PASS — mobile-first polish
+   Profile-exclusive selectors only. Queue/Pakyawan/Delivery/
+   chat/notification visuals are intentionally untouched here.
+   ============================================================ */
+
+/* ---- Rating row: always horizontal, never stacked ---- */
+.drv-premium.driver-dashboard .driver-hero-rating {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 7px 0 0;
+  color: var(--drv-text);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.drv-premium.driver-dashboard .driver-hero-rating .rating-stars-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  flex: none;
+}
+
+.drv-premium.driver-dashboard .driver-hero-rating .rating-stars-inline svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+/* ---- Identity hierarchy ---- */
+.drv-premium.driver-dashboard .driver-hero-copy h3 {
+  font-size: clamp(1.45rem, 6vw, 1.75rem);
+  line-height: 1.15;
+  margin: 5px 0 0;
+}
+
+.drv-premium.driver-dashboard .driver-hero-vehicle {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.drv-premium.driver-dashboard .driver-hero-signed {
+  margin-top: 5px;
+  font-size: 0.74rem;
+}
+
+/* ---- Status control readability ---- */
+.drv-premium.driver-dashboard .driver-status-chip {
+  letter-spacing: 0.04em;
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-offline {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* ---- Metrics: balanced, tabular, no awkward stacks ---- */
+.drv-premium.driver-dashboard .driver-stat-tile strong {
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile small {
+  line-height: 1.4;
+}
+
+@media (max-width: 360px) {
+  .drv-premium.driver-dashboard .driver-stat-tile {
+    padding: 12px 9px;
+  }
+
+  .drv-premium.driver-dashboard .driver-stat-tile strong {
+    font-size: 1.18rem;
+  }
+
+  .drv-premium.driver-dashboard .driver-stat-label {
+    font-size: 0.6rem;
+  }
+}
+
+/* ---- Password panel: quiet premium card ---- */
+.drv-premium.driver-dashboard .account-panel {
+  border-radius: 18px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.drv-premium.driver-dashboard .account-panel .panel-form,
+.drv-premium.driver-dashboard .account-panel .form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.drv-premium.driver-dashboard .account-panel .field-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.drv-premium.driver-dashboard .account-panel .primary-action {
+  width: 100%;
+}
+
+.drv-premium.driver-dashboard .password-meta {
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--drv-muted);
+  margin: 0;
+}
+
+.drv-premium.driver-dashboard .driver-password-success {
+  background: var(--drv-success-soft);
+  border: 1px solid rgba(13, 166, 116, 0.3);
+  color: var(--drv-success);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ---- History: compact, scannable ---- */
+.drv-premium.driver-dashboard .history-card {
+  padding: 16px;
+  gap: 10px;
+}
+
+.drv-premium.driver-dashboard .history-list {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.drv-premium.driver-dashboard .history-item {
+  padding: 12px 14px;
+  gap: 7px;
+}
+
+.drv-premium.driver-dashboard .history-passenger span {
+  font-variant-numeric: tabular-nums;
+}
+
+.drv-premium.driver-dashboard .history-route {
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.drv-premium.driver-dashboard .history-footer {
+  padding-top: 8px;
+}
+
+.drv-premium.driver-dashboard .history-footer strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Profile composition rhythm ---- */
+.drv-premium.driver-dashboard .driver-hero {
+  gap: 14px;
+}
+
+.drv-premium.driver-dashboard .account-actions-row {
+  margin-top: 2px;
+}
+
+/* ---- Desktop: composed profile canvas ---- */
+@media (min-width: 1024px) {
+  .drv-premium.driver-dashboard .driver-hero-copy {
+    max-width: 56ch;
+  }
+
+  .drv-premium.driver-dashboard .history-item {
+    padding: 13px 18px;
+  }
+}
+
 /* ---------------- Reduced motion ---------------- */
 @media (prefers-reduced-motion: reduce) {
   .drv-premium.driver-dashboard .driver-stat-tile,
