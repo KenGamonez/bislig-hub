@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import './driver-premium.css'
 import { CancelRideModal } from '../components/CancelRideModal'
 import { MapView } from '../components/MapView'
 import { RideChat } from '../components/RideChat'
@@ -4645,7 +4646,7 @@ const renderOnlineState = () => (
                   <div className="history-passenger">
                     <span>{ride.date}</span>
                   </div>
-                  <span className="completed-badge">{ride.status}</span>
+                  <span className={ride.status === 'cancelled' ? 'cancelled-badge' : 'completed-badge'}>{ride.status}</span>
                 </div>
                 <div className="history-route">
                   <span>{ride.pickup}</span>
@@ -4687,7 +4688,7 @@ const renderOnlineState = () => (
 
   return (
     <>
-    <div className="driver-shell driver-dashboard">
+    <div className="driver-shell driver-dashboard drv-premium">
 {showChat && activeRide?.id && (
         <RideChat
           rideId={activeRide.id}
