@@ -69,7 +69,28 @@ export function useDriverSession() {
         )
         .eq("auth_user_id", user.id)
         .maybeSingle();
-      driver = coreSelect.data;
+      if (coreSelect.error) {
+        // Last resort: the same narrow columns the driver entry gate
+        // reads (id/status/flag/name). Enough to establish the session
+        // and the first-login gate even if newer profile columns are
+        // unreadable in this database. A driver stuck on the welcome
+        // gate must never be bounced to login by a profile-column read
+        // failure.
+        console.warn(
+          "Driver session falling back to minimal columns:",
+          coreSelect.error.message
+        );
+        const minimalSelect = await supabase
+          .from("drivers")
+          .select("id, full_name, status, must_change_password")
+          .eq("auth_user_id", user.id)
+          .maybeSingle();
+        if (!minimalSelect.error) {
+          driver = minimalSelect.data;
+        }
+      } else {
+        driver = coreSelect.data;
+      }
     } else {
       driver = fullSelect.data;
     }
@@ -80,6 +101,9 @@ export function useDriverSession() {
     }
 
     const identity = driver as unknown as DriverIdentity;
+    if (typeof identity.full_name !== "string") {
+      identity.full_name = "";
+    }
     identity.can_accept_pakyawan = Boolean(identity.can_accept_pakyawan);
     identity.can_accept_deliveries = Boolean(identity.can_accept_deliveries);
     identity.must_change_password = Boolean(identity.must_change_password);
