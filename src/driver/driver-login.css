@@ -1,132 +1,583 @@
 /* ============================================================
-   BISLIG HUB — DRIVER LOGIN SKIN (Phase H)
-   Premium presentation for the driver sign-in screen.
-   All rules scoped under .hub-driver-login so nothing leaks
-   into customer/admin/legacy surfaces.
-   AUTH LOGIC IS UNTOUCHED — the legacy DriverLogin form keeps
-   its markup, handlers, group gate, and recovery flows.
+   BISLIG HUB — DRIVER LOGIN · COMMAND CENTER (premium redesign)
+   Mobile-first editorial login. All rules scoped under
+   .hub-driver-login so nothing leaks into customer/admin UI.
+   AUTH LOGIC IS UNTOUCHED — presentation only.
+   Accent: Bislig Hub orange #FF6B1A, used intentionally.
    ============================================================ */
 
 .hub-driver-login {
+  --dlx-orange: #ff6b1a;
+  --dlx-orange-deep: #d9550b;
+  --dlx-orange-soft: rgba(255, 107, 26, 0.13);
+  --dlx-ink: #0b0e11;
+  --dlx-panel: #10151a;
+  --dlx-card: #0d141b;
+  --dlx-line: rgba(255, 255, 255, 0.11);
+  --dlx-line-soft: rgba(255, 255, 255, 0.07);
+  --dlx-text: #f4f6f7;
+  --dlx-muted: rgba(244, 246, 247, 0.64);
+  --dlx-faint: rgba(244, 246, 247, 0.42);
+  --dlx-field: #eef1f3;
+  --dlx-field-ink: #10151a;
+  --dlx-danger: #ff7a72;
+  --dlx-danger-soft: rgba(255, 122, 114, 0.1);
+  --dlx-radius: 16px;
+  --dlx-touch: 48px;
+
   min-height: 100dvh;
+  background:
+    radial-gradient(1100px 480px at 85% -8%, rgba(255, 107, 26, 0.09), transparent 60%),
+    var(--dlx-ink);
+  color: var(--dlx-text);
+  padding: 22px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--bg-page);
-  padding: 36px 20px 64px;
 }
 
-.hub-driver-login__brand {
+/* Shell becomes the composition container (base: min(100%,560px)). */
+.hub-driver-login .driver-hub .auth-shell.driver-auth-shell {
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding: 0;
+  background: transparent;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 420px;
-  margin-bottom: 4px;
+  gap: 18px;
+  flex: 1;
 }
 
-.hub-driver-login__seal {
-  width: 72px;
-  height: 72px;
+/* ---------------- Hero ---------------- */
+.hub-driver-login .dlx-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(420px 200px at 12% 0%, rgba(255, 107, 26, 0.12), transparent 65%),
+    var(--dlx-panel);
+  border: 1px solid var(--dlx-line-soft);
+  border-radius: 20px;
+  padding: 24px 20px 20px;
+}
+
+.hub-driver-login .dlx-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(115deg, black 0%, transparent 62%);
+  -webkit-mask-image: linear-gradient(115deg, black 0%, transparent 62%);
+}
+
+.hub-driver-login .dlx-hero::after {
+  content: "";
+  position: absolute;
+  left: -30px;
+  right: -30px;
+  bottom: 34px;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 26, 0.55) 30%, rgba(255, 107, 26, 0.55) 62%, transparent);
+  transform: rotate(-7deg);
+}
+
+.hub-driver-login .dlx-hero__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hub-driver-login .dlx-hero__logo {
+  height: 26px;
+  width: auto;
   object-fit: contain;
 }
 
-.hub-driver-login__eyebrow {
-  margin: 12px 0 0;
+.hub-driver-login .dlx-hero__brandname {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--dlx-text);
+}
+
+.hub-driver-login .dlx-hero__eyebrow {
+  position: relative;
+  margin: 20px 0 0;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--brand-orange);
-}
-
-.hub-driver-login__tag {
-  margin: 6px 0 0;
-  font-size: var(--text-sm);
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-
-.hub-driver-login .auth-shell.driver-auth-shell {
-  width: min(100%, 460px);
-  padding: 18px 0 0;
-}
-
-.hub-driver-login .auth-card.driver-auth-card {
-  gap: 16px;
-  padding: 26px 24px 28px;
-  box-shadow: var(--shadow-card);
-}
-
-.hub-driver-login .auth-card .auth-eyebrow {
-  color: #e8a90c;
   letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dlx-orange);
 }
 
-.hub-driver-login .auth-card .auth-header h2 {
-  text-transform: none;
-  letter-spacing: -0.02em;
+.hub-driver-login .dlx-hero__title {
+  position: relative;
+  margin: 8px 0 0;
+  font-size: clamp(36px, 9.5vw, 46px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  color: var(--dlx-text);
+  text-wrap: balance;
 }
 
-.hub-driver-login .auth-card .auth-subtitle {
-  color: var(--text-muted);
+.hub-driver-login .dlx-hero__accent {
+  color: var(--dlx-orange);
 }
 
-.hub-driver-login .auth-card .input-field {
-  min-height: var(--touch-comfort);
-  border-radius: var(--radius-md);
+.hub-driver-login .dlx-hero__sub {
+  position: relative;
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--dlx-muted);
+  max-width: 34ch;
 }
 
-.hub-driver-login .auth-card .password-method {
-  display: grid;
+.hub-driver-login .dlx-hero__points {
+  position: relative;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--dlx-line-soft);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dlx-faint);
+}
+
+.hub-driver-login .dlx-hero__points li {
+  display: flex;
+  align-items: center;
   gap: 8px;
 }
 
-.hub-driver-login .auth-card .form-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  min-height: var(--touch-min);
+.hub-driver-login .dlx-hero__points li + li::before {
+  content: "";
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--dlx-orange);
+}
+
+/* ---------------- Card ---------------- */
+.hub-driver-login .driver-hub .auth-card.driver-auth-card {
+  background: var(--dlx-card);
+  border: 1px solid var(--dlx-line);
+  border-radius: 20px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  padding: 20px 20px 22px;
+  gap: 16px;
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-eyebrow {
+  color: var(--dlx-orange);
+  letter-spacing: 0.2em;
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-header {
+  gap: 6px;
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-header h2 {
+  color: var(--dlx-text);
+  text-transform: none;
+  letter-spacing: -0.025em;
+  font-size: 26px;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-subtitle {
+  color: var(--dlx-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.hub-driver-login .dlx-back {
+  align-self: flex-start;
+  min-height: 44px;
+  border-color: var(--dlx-line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--dlx-text);
+}
+
+.hub-driver-login .dlx-back:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-error {
+  color: var(--dlx-danger);
+  background: var(--dlx-danger-soft);
+  border: 1px solid rgba(255, 122, 114, 0.32);
+  border-radius: 12px;
   padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  font-size: 13.5px;
+  margin: 0;
+}
+
+/* ---------------- Fields ---------------- */
+.hub-driver-login .driver-hub .auth-card .field-block {
+  gap: 8px;
+}
+
+.hub-driver-login .driver-hub .auth-card .field-label {
+  color: rgba(244, 246, 247, 0.62);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.hub-driver-login .driver-hub .auth-card .input-field {
+  min-height: var(--dlx-touch);
+  font-size: 16px;
+  border-radius: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: var(--dlx-field);
+  color: var(--dlx-field-ink);
+  padding: 0 15px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.hub-driver-login .driver-hub .auth-card .input-field::placeholder {
+  color: rgba(16, 21, 26, 0.38);
+}
+
+.hub-driver-login .driver-hub .auth-card .input-field:focus {
+  outline: none;
+  border-color: var(--dlx-orange);
+  box-shadow: 0 0 0 3px rgba(255, 107, 26, 0.28);
+  background: #fff;
+}
+
+.hub-driver-login .driver-hub .auth-card .input-field:disabled {
+  opacity: 0.6;
+}
+
+.hub-driver-login .driver-hub .auth-card .password-visibility-toggle {
+  width: 44px;
+  height: 44px;
+  right: 4px;
+  border-radius: 10px;
+  color: rgba(16, 21, 26, 0.55);
+}
+
+.hub-driver-login .driver-hub .auth-card .password-visibility-toggle:hover {
+  color: var(--dlx-orange-deep);
+  background: rgba(16, 21, 26, 0.06);
+}
+
+.hub-driver-login .driver-hub .auth-card .password-field-wrap .input-field {
+  padding-right: 52px;
+}
+
+/* ---------------- Group tiles ---------------- */
+.hub-driver-login .driver-hub .auth-card form {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  margin: 0;
+}
+
+.hub-driver-login .driver-hub .auth-card .password-method {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  gap: 10px;
+}
+
+.hub-driver-login .driver-hub .auth-card .dlx-group-label {
+  color: rgba(244, 246, 247, 0.62);
+}
+
+.hub-driver-login .dlx-tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+  padding: 12px 14px;
+  border: 1px solid var(--dlx-line);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.hub-driver-login .dlx-tile__input {
+  position: absolute;
+  opacity: 0;
+  width: 44px;
+  height: 44px;
+  margin: 0;
   cursor: pointer;
 }
 
-.hub-driver-login .auth-card .form-check input {
-  margin-top: 2px;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--brand-orange);
+.hub-driver-login .dlx-tile__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--dlx-muted);
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.hub-driver-login .dlx-tile__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.hub-driver-login .dlx-tile__text .field-label {
+  color: var(--dlx-text);
+  font-size: 13.5px;
+  letter-spacing: 0.02em;
+}
+
+.hub-driver-login .dlx-tile__text .muted-copy {
+  color: var(--dlx-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.hub-driver-login .dlx-tile__check {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  display: inline-grid;
+  place-items: center;
+  transition: border-color 160ms ease, background 160ms ease;
   flex-shrink: 0;
 }
 
-.hub-driver-login .auth-card .primary-action.request-ride-action {
-  min-height: 52px;
-  font-size: var(--text-md);
-  border-radius: var(--radius-md);
+.hub-driver-login .dlx-tile__check::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #fff;
+  transform: scale(0);
+  transition: transform 160ms ease;
 }
 
-.hub-driver-login .auth-card .auth-links {
+.hub-driver-login .dlx-tile:hover {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:checked) {
+  border-color: var(--dlx-orange);
+  background: linear-gradient(180deg, rgba(255, 107, 26, 0.16), rgba(255, 107, 26, 0.07));
+  box-shadow: 0 0 0 2px var(--dlx-orange), 0 8px 20px rgba(255, 107, 26, 0.18);
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:checked) .dlx-tile__icon {
+  background: var(--dlx-orange);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 107, 26, 0.45);
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:checked) .dlx-tile__text .field-label {
+  color: #fff;
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:checked) .dlx-tile__check {
+  border-color: var(--dlx-orange);
+  background: var(--dlx-orange);
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:checked) .dlx-tile__check::after {
+  transform: scale(1);
+}
+
+.hub-driver-login .dlx-tile:has(.dlx-tile__input:focus-visible) {
+  outline: 2px solid var(--dlx-orange);
+  outline-offset: 2px;
+}
+
+/* ---------------- CTA + links ---------------- */
+.hub-driver-login .driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action {
+  min-height: 54px;
+  border-radius: 14px;
+  border-color: transparent;
+  background: var(--dlx-orange);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 24px rgba(255, 107, 26, 0.32);
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, opacity 140ms ease;
+}
+
+.hub-driver-login .driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action:hover:not(:disabled) {
+  background: var(--dlx-orange-deep);
+  box-shadow: 0 12px 28px rgba(255, 107, 26, 0.4);
+  transform: translateY(-1px);
+}
+
+.hub-driver-login .driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(255, 107, 26, 0.3);
+}
+
+.hub-driver-login .driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+
+.hub-driver-login .driver-hub .auth-card .auth-links {
   align-items: center;
+  gap: 4px 12px;
 }
 
-.hub-driver-login .auth-card .link-button {
-  min-height: var(--touch-min);
+.hub-driver-login .driver-hub .auth-card .link-button {
+  min-height: 44px;
+  padding: 10px 4px;
+  color: var(--dlx-muted);
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
-.hub-driver-login .auth-card .auth-back {
-  align-self: flex-start;
-  min-height: var(--touch-min);
+.hub-driver-login .driver-hub .auth-card .link-button:hover:not(:disabled) {
+  color: var(--dlx-text);
+  text-decoration-color: var(--dlx-orange);
 }
 
-@media (max-width: 428px) {
+.hub-driver-login .driver-hub .auth-card .muted-copy {
+  color: var(--dlx-muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* ---------------- Entrance ---------------- */
+@keyframes dlx-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hub-driver-login .dlx-hero {
+  animation: dlx-rise 520ms ease both;
+}
+
+.hub-driver-login .dlx-card {
+  animation: dlx-rise 520ms 90ms ease both;
+}
+
+/* ---------------- Small screens ---------------- */
+@media (max-width: 360px) {
   .hub-driver-login {
-    padding: 28px 16px 56px;
+    padding: 18px 12px calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
-  .hub-driver-login .auth-card.driver-auth-card {
-    padding: 22px 18px 24px;
+  .hub-driver-login .driver-hub .auth-card.driver-auth-card {
+    padding: 18px 16px 20px;
+  }
+
+  .hub-driver-login .dlx-tile__text .muted-copy {
+    font-size: 11.5px;
+  }
+}
+
+/* Short screens: compress hero so the form stays reachable. */
+@media (max-height: 660px) {
+  .hub-driver-login .dlx-hero__title {
+    font-size: clamp(30px, 8vw, 38px);
+  }
+
+  .hub-driver-login .dlx-hero__sub,
+  .hub-driver-login .dlx-hero__points {
+    display: none;
+  }
+}
+
+/* ---------------- Desktop: asymmetric editorial ---------------- */
+@media (min-width: 1024px) {
+  .hub-driver-login {
+    justify-content: center;
+    padding: 48px 40px 56px;
+  }
+
+  .hub-driver-login .driver-hub .auth-shell.driver-auth-shell {
+    width: min(100%, 1040px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 430px);
+    gap: clamp(36px, 5vw, 76px);
+    align-items: center;
+  }
+
+  .hub-driver-login .dlx-hero {
+    padding: 44px 40px 40px;
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hub-driver-login .dlx-hero__logo {
+    height: 32px;
+  }
+
+  .hub-driver-login .dlx-hero__eyebrow {
+    margin-top: 28px;
+  }
+
+  .hub-driver-login .dlx-hero__title {
+    font-size: clamp(56px, 5.6vw, 84px);
+    line-height: 0.98;
+  }
+
+  .hub-driver-login .dlx-hero__sub {
+    font-size: 16px;
+    max-width: 36ch;
+  }
+
+  .hub-driver-login .dlx-hero__points {
+    margin-top: 26px;
+    font-size: 13px;
+  }
+
+  .hub-driver-login .driver-hub .auth-card.driver-auth-card {
+    padding: 28px 28px 30px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .hub-driver-login .driver-hub .auth-shell.driver-auth-shell {
+    width: min(100%, 1120px);
+    gap: 88px;
+  }
+}
+
+/* ---------------- Reduced motion ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  .hub-driver-login .dlx-hero,
+  .hub-driver-login .dlx-card {
+    animation: none;
+  }
+
+  .hub-driver-login .driver-hub .auth-card.driver-auth-card .primary-action.request-ride-action:hover:not(:disabled) {
+    transform: none;
   }
 }

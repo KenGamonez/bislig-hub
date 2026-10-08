@@ -146,9 +146,37 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
 
   return (
     <>
-      <div className="auth-shell driver-auth-shell">
-        <div className="auth-card driver-auth-card">
-          <button type="button" className="secondary-action compact-button auth-back" onClick={onBack}>
+      <div className="auth-shell driver-auth-shell dlx">
+        <section className="dlx-hero" aria-label="Bislig Hub driver access">
+          <div className="dlx-hero__brand">
+            <img
+              src="/assets/bislig-hub-logo.png"
+              alt="Bislig Hub"
+              className="dlx-hero__logo"
+              decoding="async"
+            />
+            <span className="dlx-hero__brandname" aria-hidden="true">
+              Bislig Hub
+            </span>
+          </div>
+          <p className="dlx-hero__eyebrow">Driver access</p>
+          <h1 className="dlx-hero__title">
+            Your city.
+            <br />
+            <span className="dlx-hero__accent">Your shift.</span>
+          </h1>
+          <p className="dlx-hero__sub">
+            One account for jobs, official TODA news, and the shared driver chat.
+          </p>
+          <ul className="dlx-hero__points" aria-hidden="true">
+            <li>Work</li>
+            <li>News</li>
+            <li>Chat</li>
+          </ul>
+        </section>
+
+        <div className="auth-card driver-auth-card dlx-card">
+          <button type="button" className="secondary-action compact-button auth-back dlx-back" onClick={onBack}>
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M19 12H5" />
               <path d="m12 19-7-7 7-7" />
@@ -157,7 +185,6 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
           </button>
 
           <div className="auth-header">
-            <p className="eyebrow auth-eyebrow">{t('auth.driverAccess')}</p>
             <h2>{mode === 'login' ? t('auth.welcomeBack') : mode === 'forgot' ? t('auth.resetPassword') : t('auth.checkInbox')}</h2>
             {mode === 'login' ? <p className="auth-subtitle">Sign in to manage your rides.</p> : null}
           </div>
@@ -217,32 +244,54 @@ export function DriverLogin({ onLogin, onBack }: DriverLoginProps) {
               </label>
 
               <div className="password-method" role="radiogroup" aria-label={t('auth.driverGroup')}>
-                <p className="field-label">{t('auth.driverGroup')}</p>
-                <label className="form-check">
+                <p className="field-label dlx-group-label">{t('auth.driverGroup')}</p>
+                <label className="form-check dlx-tile">
                   <input
                     type="radio"
                     name="driver-group"
+                    className="dlx-tile__input"
                     checked={group === 'btrp'}
                     onChange={() => setGroup('btrp')}
                     disabled={loading}
                   />
-                  <span className="field-label">
-                    {t('auth.groupBtrp')}
-                    <span className="muted-copy"> — {t('auth.groupBtrpHint')}</span>
+                  <span className="dlx-tile__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="9" cy="8" r="3.2" />
+                      <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+                      <circle cx="16.5" cy="9" r="2.4" />
+                      <path d="M15.5 13.6a4.4 4.4 0 0 1 5 4.4" />
+                    </svg>
                   </span>
+                  <span className="dlx-tile__text">
+                    <span className="field-label">
+                      {t('auth.groupBtrp')}
+                    </span>
+                    <span className="muted-copy">{t('auth.groupBtrpHint')}</span>
+                  </span>
+                  <span className="dlx-tile__check" aria-hidden="true" />
                 </label>
-                <label className="form-check">
+                <label className="form-check dlx-tile">
                   <input
                     type="radio"
                     name="driver-group"
+                    className="dlx-tile__input"
                     checked={group === 'independent'}
                     onChange={() => setGroup('independent')}
                     disabled={loading}
                   />
-                  <span className="field-label">
-                    {t('auth.groupIndependent')}
-                    <span className="muted-copy"> — {t('auth.groupIndependentHint')}</span>
+                  <span className="dlx-tile__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="8" r="3.4" />
+                      <path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
+                    </svg>
                   </span>
+                  <span className="dlx-tile__text">
+                    <span className="field-label">
+                      {t('auth.groupIndependent')}
+                    </span>
+                    <span className="muted-copy">{t('auth.groupIndependentHint')}</span>
+                  </span>
+                  <span className="dlx-tile__check" aria-hidden="true" />
                 </label>
               </div>
 

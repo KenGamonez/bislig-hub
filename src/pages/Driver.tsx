@@ -127,22 +127,6 @@ export function Driver() {
   if (!driverId) {
     return (
       <div className="hub-driver-login">
-        <div className="hub-driver-login__brand">
-          <img
-            src="/assets/btrp-toda-logo.png"
-            alt="BTRP TODA official seal"
-            className="hub-driver-login__seal"
-            width={144}
-            height={144}
-            decoding="async"
-          />
-          <p className="hub-driver-login__eyebrow">
-            BTRP TODA · Driver access
-          </p>
-          <p className="hub-driver-login__tag">
-            One account for work, news, and the shared TODA chat.
-          </p>
-        </div>
         <LegacyShell tone="driver">
           <DriverLogin
             onLogin={(id) => setDriverId(id)}
