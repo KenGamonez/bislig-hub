@@ -693,6 +693,389 @@
   line-height: 1.4;
 }
 
+/* ============================================================
+   RIDE QUEUE REFINEMENT — operational inbox, not settings form
+   Queue-exclusive selectors only (verified: no matches outside
+   the queue render paths). Mobile-first.
+   ============================================================ */
+
+/* ---- Availability summary: scannable status, no collisions ---- */
+.drv-premium.driver-dashboard .presence-controls {
+  display: grid;
+  gap: 10px;
+}
+
+.drv-premium.driver-dashboard .presence-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--drv-line);
+  border-radius: 14px;
+  background: var(--drv-surface);
+}
+
+.drv-premium.driver-dashboard .presence-label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--drv-muted);
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .presence-location-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--drv-line);
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .presence-location-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
+}
+
+.drv-premium.driver-dashboard .presence-location-status.is-active {
+  background: var(--drv-success-soft);
+  border-color: rgba(13, 166, 116, 0.35);
+  color: var(--drv-success);
+}
+
+.drv-premium.driver-dashboard .presence-location-status.is-stale {
+  background: rgba(232, 169, 12, 0.12);
+  border-color: rgba(232, 169, 12, 0.4);
+  color: #9a6b00;
+}
+
+.drv-premium.driver-dashboard .presence-location-status.is-lost {
+  background: var(--drv-danger-soft);
+  border-color: rgba(224, 58, 62, 0.3);
+  color: var(--drv-danger);
+}
+
+.drv-premium.driver-dashboard .presence-control .secondary-action {
+  min-height: 48px;
+  min-width: 132px;
+  border-radius: 13px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .presence-control .secondary-action.is-active {
+  border-color: var(--drv-success);
+  color: var(--drv-success);
+  background: var(--drv-success-soft);
+}
+
+/* Auto-accept reads as a secondary preference, not a primary task. */
+.drv-premium.driver-dashboard .presence-controls .presence-control:last-child {
+  background: transparent;
+  border-style: dashed;
+}
+
+.drv-premium.driver-dashboard .presence-controls .presence-control:last-child .secondary-action {
+  min-height: 44px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--drv-muted);
+}
+
+.drv-premium.driver-dashboard .presence-controls .presence-control:last-child .secondary-action.is-active {
+  color: var(--drv-orange-deep);
+  border-color: rgba(255, 107, 26, 0.45);
+  background: var(--drv-orange-soft);
+}
+
+/* Vehicle / plate detail rows: label above value, never collided. */
+.drv-premium.driver-dashboard .availability-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--drv-line-soft);
+  border-radius: 13px;
+  background: var(--drv-surface-soft);
+}
+
+.drv-premium.driver-dashboard .availability-details > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .availability-details span {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--drv-faint);
+}
+
+.drv-premium.driver-dashboard .availability-details strong {
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: var(--drv-ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---- Queue state badges ---- */
+.drv-premium.driver-dashboard .work-state .state-badge,
+.drv-premium.driver-dashboard .online-badge,
+.drv-premium.driver-dashboard .paused-badge,
+.drv-premium.driver-dashboard .request-badge {
+  font-variant-numeric: tabular-nums;
+}
+
+.drv-premium.driver-dashboard .paused-badge {
+  background: rgba(232, 169, 12, 0.14);
+  border: 1px solid rgba(232, 169, 12, 0.4);
+  color: #9a6b00;
+}
+
+.drv-premium.driver-dashboard .online-badge {
+  background: var(--drv-success-soft);
+  border: 1px solid rgba(13, 166, 116, 0.35);
+  color: var(--drv-success);
+}
+
+.drv-premium.driver-dashboard .request-badge {
+  background: var(--drv-orange);
+  border: 1px solid var(--drv-orange);
+  color: #fff;
+}
+
+.drv-premium.driver-dashboard .work-offline {
+  border-top: 3px solid var(--drv-line);
+}
+
+.drv-premium.driver-dashboard .work-waiting {
+  border-top: 3px solid var(--drv-success);
+}
+
+/* ---- Waiting / listening ---- */
+.drv-premium.driver-dashboard .waiting-box strong {
+  color: var(--drv-text);
+  font-size: 0.9rem;
+}
+
+.drv-premium.driver-dashboard .waiting-box span:last-child {
+  color: var(--drv-muted);
+  font-size: 0.8rem;
+}
+
+/* ---- Request workspace identity ---- */
+.drv-premium.driver-dashboard .action-row.request-actions {
+  gap: 10px;
+}
+
+.drv-premium.driver-dashboard .request-actions .accept-cta {
+  min-height: 56px;
+  font-size: 1.02rem;
+  box-shadow: 0 10px 24px rgba(255, 107, 26, 0.3);
+}
+
+.drv-premium.driver-dashboard .request-actions .secondary-action {
+  min-height: 52px;
+  color: var(--drv-muted);
+}
+
+.drv-premium.driver-dashboard .offer-countdown {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.drv-premium.driver-dashboard .fare-highlight small,
+.drv-premium.driver-dashboard .fare-highlight span:not(strong) {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.drv-premium.driver-dashboard .ride-route {
+  gap: 10px;
+}
+
+.drv-premium.driver-dashboard .route-point {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .route-point > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .route-point small {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--drv-faint);
+}
+
+.drv-premium.driver-dashboard .route-point strong {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.drv-premium.driver-dashboard .route-line {
+  margin-left: 6px;
+}
+
+.drv-premium.driver-dashboard .ride-info-grid > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  background: var(--drv-surface-soft);
+  border: 1px solid var(--drv-line-soft);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.drv-premium.driver-dashboard .ride-info-grid span {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--drv-faint);
+}
+
+.drv-premium.driver-dashboard .ride-info-grid strong {
+  font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+
+.drv-premium.driver-dashboard .ride-stops {
+  display: grid;
+  gap: 6px;
+}
+
+.drv-premium.driver-dashboard .ride-stops .section-label {
+  color: var(--drv-faint);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+}
+
+.drv-premium.driver-dashboard .ride-stops-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.drv-premium.driver-dashboard .ride-stops-list li {
+  font-size: 0.86rem;
+  padding: 9px 12px;
+  background: var(--drv-surface-soft);
+  border: 1px solid var(--drv-line-soft);
+  border-radius: 11px;
+  overflow-wrap: anywhere;
+}
+
+.drv-premium.driver-dashboard .cancel-action,
+.drv-premium.driver-dashboard .driver-contact-actions .secondary-action {
+  min-height: 48px;
+}
+
+.drv-premium.driver-dashboard .driver-contact-actions .chat-button {
+  border-color: var(--drv-line);
+}
+
+.drv-premium.driver-dashboard .driver-location-note,
+.drv-premium.driver-dashboard .passenger-reputation {
+  border-left: 3px solid var(--drv-line);
+  padding-left: 10px;
+}
+
+.drv-premium.driver-dashboard .ride-cancelled-notice button {
+  border: 1px solid rgba(224, 58, 62, 0.35);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--drv-danger);
+  font-weight: 750;
+  padding: 0 16px;
+}
+
+/* ---- Mini-nav: no orphaned wrap row on narrow phones ---- */
+@media (max-width: 430px) {
+  .drv-premium.driver-dashboard .driver-mini-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    margin: 0 -2px;
+    padding: 8px 2px 12px;
+  }
+
+  .drv-premium.driver-dashboard .driver-mini-nav .mini-nav-item {
+    scroll-snap-align: start;
+  }
+
+  .drv-premium.driver-dashboard .presence-control {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .drv-premium.driver-dashboard .presence-control .secondary-action {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .drv-premium.driver-dashboard .availability-details {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Desktop queue composition ---- */
+@media (min-width: 1024px) {
+  .drv-premium.driver-dashboard .work-offline,
+  .drv-premium.driver-dashboard .work-waiting {
+    max-width: 760px;
+  }
+
+  .drv-premium.driver-dashboard .presence-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .drv-premium.driver-dashboard .ride-info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .drv-premium.driver-dashboard .request-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .drv-premium.driver-dashboard .request-actions .accept-cta {
+    grid-column: 1 / -1;
+  }
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile small {
+  line-height: 1.4;
+}
+
 @media (max-width: 360px) {
   .drv-premium.driver-dashboard .driver-stat-tile {
     padding: 12px 9px;
@@ -934,6 +1317,12 @@
 
 /* Fare hierarchy */
 .drv-premium.driver-dashboard .fare-highlight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 4px;
+  column-gap: 12px;
   background: var(--drv-ink);
   border: 1px solid var(--drv-ink);
   border-radius: 14px;
