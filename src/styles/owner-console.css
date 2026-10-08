@@ -32,6 +32,47 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---- Responsive desktop canvas: fluid up to a controlled cap ----
+   Mobile/tablet behavior below 1024px is intentionally untouched. */
+@media (min-width: 1024px) {
+  .owner-console {
+    --owner-max: 1560px;
+    --owner-drawer-w: 420px;
+    max-width: var(--owner-max);
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .owner-console table.admin-table thead th {
+    padding: 12px 16px;
+  }
+
+  .owner-console table.admin-table tbody td {
+    padding: 14px 16px;
+  }
+
+  .owner-console .driver-cell {
+    gap: 12px;
+  }
+
+  .owner-console .overview-panel .stats-grid.admin-overview-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+/* Large monitors (32" class): substantially wider canvas, drawer stays focused. */
+@media (min-width: 1800px) {
+  .owner-console {
+    --owner-max: 1760px;
+    --owner-drawer-w: 440px;
+    max-width: var(--owner-max);
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
 /* ---------------- Header: compact brand + account ---------------- */
 .owner-console .admin-back-button {
   margin-bottom: 10px;
