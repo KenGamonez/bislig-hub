@@ -121,23 +121,132 @@
   margin-top: 0;
 }
 
-/* ---- Step 2: stacked details & fare ---- */
+/* ---- Step 2: compact card layout (details & fare) ---- */
 .ride-route .ride-details {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
-.ride-route .field-group {
+/* Hero fare panel: peso badge + compact copy. */
+.ride-route .fare-box--hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+.ride-route .fare-box__icon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--brand-orange);
+  background: var(--brand-orange-soft);
+}
+
+.ride-route .fare-box__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* Two-column card rows: Vehicle + Passengers, Name + Mobile. */
+.ride-route .detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.ride-route .detail-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  align-content: start;
+}
+
+.ride-route .detail-card:focus-within {
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 3px var(--brand-orange-soft);
+}
+
+.ride-route .detail-card:has(.has-error) {
+  border-color: var(--danger);
+}
+
+.ride-route .detail-card__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.ride-route .detail-card__control {
+  display: flex;
+  align-items: center;
   gap: 8px;
   min-width: 0;
 }
 
-.ride-route .section-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-secondary);
+.ride-route .detail-card__control > svg {
+  flex: none;
+  color: var(--text-faint);
+}
+
+/* Borderless controls live on the card surface. */
+.ride-route .input-field--bare {
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+  min-height: 40px;
+  box-shadow: none;
+}
+
+.ride-route .input-field--bare:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.ride-route select.input-field--bare {
+  width: 100%;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ride-route .input-field--bare.has-error {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Card stepper: soft gray pill buttons, comfortable targets. */
+.ride-route .stepper--card {
+  border: 0;
+  background: transparent;
+  gap: 6px;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  min-height: 40px;
+  overflow: visible;
+}
+
+.ride-route .stepper--card button {
+  background: var(--bg-surface-soft);
+  border-radius: 12px;
+  min-height: 40px;
+  font-size: 18px;
+}
+
+.ride-route .stepper--card output {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  min-height: 40px;
 }
 
 /* Route recap above the CTA: divider, pin, truncated summary. */
@@ -172,6 +281,7 @@
 .ride-route .form-actions .btn--primary {
   min-height: 52px;
   font-size: 15px;
+  gap: 8px;
 }
 
 .ride-route .form-footnote {
@@ -182,6 +292,13 @@
 /* ---- Narrow mobile: stack, keep targets big ---- */
 @media (max-width: 600px) {
   .ride-route .route-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Very narrow screens: card pairs stack so controls stay usable. */
+@media (max-width: 360px) {
+  .ride-route .detail-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

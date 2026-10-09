@@ -240,6 +240,7 @@ export function RideNow() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [passengerCount, setPassengerCount] = useState(1);
   const [passengerType, setPassengerType] = useState<PassengerType>("Regular");
   const [vehicleType, setVehicleType] =
@@ -723,9 +724,9 @@ export function RideNow() {
       setCustomerAuthId(await getCustomerAuthId());
       const created = await createRide({
         customer_name: name.trim(),
-        // Phone field removed from the UI: the backend column keeps the
-        // empty-string sentinel the API already accepted for blank input.
-        customer_phone: "",
+        // Mobile number is optional: blank stays the empty-string sentinel
+        // the API already accepts. No validation requires it.
+        customer_phone: phone.trim(),
         pickup_address: pickup.trim(),
         pickup_lat: pickupCoords?.lat ?? null,
         pickup_lng: pickupCoords?.lng ?? null,
@@ -1206,14 +1207,11 @@ export function RideNow() {
         </Link>
       </nav>
 
-      <header className="form-header">
-        <h1 className="form-header__title">Where are you going?</h1>
-        {formStep === 2 ? (
-          <p className="form-header__subtitle">
-            Now your details — then review the fare and request.
-          </p>
-        ) : null}
-      </header>
+      {formStep === 1 && (
+        <header className="form-header">
+          <h1 className="form-header__title">Where are you going?</h1>
+        </header>
+      )}
 
       <div className="wizard-progress" aria-label={`Step ${formStep} of 2`}>
         <div className="flow-progress" role="presentation">
@@ -1222,12 +1220,12 @@ export function RideNow() {
               key={n}
               className={`flow-progress-step${formStep === n ? " is-current" : ""}${formStep > n ? " is-done" : ""}`}
             >
-              {formStep > n ? "✓" : `0${n}`}
+              {formStep > n ? "✓" : `${n}`}
             </span>
           ))}
         </div>
         <span className="wizard-step-label">
-          {formStep === 1 ? "Step 1 — Route" : "Step 2 — Details & fare"}
+          {formStep === 1 ? "Step 1 — Route" : "Details & fare"}
         </span>
       </div>
 
@@ -1291,75 +1289,86 @@ export function RideNow() {
 
         {formStep === 2 && (
           <div className="ride-details">
-            <div className="fare-box" aria-live="polite">
-              <span className="field-label">Estimated fare</span>
-              {fareQuote ? (
-                <>
-                  <strong>₱{formatCentavos(fareQuote.fareCents)}</strong>
-                  <small>
-                    {fareQuote.discountApplied ? "Discounted · " : ""}
-                    {fareQuote.matchedDestination ?? "Standard rate"}
-                  </small>
-                </>
-              ) : (
-                <>
-                  <strong>Fare confirmed by driver</strong>
-                  <small>Shown before pickup once a driver accepts</small>
-                </>
-              )}
-            </div>
-
-            <label className="field-block">
-              <span className="field-label">Vehicle</span>
-              <select
-                className="input-field"
-                value={vehicleType}
-                onChange={(e) => {
-                  const v = e.target.value as VehicleType;
-                  setVehicleType(v);
-                  if (v === "motorcycle") setPassengerCount(1);
-                }}
-              >
-                <option value="tricycle">Tricycle</option>
-                <option value="umbak">Umbak</option>
-                <option value="motorcycle">Motorcycle</option>
-              </select>
-            </label>
-
-            <div className="field-block">
-              <span className="field-label" id="pax-label">
-                Passengers
-              </span>
-              <div
-                className="stepper"
-                role="group"
-                aria-labelledby="pax-label"
-              >
-                <button
-                  type="button"
-                  aria-label="Fewer passengers"
-                  onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
-                >
-                  −
-                </button>
-                <output aria-live="polite">{passengerCount}</output>
-                <button
-                  type="button"
-                  aria-label="More passengers"
-                  onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
-                >
-                  +
-                </button>
+            <div className="fare-box fare-box--hero" aria-live="polite">
+              <span className="fare-box__icon" aria-hidden="true">₱</span>
+              <div className="fare-box__body">
+                <span className="field-label">Estimated fare</span>
+                {fareQuote ? (
+                  <>
+                    <strong>₱{formatCentavos(fareQuote.fareCents)}</strong>
+                    <small>
+                      {fareQuote.discountApplied ? "Discounted · " : ""}
+                      {fareQuote.matchedDestination ?? "Standard rate"}
+                    </small>
+                  </>
+                ) : (
+                  <>
+                    <strong>Confirmed by driver</strong>
+                    <small>Shown before pickup</small>
+                  </>
+                )}
               </div>
-              {fieldErrors.passengerCount && (
-                <span className="field-error">{fieldErrors.passengerCount}</span>
-              )}
             </div>
 
-            <label className="field-block">
-              <span className="field-label">Passenger type</span>
+            <div className="detail-grid">
+              <div className="detail-card">
+                <label className="field-block" htmlFor="ride-vehicle">
+                  <span className="detail-card__label">Vehicle</span>
+                </label>
+                <select
+                  id="ride-vehicle"
+                  className="input-field input-field--bare"
+                  value={vehicleType}
+                  onChange={(e) => {
+                    const v = e.target.value as VehicleType;
+                    setVehicleType(v);
+                    if (v === "motorcycle") setPassengerCount(1);
+                  }}
+                >
+                  <option value="tricycle">Tricycle</option>
+                  <option value="umbak">Umbak</option>
+                  <option value="motorcycle">Motorcycle</option>
+                </select>
+              </div>
+
+              <div className="detail-card">
+                <span className="detail-card__label" id="pax-label">
+                  Passengers
+                </span>
+                <div
+                  className="stepper stepper--card"
+                  role="group"
+                  aria-labelledby="pax-label"
+                >
+                  <button
+                    type="button"
+                    aria-label="Fewer passengers"
+                    onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
+                  >
+                    −
+                  </button>
+                  <output aria-live="polite">{passengerCount}</output>
+                  <button
+                    type="button"
+                    aria-label="More passengers"
+                    onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
+                  >
+                    +
+                  </button>
+                </div>
+                {fieldErrors.passengerCount && (
+                  <span className="field-error">{fieldErrors.passengerCount}</span>
+                )}
+              </div>
+            </div>
+
+            <div className="detail-card">
+              <label className="field-block" htmlFor="ride-passenger-type">
+                <span className="detail-card__label">Passenger type</span>
+              </label>
               <select
-                className="input-field"
+                id="ride-passenger-type"
+                className="input-field input-field--bare"
                 value={passengerType}
                 onChange={(e) => setPassengerType(e.target.value as PassengerType)}
               >
@@ -1368,27 +1377,55 @@ export function RideNow() {
                 <option value="Senior Citizen">Senior Citizen</option>
                 <option value="PWD">PWD</option>
               </select>
-            </label>
+            </div>
 
-            <div className="field-group">
-              <span className="section-label">Passenger details</span>
-              <label className="field-block">
-                <span className="field-label">Full name</span>
-                <input
-                  className={`input-field${fieldErrors.name ? " has-error" : ""}`}
-                  type="text"
-                  placeholder="e.g. Juan Dela Cruz"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setFieldErrors((c) => ({ ...c, name: "" }));
-                  }}
-                  autoComplete="name"
-                />
+            <div className="detail-grid">
+              <div className="detail-card">
+                <label className="field-block" htmlFor="ride-name">
+                  <span className="detail-card__label">Your name</span>
+                </label>
+                <div className="detail-card__control">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M5 20c1.2-3.2 3.9-5 7-5s5.8 1.8 7 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                  <input
+                    id="ride-name"
+                    className={`input-field input-field--bare${fieldErrors.name ? " has-error" : ""}`}
+                    type="text"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      setFieldErrors((c) => ({ ...c, name: "" }));
+                    }}
+                    autoComplete="name"
+                  />
+                </div>
                 {fieldErrors.name && (
                   <span className="field-error">{fieldErrors.name}</span>
                 )}
-              </label>
+              </div>
+
+              <div className="detail-card">
+                <label className="field-block" htmlFor="ride-phone">
+                  <span className="detail-card__label">Mobile number</span>
+                </label>
+                <div className="detail-card__control">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 4h4l2 5-2.5 1.5c.8 2.3 2.7 4.2 5 5L15 13l5 2v4c0 .6-.4 1-1 1C10.6 20 4 13.4 4 5c0-.6.4-1 1-1Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <input
+                    id="ride-phone"
+                    className="input-field input-field--bare"
+                    type="tel"
+                    placeholder="09xx xxx xxxx"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    autoComplete="tel"
+                  />
+                </div>
+              </div>
             </div>
 
             <p className="route-summary">
@@ -1420,7 +1457,16 @@ export function RideNow() {
               className="btn btn--primary btn--block"
               disabled={phase === "submitting"}
             >
-              {phase === "submitting" ? "Requesting ride…" : "Request ride"}
+              {phase === "submitting" ? (
+                "Requesting ride…"
+              ) : (
+                <>
+                  Request ride
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </>
+              )}
             </button>
           )}
           {formStep === 2 && (
@@ -1433,9 +1479,11 @@ export function RideNow() {
             </button>
           )}
         </div>
-        <p className="form-footnote">
-          No account needed. Rides are fulfilled by local Bislig drivers.
-        </p>
+        {formStep === 1 && (
+          <p className="form-footnote">
+            No account needed. Rides are fulfilled by local Bislig drivers.
+          </p>
+        )}
       </form>
     </div>
   );
