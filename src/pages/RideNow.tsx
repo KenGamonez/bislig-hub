@@ -281,6 +281,7 @@ export function RideNow() {
   } | null>(null);
   const [shareError, setShareError] = useState("");
   const [cancelNotice, setCancelNotice] = useState<CancelNotice | null>(null);
+  const [redispatchExhausted, setRedispatchExhausted] = useState(false);
   const pollRef = useRef<number | null>(null);
   const redispatchRef = useRef<number | null>(null);
   const redispatchAttemptsRef = useRef(0);
@@ -343,6 +344,7 @@ export function RideNow() {
     handledChatIdsRef.current = new Set();
     rideNotifySigRef.current = null;
     redispatchAttemptsRef.current = 0;
+    setRedispatchExhausted(false);
   }, [stopPolling, stopRedispatch]);
 
   const syncRide = useCallback(
@@ -592,13 +594,17 @@ export function RideNow() {
       return;
     }
     redispatchAttemptsRef.current = 0;
+    setRedispatchExhausted(false);
     stopRedispatch();
     redispatchRef.current = window.setInterval(() => {
       if (
         redispatchBusyRef.current ||
         redispatchAttemptsRef.current >= REDISPATCH_MAX
       ) {
-        if (redispatchAttemptsRef.current >= REDISPATCH_MAX) stopRedispatch();
+        if (redispatchAttemptsRef.current >= REDISPATCH_MAX) {
+          stopRedispatch();
+          setRedispatchExhausted(true);
+        }
         return;
       }
       redispatchBusyRef.current = true;
@@ -1138,6 +1144,16 @@ export function RideNow() {
 
           {cancellable && !confirmingCancel && (
             <div className="status-card__actions">
+              {phase === "searching" && redispatchExhausted && (
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() => void handleRetry()}
+                  disabled={retrying}
+                >
+                  {retrying ? "Trying again…" : "Try Again"}
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn--ghost btn--danger"
