@@ -2728,6 +2728,18 @@
    their own styles and are intentionally not restyled here.
    ============================================================ */
 
+/* Header chip label: pinned per state. Without these, the later-loaded
+   driver-hub skin wins the tie and paints the Online label near-black
+   (slate) on the light-green pill. Five-class specificity beats it
+   regardless of bundle order. */
+.drv-premium.driver-dashboard .driver-status-chip.is-online .status-chip-label {
+  color: #15803d;
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-offline .status-chip-label {
+  color: #b91c1c;
+}
+
 /* Queue badges: dot + text, high-contrast tints */
 .drv-premium.driver-dashboard .online-badge {
   background: #dcfce7;
