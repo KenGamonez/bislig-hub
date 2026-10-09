@@ -2171,14 +2171,17 @@
 }
 
 .drv-premium.driver-dashboard .driver-status-chip.is-online {
-  border-color: rgba(22, 163, 74, 0.35);
-  background: rgba(22, 163, 74, 0.1);
+  border-color: #86efac;
+  background: #dcfce7;
   box-shadow: none;
   color: #15803d;
 }
 
 .drv-premium.driver-dashboard .driver-status-chip.is-offline {
-  color: var(--drv-muted);
+  border-color: #fca5a5;
+  background: #fee2e2;
+  box-shadow: none;
+  color: #b91c1c;
 }
 
 .drv-premium.driver-dashboard .driver-status-chip.is-online .status-indicator {
@@ -2187,8 +2190,8 @@
 }
 
 .drv-premium.driver-dashboard .driver-status-chip.is-offline .status-indicator {
-  background: var(--drv-faint);
-  box-shadow: none;
+  background: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16);
 }
 
 .drv-premium.driver-dashboard .notification-bell {
@@ -2715,4 +2718,69 @@
   .drv-premium.driver-dashboard .history-item {
     flex-basis: 85%;
   }
+}
+
+/* ============================================================
+   STATUS COLOR LANGUAGE — online green, offline red.
+   Driven by existing state classes only (.is-online,
+   .is-offline, .online-badge, .offline-badge); no logic change.
+   Action buttons (Go Online / Go Offline / Available) keep
+   their own styles and are intentionally not restyled here.
+   ============================================================ */
+
+/* Queue badges: dot + text, high-contrast tints */
+.drv-premium.driver-dashboard .online-badge {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #15803d;
+}
+
+.drv-premium.driver-dashboard .offline-badge {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+}
+
+.drv-premium.driver-dashboard .online-badge::before,
+.drv-premium.driver-dashboard .offline-badge::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.drv-premium.driver-dashboard .online-badge::before {
+  background: #16a34a;
+}
+
+.drv-premium.driver-dashboard .offline-badge::before {
+  background: #dc2626;
+}
+
+/* Profile presence dots follow the same language */
+.drv-premium.driver-dashboard .driver-avatar-dot.is-offline,
+.drv-premium.driver-dashboard .driver-hero-avail-dot.is-offline {
+  background: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.16);
+}
+
+/* Availability strip tints with the live state */
+.drv-premium.driver-dashboard .driver-hero-availability:has(.is-online) {
+  border-color: #86efac;
+  background: #dcfce7;
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability:has(.is-online) strong {
+  color: #15803d;
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability:has(.is-offline) {
+  border-color: #fca5a5;
+  background: #fee2e2;
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability:has(.is-offline) strong {
+  color: #b91c1c;
 }
