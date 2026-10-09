@@ -2144,3 +2144,583 @@
     transform: none;
   }
 }
+
+/* ============================================================
+   COMPACT DASHBOARD REFRESH — mobile-first, horizontal scan
+   Light surfaces, horizontal groupings, compact rows.
+   Same scope (.drv-premium.driver-dashboard); later rules win
+   ties. Markup hooks: driver-dash-topbar, driver-brand,
+   driver-dash-titles, driver-stat-icon/copy, history-filters,
+   history-filter, history-date/fare/stop/chevron, history-toggle.
+   Handlers, state, queries, lifecycle untouched.
+   ============================================================ */
+
+.drv-premium.driver-dashboard {
+  padding: 10px 12px calc(24px + env(safe-area-inset-bottom, 0px));
+  gap: 10px;
+}
+
+/* ---- App bar: white surface, single compact block ---- */
+.drv-premium.driver-dashboard .driver-dash-header {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: var(--drv-surface);
+  border: 1px solid var(--drv-line);
+  border-radius: var(--drv-radius);
+  box-shadow: 0 1px 4px rgba(12, 21, 24, 0.06);
+  color: var(--drv-text);
+}
+
+.drv-premium.driver-dashboard .driver-dash-header::before {
+  display: none;
+}
+
+.drv-premium.driver-dashboard .driver-dash-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .driver-dash-topbar .driver-back-arrow {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--drv-ink);
+}
+
+.drv-premium.driver-dashboard .driver-brand {
+  margin: 0 auto 0 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--drv-ink);
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .driver-brand span {
+  color: var(--drv-orange);
+}
+
+.drv-premium.driver-dashboard .driver-header-controls {
+  margin-left: auto;
+}
+
+.drv-premium.driver-dashboard .driver-dash-titles h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--drv-ink);
+}
+
+.drv-premium.driver-dashboard .driver-dash-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--drv-muted);
+}
+
+/* Operational status chip: light pill, green when online */
+.drv-premium.driver-dashboard .driver-status-chip {
+  min-height: 40px;
+  padding: 0 12px;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface-soft);
+  box-shadow: none;
+  color: var(--drv-muted);
+  font-size: 0.8rem;
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-online {
+  border-color: rgba(22, 163, 74, 0.35);
+  background: rgba(22, 163, 74, 0.1);
+  box-shadow: none;
+  color: #15803d;
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-offline {
+  color: var(--drv-muted);
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-online .status-indicator {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+}
+
+.drv-premium.driver-dashboard .driver-status-chip.is-offline .status-indicator {
+  background: var(--drv-faint);
+  box-shadow: none;
+}
+
+.drv-premium.driver-dashboard .notification-bell {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface);
+  color: var(--drv-ink);
+}
+
+.drv-premium.driver-dashboard .notification-badge {
+  background: var(--drv-danger);
+}
+
+/* ---- Tabs: horizontal scroll, pill active ---- */
+.drv-premium.driver-dashboard .driver-mini-nav {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 8px;
+  padding: 2px 2px 4px;
+}
+
+.drv-premium.driver-dashboard .driver-mini-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.drv-premium.driver-dashboard .mini-nav-item {
+  flex: 1 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
+.drv-premium.driver-dashboard .mini-nav-item svg {
+  flex: none;
+}
+
+.drv-premium.driver-dashboard .mini-nav-item.is-active {
+  box-shadow: none;
+}
+
+/* ---- Profile hero: compact horizontal card ---- */
+.drv-premium.driver-dashboard .driver-hero {
+  padding: 14px;
+  border-radius: var(--drv-radius);
+}
+
+.drv-premium.driver-dashboard .driver-hero-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .driver-avatar .driver-photo,
+.drv-premium.driver-dashboard .driver-avatar .driver-photo.driver-photo-fallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--drv-line);
+  font-size: 1.5rem;
+}
+
+.drv-premium.driver-dashboard .driver-hero-copy {
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .driver-hero-copy h3 {
+  font-size: 1.12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .driver-hero-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.drv-premium.driver-dashboard .driver-hero-vehicle {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .driver-hero-signed {
+  margin-top: 2px;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface-soft);
+  color: var(--drv-text);
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability small {
+  color: var(--drv-faint);
+  font-size: 0.7rem;
+}
+
+.drv-premium.driver-dashboard .driver-hero-availability strong {
+  color: var(--drv-text);
+  font-size: 0.8rem;
+}
+
+/* ---- Metrics: icon + value + label, three across ---- */
+.drv-premium.driver-dashboard .driver-stat-grid {
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border-radius: var(--drv-radius-sm);
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile:hover {
+  box-shadow: none;
+}
+
+.drv-premium.driver-dashboard .driver-stat-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.drv-premium.driver-dashboard .driver-stat-icon.is-trips {
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.drv-premium.driver-dashboard .driver-stat-icon.is-rating {
+  color: var(--drv-orange-deep);
+  background: var(--drv-orange-soft);
+}
+
+.drv-premium.driver-dashboard .driver-stat-icon.is-completion {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.12);
+}
+
+.drv-premium.driver-dashboard .driver-stat-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile strong {
+  font-size: 1.02rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .driver-stat-tile small {
+  font-size: 0.7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Account actions: clean two-up row ---- */
+.drv-premium.driver-dashboard .account-actions-row {
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .account-actions-row .secondary-action {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.drv-premium.driver-dashboard .account-actions-row .secondary-action svg {
+  flex: none;
+}
+
+/* ---- History: panel header, filter pills, divider rows ---- */
+.drv-premium.driver-dashboard .history-card {
+  padding: 14px;
+  border-radius: var(--drv-radius);
+}
+
+.drv-premium.driver-dashboard .history-card .section-heading {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.drv-premium.driver-dashboard .history-card .section-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--drv-ink);
+}
+
+.drv-premium.driver-dashboard .history-filters {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.drv-premium.driver-dashboard .history-filter {
+  flex: 1 1 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface);
+  color: var(--drv-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .history-filter.is-active {
+  border-color: var(--drv-ink);
+  background: var(--drv-ink);
+  color: #fff;
+}
+
+.drv-premium.driver-dashboard .history-list {
+  margin: 6px 0 0;
+  gap: 0;
+}
+
+.drv-premium.driver-dashboard .history-item {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.drv-premium.driver-dashboard .history-item + .history-item {
+  border-top: 1px solid var(--drv-line-soft);
+}
+
+.drv-premium.driver-dashboard .history-item:hover {
+  border-color: var(--drv-line-soft);
+  background: var(--drv-paper);
+}
+
+.drv-premium.driver-dashboard .history-date {
+  display: grid;
+  gap: 0;
+  min-width: 62px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--drv-muted);
+}
+
+.drv-premium.driver-dashboard .history-fare {
+  font-weight: 800;
+  color: var(--drv-text);
+}
+
+.drv-premium.driver-dashboard .history-route {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--drv-text);
+}
+
+.drv-premium.driver-dashboard .history-route svg,
+.drv-premium.driver-dashboard .history-route strong {
+  flex: none;
+  color: var(--drv-faint);
+}
+
+.drv-premium.driver-dashboard .history-stop {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drv-premium.driver-dashboard .history-chevron {
+  color: var(--drv-faint);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.drv-premium.driver-dashboard .history-toggle {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 12px;
+  border: 1px solid var(--drv-line);
+  background: var(--drv-surface);
+  color: var(--drv-text);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* ---- Incoming request sheet: compact, horizontal, prominent CTA ---- */
+.drv-premium.driver-dashboard .ride-request-sheet > .driver-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.drv-premium.driver-dashboard .work-request .state-heading h3 {
+  font-size: 1.15rem;
+}
+
+.drv-premium.driver-dashboard .work-request .state-heading p {
+  font-size: 0.8rem;
+}
+
+.drv-premium.driver-dashboard .request-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.drv-premium.driver-dashboard .fare-highlight-focal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.drv-premium.driver-dashboard .fare-highlight-focal strong {
+  font-size: 1.05rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.drv-premium.driver-dashboard .work-request .ride-route {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .work-request .route-line {
+  display: none;
+}
+
+.drv-premium.driver-dashboard .work-request .route-point strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.drv-premium.driver-dashboard .work-request .ride-info-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .work-request .ride-info-grid > div {
+  min-width: 0;
+}
+
+.drv-premium.driver-dashboard .work-request .ride-info-grid strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.drv-premium.driver-dashboard .offer-countdown {
+  margin: 0;
+  text-align: center;
+  font-size: 0.82rem;
+}
+
+.drv-premium.driver-dashboard .request-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .request-actions .primary-action,
+.drv-premium.driver-dashboard .request-actions .secondary-action {
+  min-height: 52px;
+  margin: 0;
+  width: 100%;
+}
+
+.drv-premium.driver-dashboard .request-actions .secondary-action:last-child {
+  grid-column: 1 / -1;
+}
+
+/* ---- Bottom action bar: compact two-up row ---- */
+.drv-premium.driver-dashboard .driver-mobile-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .driver-mobile-actions .primary-action,
+.drv-premium.driver-dashboard .driver-mobile-actions .secondary-action {
+  min-height: 52px;
+  width: 100%;
+  margin: 0;
+  font-size: 0.88rem;
+  border-radius: 14px;
+}
+
+/* ---- Very narrow screens: keep targets usable ---- */
+@media (max-width: 360px) {
+  .drv-premium.driver-dashboard .driver-stat-tile {
+    padding: 8px;
+    gap: 7px;
+  }
+
+  .drv-premium.driver-dashboard .driver-stat-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .drv-premium.driver-dashboard .driver-stat-tile strong {
+    font-size: 0.92rem;
+  }
+
+  .drv-premium.driver-dashboard .mini-nav-item {
+    padding: 0 10px;
+    font-size: 0.78rem;
+  }
+
+  .drv-premium.driver-dashboard .history-date {
+    min-width: 56px;
+  }
+}

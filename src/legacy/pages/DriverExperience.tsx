@@ -4051,7 +4051,6 @@ const renderSummary = () => (
           </div>
 
           <div className="driver-hero-copy">
-            <p className="section-label">DRIVER PROFILE</p>
             <h3>{displayedDriver.name}</h3>
             <p className="driver-hero-rating">
               {renderStarRating(displayedDriver.rating)}
@@ -4083,19 +4082,41 @@ const renderSummary = () => (
 
       <div className="driver-stat-grid">
         <div className="driver-stat-tile">
-          <span className="driver-stat-label">Completed rides</span>
-          <strong>{reputation ? reputation.completedRides : driverHistoryRides.length}</strong>
-          <small>All-time trips</small>
+          <span className="driver-stat-icon is-trips" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v10" />
+              <path d="M15.5 9.5c-.7-1-2-1.5-3.5-1.5-2 0-3.3 1-3.3 2.4 0 3.2 6.9 1.6 6.9 4.7 0 1.4-1.4 2.4-3.6 2.4-1.5 0-2.9-.6-3.7-1.6" />
+            </svg>
+          </span>
+          <div className="driver-stat-copy">
+            <strong>{reputation ? reputation.completedRides : driverHistoryRides.length}</strong>
+            <small>All-time trips</small>
+          </div>
         </div>
         <div className="driver-stat-tile">
-          <span className="driver-stat-label">Rating</span>
-          <strong>{reputation ? reputation.averageStars.toFixed(1) : String(demoDriver.rating)}</strong>
-          <small>{reputation ? `${reputation.totalRatings} rating${reputation.totalRatings === 1 ? '' : 's'}` : 'Passenger feedback'}</small>
+          <span className="driver-stat-icon is-rating" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8L12 3Z" />
+            </svg>
+          </span>
+          <div className="driver-stat-copy">
+            <strong>{reputation ? reputation.averageStars.toFixed(1) : String(demoDriver.rating)}</strong>
+            <small>{reputation ? `${reputation.totalRatings} rating${reputation.totalRatings === 1 ? '' : 's'}` : 'Passenger feedback'}</small>
+          </div>
         </div>
         <div className="driver-stat-tile">
-          <span className="driver-stat-label">Cancellations</span>
-          <strong>{reputation ? `${reputation.cancelledRides} (${reputation.cancellationRate}%)` : '0'}</strong>
-          <small>Of all completed rides</small>
+          <span className="driver-stat-icon is-completion" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 3a9 9 0 0 1 0 18" />
+              <circle cx="12" cy="12" r="3.5" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <div className="driver-stat-copy">
+            <strong>{reputation ? `${reputation.cancelledRides} (${reputation.cancellationRate}%)` : '0'}</strong>
+            <small>Cancelled trips</small>
+          </div>
         </div>
       </div>
     </section>
@@ -4569,6 +4590,8 @@ const renderOnlineState = () => (
 
   const [driverHistoryRides, setDriverHistoryRides] = useState<Ride[]>([])
   const [isLoadingDriverHistory, setIsLoadingDriverHistory] = useState(false)
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'completed' | 'cancelled'>('all')
+  const [historyExpanded, setHistoryExpanded] = useState(false)
 
   useEffect(() => {
     if (!driverId) {
@@ -4621,46 +4644,92 @@ const renderOnlineState = () => (
     }
   }
 
+  const HISTORY_PREVIEW_COUNT = 4
+
   const renderRecentRides = () => {
     const historyRides = driverHistoryRides.map(mapDriverHistoryRide)
+    const visibleRides = historyRides.filter((ride) => historyFilter === 'all' ? true : ride.status === historyFilter)
+    const previewRides = historyExpanded ? visibleRides : visibleRides.slice(0, HISTORY_PREVIEW_COUNT)
 
     return (
-      <section className="driver-card history-card">
+      <section className="driver-card history-card" aria-label="Ride history">
         <div className="section-heading">
-          <div>
-            <p className="section-label">RIDE HISTORY</p>
-            <h3>Recent trips</h3>
-          </div>
+          <h3>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 7v5l3.5 2" />
+            </svg>
+            Ride history
+          </h3>
           <span className="history-count">{isLoadingDriverHistory ? '...' : `${historyRides.length} total`}</span>
+        </div>
+
+        <div className="history-filters" role="group" aria-label="Filter trips by status">
+          {(['all', 'completed', 'cancelled'] as const).map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              className={historyFilter === filter ? 'history-filter is-active' : 'history-filter'}
+              aria-pressed={historyFilter === filter}
+              onClick={() => {
+                setHistoryFilter(filter)
+                setHistoryExpanded(false)
+              }}
+            >
+              {filter === 'all' ? 'All' : filter === 'completed' ? 'Completed' : 'Cancelled'}
+            </button>
+          ))}
         </div>
 
         {isLoadingDriverHistory ? (
           <p className="muted-copy">Loading ride history...</p>
         ) : historyRides.length === 0 ? (
           <p className="muted-copy">No completed trips yet.</p>
+        ) : visibleRides.length === 0 ? (
+          <p className="muted-copy">No {historyFilter} trips.</p>
         ) : (
           <ul className="history-list">
-            {historyRides.map((ride) => (
-              <li key={ride.id} className="history-item">
-                <div className="history-main">
-                  <div className="history-passenger">
-                    <span>{ride.date}</span>
+            {previewRides.map((ride) => {
+              const [datePart, timePart] = ride.date.split('·').map((part) => part.trim())
+              return (
+                <li key={ride.id} className="history-item">
+                  <div className="history-date">
+                    <span>{datePart}</span>
+                    {timePart ? <span>{timePart}</span> : null}
+                    <span className="history-fare">{ride.fare}</span>
+                  </div>
+                  <div className="history-route" title={`${ride.pickup} → ${ride.destination}`}>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    <span className="history-stop">{ride.pickup}</span>
+                    <strong aria-hidden="true">→</strong>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    <span className="history-stop">{ride.destination}</span>
                   </div>
                   <span className={ride.status === 'cancelled' ? 'cancelled-badge' : 'completed-badge'}>{ride.status}</span>
-                </div>
-                <div className="history-route">
-                  <span>{ride.pickup}</span>
-                  <strong>→</strong>
-                  <span>{ride.destination}</span>
-                </div>
-                <div className="history-footer">
-                  <span>{ride.status === 'cancelled' ? 'Cancelled trip' : 'Completed trip'}</span>
-                  <strong>{ride.fare}</strong>
-                </div>
-              </li>
-            ))}
+                  <span className="history-chevron" aria-hidden="true">›</span>
+                </li>
+              )
+            })}
           </ul>
         )}
+
+        {!isLoadingDriverHistory && visibleRides.length > HISTORY_PREVIEW_COUNT ? (
+          <button
+            type="button"
+            className="history-toggle"
+            aria-expanded={historyExpanded}
+            onClick={() => setHistoryExpanded((current) => !current)}
+          >
+            {historyExpanded ? 'Show fewer trips' : 'View all trips'}
+            <span aria-hidden="true">{historyExpanded ? '‹' : '›'}</span>
+          </button>
+        ) : null}
       </section>
     )
   }
@@ -4712,24 +4781,16 @@ const renderOnlineState = () => (
         </div>
       ) : null}
 
-      <div className="driver-back-row">
-        <button type="button" className="driver-back-arrow" onClick={onBack} aria-label="Back to Bislig Hub" title="Back to Bislig Hub">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M19 12H5" />
-            <path d="m12 19-7-7 7-7" />
-          </svg>
-        </button>
-      </div>
-
       <header className="driver-dash-header">
-        <div className="driver-dash-copy">
-          <p className="driver-kicker">Bislig Hub</p>
-          <h2>Driver Dashboard</h2>
-          <p className="driver-dash-subtitle">
-            {driverOnline ? 'You\u2019re online and ready to accept ride requests.' : 'Go online to start receiving ride requests.'}
-          </p>
-        </div>
-        <div className="driver-header-controls">
+        <div className="driver-dash-topbar">
+          <button type="button" className="driver-back-arrow" onClick={onBack} aria-label="Back to Bislig Hub" title="Back to Bislig Hub">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+          </button>
+          <p className="driver-brand">Bislig <span>Hub</span></p>
+          <div className="driver-header-controls">
           <button
             type="button"
             className={driverOnline ? 'driver-status-chip is-online' : 'driver-status-chip is-offline'}
@@ -4754,15 +4815,49 @@ const renderOnlineState = () => (
             </span>
           </button>
           {renderNotificationBell()}
+          </div>
+        </div>
+        <div className="driver-dash-titles">
+          <h2>Driver Dashboard</h2>
+          <p className="driver-dash-subtitle">
+            {driverOnline ? 'You\u2019re online and ready to accept ride requests.' : 'Go online to start receiving ride requests.'}
+          </p>
         </div>
       </header>
 
       <nav className="driver-mini-nav" aria-label="Driver workspaces">
         {([
-          { id: 'profile', label: 'Profile' },
-          { id: 'queue', label: 'Ride Queue' },
-          { id: 'pakyawan', label: 'Pakyawan', count: pakyawanRequests.length + activePakyawanOffers.length },
-          { id: 'delivery', label: 'Delivery', count: deliveryRequests.length + activeDeliveryOffers.length },
+          { id: 'profile', label: 'Profile', icon: (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          ) },
+          { id: 'queue', label: 'Ride Queue', icon: (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 11 6.5 6h11L19 11" />
+              <path d="M4 11h16a1 1 0 0 1 1 1v4h-2.5" />
+              <path d="M5.5 16H4a1 1 0 0 1-1-1v-4h3" />
+              <circle cx="8" cy="16.5" r="1.8" />
+              <circle cx="16" cy="16.5" r="1.8" />
+            </svg>
+          ) },
+          { id: 'pakyawan', label: 'Pakyawan', icon: (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m12 2 8 4.5v9L12 20l-8-4.5v-9L12 2Z" />
+              <path d="M12 11 4 6.5" />
+              <path d="m12 11 8-4.5" />
+              <path d="M12 11v9" />
+            </svg>
+          ), count: pakyawanRequests.length + activePakyawanOffers.length },
+          { id: 'delivery', label: 'Delivery', icon: (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M2 6h12v10H2z" />
+              <path d="M14 10h4l4 4v2h-8" />
+              <circle cx="6.5" cy="18" r="1.8" />
+              <circle cx="17.5" cy="18" r="1.8" />
+            </svg>
+          ), count: deliveryRequests.length + activeDeliveryOffers.length },
         ] as const).map((item) => (
           <button
             key={item.id}
@@ -4771,6 +4866,7 @@ const renderOnlineState = () => (
             onClick={() => setDriverView(item.id)}
             aria-current={driverView === item.id ? 'page' : undefined}
           >
+            {item.icon}
             {item.label}
             {'count' in item && item.count > 0 ? <span className="mini-nav-badge">{item.count}</span> : null}
           </button>
@@ -4792,6 +4888,10 @@ const renderOnlineState = () => (
               }}
               disabled={isLoggingOut}
             >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="4" y="11" width="16" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              </svg>
               Change Password
             </button>
             <button
@@ -4800,6 +4900,11 @@ const renderOnlineState = () => (
               onClick={() => void handleLogout()}
               disabled={isLoggingOut}
             >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <path d="m16 17 5-5-5-5" />
+                <path d="M21 12H9" />
+              </svg>
               {isLoggingOut ? 'Signing out...' : 'Logout'}
             </button>
           </div>
