@@ -4591,7 +4591,15 @@ const renderOnlineState = () => (
   const [driverHistoryRides, setDriverHistoryRides] = useState<Ride[]>([])
   const [isLoadingDriverHistory, setIsLoadingDriverHistory] = useState(false)
   const [historyFilter, setHistoryFilter] = useState<'all' | 'completed' | 'cancelled'>('all')
-  const [historyExpanded, setHistoryExpanded] = useState(false)
+  const historyListRef = useRef<HTMLUListElement | null>(null)
+
+  const scrollHistoryBy = (direction: 1 | -1) => {
+    const list = historyListRef.current
+    if (!list) return
+    const card = list.querySelector(':scope > li')
+    const step = card ? card.getBoundingClientRect().width + 12 : list.clientWidth * 0.8
+    list.scrollBy({ left: direction * step, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     if (!driverId) {
@@ -4644,23 +4652,17 @@ const renderOnlineState = () => (
     }
   }
 
-  const HISTORY_PREVIEW_COUNT = 4
-
   const renderRecentRides = () => {
     const historyRides = driverHistoryRides.map(mapDriverHistoryRide)
     const visibleRides = historyRides.filter((ride) => historyFilter === 'all' ? true : ride.status === historyFilter)
-    const previewRides = historyExpanded ? visibleRides : visibleRides.slice(0, HISTORY_PREVIEW_COUNT)
 
     return (
       <section className="driver-card history-card" aria-label="Ride history">
         <div className="section-heading">
-          <h3>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 7v5l3.5 2" />
-            </svg>
-            Ride history
-          </h3>
+          <div>
+            <p className="section-label">RIDE HISTORY</p>
+            <h3>Recent trips</h3>
+          </div>
           <span className="history-count">{isLoadingDriverHistory ? '...' : `${historyRides.length} total`}</span>
         </div>
 
@@ -4671,10 +4673,7 @@ const renderOnlineState = () => (
               type="button"
               className={historyFilter === filter ? 'history-filter is-active' : 'history-filter'}
               aria-pressed={historyFilter === filter}
-              onClick={() => {
-                setHistoryFilter(filter)
-                setHistoryExpanded(false)
-              }}
+              onClick={() => setHistoryFilter(filter)}
             >
               {filter === 'all' ? 'All' : filter === 'completed' ? 'Completed' : 'Cancelled'}
             </button>
@@ -4688,48 +4687,53 @@ const renderOnlineState = () => (
         ) : visibleRides.length === 0 ? (
           <p className="muted-copy">No {historyFilter} trips.</p>
         ) : (
-          <ul className="history-list">
-            {previewRides.map((ride) => {
-              const [datePart, timePart] = ride.date.split('·').map((part) => part.trim())
-              return (
-                <li key={ride.id} className="history-item">
-                  <div className="history-date">
-                    <span>{datePart}</span>
-                    {timePart ? <span>{timePart}</span> : null}
-                    <span className="history-fare">{ride.fare}</span>
-                  </div>
-                  <div className="history-route" title={`${ride.pickup} → ${ride.destination}`}>
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    <span className="history-stop">{ride.pickup}</span>
-                    <strong aria-hidden="true">→</strong>
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
-                      <circle cx="12" cy="10" r="2.5" />
-                    </svg>
-                    <span className="history-stop">{ride.destination}</span>
-                  </div>
-                  <span className={ride.status === 'cancelled' ? 'cancelled-badge' : 'completed-badge'}>{ride.status}</span>
-                  <span className="history-chevron" aria-hidden="true">›</span>
-                </li>
-              )
-            })}
-          </ul>
+          <div className="history-carousel">
+            <ul
+              key={historyFilter}
+              ref={historyListRef}
+              className="history-list"
+              aria-label="Recent trips, swipe horizontally to see more"
+            >
+              {visibleRides.map((ride) => {
+                const [datePart, timePart] = ride.date.split('·').map((part) => part.trim())
+                return (
+                  <li key={ride.id} className="history-item">
+                    <div className="history-card-top">
+                      <span className="history-date">{timePart ? `${datePart} · ${timePart}` : datePart}</span>
+                      <span className={ride.status === 'cancelled' ? 'cancelled-badge' : 'completed-badge'}>{ride.status}</span>
+                    </div>
+                    <div className="history-route-col" title={`${ride.pickup} → ${ride.destination}`}>
+                      <div className="history-stop-row">
+                        <span className="route-dot pickup-dot" aria-hidden="true" />
+                        <span className="history-stop">{ride.pickup}</span>
+                      </div>
+                      <span className="history-route-connector" aria-hidden="true" />
+                      <div className="history-stop-row">
+                        <span className="route-dot destination-dot" aria-hidden="true" />
+                        <span className="history-stop">{ride.destination}</span>
+                      </div>
+                    </div>
+                    <div className="history-card-foot">
+                      <span className="history-fare">{ride.fare}</span>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+            <div className="history-nav" aria-hidden={visibleRides.length < 2}>
+              <button type="button" className="history-nav-btn" aria-label="Previous trips" tabIndex={visibleRides.length < 2 ? -1 : undefined} onClick={() => scrollHistoryBy(-1)}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+              <button type="button" className="history-nav-btn" aria-label="Next trips" tabIndex={visibleRides.length < 2 ? -1 : undefined} onClick={() => scrollHistoryBy(1)}>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
-
-        {!isLoadingDriverHistory && visibleRides.length > HISTORY_PREVIEW_COUNT ? (
-          <button
-            type="button"
-            className="history-toggle"
-            aria-expanded={historyExpanded}
-            onClick={() => setHistoryExpanded((current) => !current)}
-          >
-            {historyExpanded ? 'Show fewer trips' : 'View all trips'}
-            <span aria-hidden="true">{historyExpanded ? '‹' : '›'}</span>
-          </button>
-        ) : null}
       </section>
     )
   }
