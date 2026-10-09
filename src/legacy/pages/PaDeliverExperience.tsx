@@ -9,6 +9,7 @@ import { formatCentavos } from '../lib/fare'
 import type { DeliveryBooking } from '../types/delivery'
 import { useLanguage } from '../lib/i18n'
 import { useNotifications } from '../../notifications/notifications'
+import './PaDeliverExperience.css'
 
 const DELIVERY_SENDER_COPY: Record<string, { title: string; message: string }> = {
   quoted: {
@@ -666,7 +667,7 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
         <div className="flow-fields">
           <div className="flow-date-group">
             <span className="field-label">{t('pad.whenNeed')}</span>
-            <div className="flow-date-row" role="group" aria-label={t('pad.whenNeed')}>
+            <div className="flow-date-row pad-segment" role="group" aria-label={t('pad.whenNeed')}>
               <button
                 type="button"
                 className={deliveryTiming === 'now' ? 'secondary-action compact-button active-filter' : 'secondary-action compact-button'}
@@ -735,20 +736,23 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
     return (
       <div className="flow-fields">
-        <label className="field-block">
-          <span className="field-label">{t('pad.packageType')}</span>
-          <select
-            className={`input-field${errors.package_type ? ' has-error' : ''}`}
-            value={form.package_type}
-            onChange={(event) => updateField('package_type', event.target.value)}
-          >
-            <option value="">{t('form.selectOption')}</option>
+        <div className="field-block pad-chips-block">
+          <span className="field-label" id="pa-deliver-package-type-label">{t('pad.packageType')}</span>
+          <div className="pad-chips" role="group" aria-labelledby="pa-deliver-package-type-label">
             {packageTypes.map((type) => (
-              <option key={type}>{type}</option>
+              <button
+                key={type}
+                type="button"
+                className={`pad-chip${form.package_type === type ? ' is-selected' : ''}${errors.package_type ? ' has-error' : ''}`}
+                aria-pressed={form.package_type === type}
+                onClick={() => updateField('package_type', type)}
+              >
+                {type}
+              </button>
             ))}
-          </select>
+          </div>
           {errors.package_type ? <span className="field-error">{errors.package_type}</span> : null}
-        </label>
+        </div>
 
         <label className="field-block">
           <span className="field-label">{t('pad.packageDetails')}</span>
@@ -786,7 +790,7 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
     return (
       <>
-        <main className="scheduled-shell flow-shell">
+        <main className="scheduled-shell flow-shell pad-premium">
           <section className="scheduled-card scheduled-success" id="pad-delivery-box">
             <p className="eyebrow">{status === 'quoted' ? t('pad.quoteReady') : status === 'confirmed' ? t('pad.trackConfirmed') : status === 'assigned' ? t('pad.trackAssigned') : status === 'driver_on_way' ? t('pad.trackOnWay') : status === 'driver_arrived' ? t('pad.trackArrived') : status === 'picked_up' ? t('pad.trackPickedUp') : status === 'in_transit' ? t('pad.trackInTransit') : status === 'delivered' ? t('pad.trackDelivered') : status === 'cancelled' ? t('pad.trackCancelled') : status === 'failed' ? t('pad.trackFailedStatus') : status === 'no_driver' ? t('pad.trackNoDriver') : status === 'pending' || status === 'dispatching' ? t('pad.trackFinding') : t('pad.receivedEyebrow')}</p>
             <h1>{status === 'quoted' ? t('pad.quoteReady') : status === 'confirmed' ? t('pad.trackConfirmed') : status === 'assigned' ? t('pad.trackAssigned') : status === 'driver_on_way' ? t('pad.trackOnWay') : status === 'driver_arrived' ? t('pad.trackArrived') : status === 'picked_up' ? t('pad.trackPickedUp') : status === 'in_transit' ? t('pad.trackInTransit') : status === 'delivered' ? t('pad.trackDelivered') : status === 'cancelled' ? t('pad.trackCancelled') : status === 'failed' ? t('pad.trackFailedStatus') : status === 'no_driver' ? t('pad.trackNoDriver') : status === 'pending' || status === 'dispatching' ? t('pad.trackFinding') : t('pad.receivedTitle')}</h1>
@@ -984,7 +988,7 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
   return (
     <>
-      <main className="scheduled-shell flow-shell">
+      <main className="scheduled-shell flow-shell pad-premium">
         <section className="section-header scheduled-header pad-hero">
           <p className="eyebrow">{t('pad.eyebrow')}</p>
           <h1>

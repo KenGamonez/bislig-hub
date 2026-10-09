@@ -1,0 +1,344 @@
+/* =========================================================
+   PA-DELIVER — premium customer experience (Bislig Hub)
+   Scoped to `.pad-premium` (the legacy PaDeliverExperience main
+   rendered at /delivery). Presentation only: steps, fields,
+   handlers, payloads and validation live untouched in
+   PaDeliverExperience.tsx. Accents use Hub brand tokens
+   (--brand-orange / --success); surfaces reuse the legacy
+   --color-* / --text-* tokens already loaded on this route.
+   Mobile-first: 360px first, then 480px, then desktop.
+   ========================================================= */
+
+.pad-premium {
+  width: min(100%, 720px);
+  max-width: 100%;
+  overflow-x: clip;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+.pad-premium .flow-card,
+.pad-premium .scheduled-card,
+.pad-premium .field-block,
+.pad-premium .flow-fields,
+.pad-premium .flow-field-row,
+.pad-premium .flow-date-group {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pad-premium .input-field,
+.pad-premium .textarea-field,
+.pad-premium .flow-notes {
+  max-width: 100%;
+}
+
+/* ---- Hero: eyebrow pill, tighter rhythm ---- */
+.pad-premium .pad-hero {
+  padding: 28px 24px 26px;
+}
+
+.pad-premium .pad-hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 138, 0, 0.38);
+  border-radius: 999px;
+  background: rgba(255, 138, 0, 0.1);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.pad-premium .pad-hero .eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--brand-orange);
+  box-shadow: 0 0 8px rgba(255, 138, 0, 0.7);
+}
+
+.pad-premium .pad-hero h1 {
+  max-width: 16ch;
+}
+
+.pad-premium .pad-hero .pad-descriptor {
+  margin-top: 14px;
+}
+
+/* ---- Flow card: elevated premium surface ---- */
+.pad-premium form.flow-card {
+  padding: 20px 20px 24px;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(7, 16, 18, 0.05),
+    0 12px 32px -12px rgba(7, 16, 18, 0.18);
+}
+
+.pad-premium .flow-progress {
+  padding: 2px 0 16px;
+  gap: 8px;
+}
+
+.pad-premium .flow-step-heading {
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+/* ---- Package-type chips (same values/state as before) ---- */
+.pad-premium .pad-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pad-premium .pad-chip {
+  appearance: none;
+  min-height: 52px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 14px;
+  background: var(--color-white);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pad-premium .pad-chip:hover {
+  border-color: var(--color-gray-300);
+  box-shadow: 0 2px 10px -4px rgba(7, 16, 18, 0.25);
+}
+
+.pad-premium .pad-chip:focus-visible {
+  outline: 2px solid var(--brand-orange);
+  outline-offset: 2px;
+}
+
+.pad-premium .pad-chip.is-selected {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: var(--brand-orange);
+  box-shadow: 0 6px 16px -8px rgba(7, 16, 18, 0.6);
+}
+
+.pad-premium .pad-chip.has-error {
+  border-color: rgba(220, 38, 38, 0.65);
+}
+
+.pad-premium .pad-chip.is-selected.has-error {
+  border-color: rgba(220, 38, 38, 0.85);
+}
+
+/* ---- Timing: segmented Now / Scheduled control ---- */
+.pad-premium .pad-segment {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 999px;
+  background: var(--color-gray-50);
+}
+
+.pad-premium .pad-segment .secondary-action.compact-button {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  border-color: transparent;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.pad-premium .pad-segment .secondary-action.compact-button.active-filter {
+  border-color: var(--color-black);
+  background: var(--color-black);
+  color: var(--brand-orange);
+  box-shadow: 0 4px 12px -6px rgba(7, 16, 18, 0.55);
+}
+
+/* ---- Route timeline card ---- */
+.pad-premium .pad-route {
+  gap: 0;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--color-gray-100);
+  border-radius: 16px;
+  background: var(--color-gray-50);
+}
+
+.pad-premium .pad-route-stop {
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: center;
+}
+
+.pad-premium .pad-route-stop .input-field {
+  background: var(--color-white);
+}
+
+.pad-premium .pad-route-leg {
+  height: 30px;
+  padding-left: 8px;
+}
+
+.pad-premium .pad-route-dot.is-pickup {
+  background: var(--brand-orange);
+  box-shadow: 0 0 0 4px rgba(255, 138, 0, 0.16);
+}
+
+/* ---- Schedule date/time row: never overflow ---- */
+.pad-premium .flow-date-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.pad-premium .flow-field-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---- Actions: thumb-friendly, stacked ---- */
+.pad-premium .flow-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.pad-premium .flow-actions .request-ride-action {
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+}
+
+.pad-premium .flow-actions .flow-back {
+  justify-self: center;
+  padding: 10px 16px;
+  min-height: 44px;
+}
+
+.pad-premium .flow-final-note {
+  margin-top: 18px;
+}
+
+/* ---- Submitted / tracking card ---- */
+.pad-premium .scheduled-card.scheduled-success {
+  padding: 24px 20px;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(7, 16, 18, 0.05),
+    0 12px 32px -12px rgba(7, 16, 18, 0.18);
+  overflow-wrap: anywhere;
+}
+
+.pad-premium .booking-fee {
+  font-size: 1.05rem;
+}
+
+.pad-premium .booking-ref {
+  overflow-wrap: anywhere;
+}
+
+.pad-premium .pak-bell-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.pad-premium .pad-proof-box {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-gray-100);
+  border-radius: 14px;
+  background: var(--color-gray-50);
+}
+
+.pad-premium .pakyawan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pad-premium .proof-viewer-overlay {
+  padding: 20px;
+}
+
+.pad-premium .proof-viewer-sheet img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---- Small phones: protect 320–360px ---- */
+@media (max-width: 360px) {
+  .pad-premium {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .pad-premium .pad-hero {
+    padding: 22px 18px;
+  }
+
+  .pad-premium form.flow-card {
+    padding: 16px 14px 20px;
+  }
+
+  .pad-premium .pad-chips {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pad-premium .pad-route {
+    padding: 12px 12px 10px;
+  }
+}
+
+/* ---- Larger phones / small tablets ---- */
+@media (min-width: 481px) {
+  .pad-premium .pad-hero {
+    padding: 34px 32px 30px;
+  }
+
+  .pad-premium form.flow-card {
+    padding: 24px 28px 28px;
+  }
+
+  .pad-premium .pad-chips {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .pad-premium .flow-date-row,
+  .pad-premium .flow-field-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pad-premium .scheduled-card.scheduled-success {
+    padding: 28px;
+  }
+}
+
+/* ---- Desktop: calm rhythm ---- */
+@media (min-width: 900px) {
+  .pad-premium .flow-actions .request-ride-action {
+    min-height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pad-premium .pad-chip {
+    transition: none;
+  }
+}
