@@ -989,17 +989,16 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
   return (
     <>
       <main className="scheduled-shell flow-shell pad-premium">
-        <section className="section-header scheduled-header pad-hero">
-          <p className="eyebrow">{t('pad.eyebrow')}</p>
-          <h1>
-            {t('pad.title1')}
-            <span className="hero-accent">{t('pad.title2')}</span>
-          </h1>
-          <p className="subtitle">{t('pad.subtitle')}</p>
-          <p className="pad-descriptor">{t('pad.descriptor')}</p>
-        </section>
-
-        <form className="scheduled-form flow-card" ref={cardRef} onSubmit={handleSubmit} noValidate>
+        <section className="section-header scheduled-header pad-hero pad-compact">
+          <div className="pad-compact-row">
+            <span className="pad-compact-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3.5 9a1.5 1.5 0 0 1 1.5-1.5H11l2.2 2.2A1.5 1.5 0 0 0 14.3 10H16a1.5 1.5 0 0 1 1.5 1.5V15a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3.5 15V9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                <path d="M9 7.5V6a1 1 0 0 1 1-1h1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </span>
+            <h1 className="pad-compact-title">{t('pad.eyebrow')}</h1>
+          </div>
           <div className="flow-progress" role="presentation" aria-label={t('pad.progressAria', { step, total: 3 })}>
             {[1, 2, 3].map((number) =>
               step < number
@@ -1023,6 +1022,9 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
                   ],
             )}
           </div>
+        </section>
+
+        <form className="scheduled-form flow-card" ref={cardRef} onSubmit={handleSubmit} noValidate>
 
           <div className="flow-step is-current" key={step}>
             <header className="flow-step-heading">
