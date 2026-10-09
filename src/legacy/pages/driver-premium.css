@@ -2092,16 +2092,16 @@
   gap: 10px;
 }
 
-/* ---- App bar: white surface, single compact block ---- */
+/* ---- App bar: dark card, single compact block ---- */
 .drv-premium.driver-dashboard .driver-dash-header {
   display: grid;
   gap: 8px;
-  padding: 10px 12px 12px;
-  background: var(--drv-surface);
-  border: 1px solid var(--drv-line);
+  padding: 12px 14px 14px;
+  background: var(--drv-black);
+  border: 1px solid var(--drv-black);
   border-radius: var(--drv-radius);
-  box-shadow: 0 1px 4px rgba(12, 21, 24, 0.06);
-  color: var(--drv-text);
+  box-shadow: 0 10px 26px rgba(7, 9, 11, 0.22);
+  color: #fff;
 }
 
 .drv-premium.driver-dashboard .driver-dash-header::before {
@@ -2125,7 +2125,7 @@
   border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--drv-ink);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .drv-premium.driver-dashboard .driver-brand {
@@ -2133,7 +2133,7 @@
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--drv-ink);
+  color: #fff;
   white-space: nowrap;
 }
 
@@ -2148,13 +2148,13 @@
 .drv-premium.driver-dashboard .driver-dash-titles h2 {
   margin: 0;
   font-size: 1.3rem;
-  color: var(--drv-ink);
+  color: #fff;
 }
 
 .drv-premium.driver-dashboard .driver-dash-subtitle {
   margin: 2px 0 0;
   font-size: 0.82rem;
-  color: var(--drv-muted);
+  color: rgba(255, 255, 255, 0.66);
 }
 
 /* Operational status chip: light pill, green when online */
@@ -2198,9 +2198,9 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid var(--drv-line);
-  background: var(--drv-surface);
-  color: var(--drv-ink);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
 }
 
 .drv-premium.driver-dashboard .notification-badge {
@@ -2228,12 +2228,8 @@
   box-shadow: none;
 }
 
-.drv-premium.driver-dashboard .mini-nav-item svg {
-  flex: none;
-}
-
 .drv-premium.driver-dashboard .mini-nav-item.is-active {
-  box-shadow: none;
+  box-shadow: inset 0 -3px 0 var(--drv-orange);
 }
 
 /* ---- Profile hero: compact horizontal card ---- */
@@ -2676,6 +2672,40 @@
 
 .drv-premium.driver-dashboard .request-actions .secondary-action:last-child {
   grid-column: 1 / -1;
+}
+
+/* ---- Queue waiting/offline card: badge under heading, uniform border ---- */
+.drv-premium.driver-dashboard .work-waiting,
+.drv-premium.driver-dashboard .work-offline {
+  border-top: 1px solid var(--drv-line);
+}
+
+.drv-premium.driver-dashboard .work-waiting .state-heading,
+.drv-premium.driver-dashboard .work-offline .state-heading {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.drv-premium.driver-dashboard .work-waiting .state-badge,
+.drv-premium.driver-dashboard .work-offline .state-badge {
+  align-self: flex-start;
+}
+
+/* ---- Queue controls: stacked label row + full-width action ---- */
+.drv-premium.driver-dashboard .presence-control {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.drv-premium.driver-dashboard .presence-control .secondary-action {
+  width: 100%;
+  min-height: 52px;
+}
+
+.drv-premium.driver-dashboard .presence-controls .presence-control:last-child .secondary-action {
+  width: 100%;
+  min-height: 52px;
 }
 
 /* ---- Bottom action bar: compact two-up row ---- */

@@ -4831,37 +4831,10 @@ const renderOnlineState = () => (
 
       <nav className="driver-mini-nav" aria-label="Driver workspaces">
         {([
-          { id: 'profile', label: 'Profile', icon: (
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          ) },
-          { id: 'queue', label: 'Ride Queue', icon: (
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M5 11 6.5 6h11L19 11" />
-              <path d="M4 11h16a1 1 0 0 1 1 1v4h-2.5" />
-              <path d="M5.5 16H4a1 1 0 0 1-1-1v-4h3" />
-              <circle cx="8" cy="16.5" r="1.8" />
-              <circle cx="16" cy="16.5" r="1.8" />
-            </svg>
-          ) },
-          { id: 'pakyawan', label: 'Pakyawan', icon: (
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m12 2 8 4.5v9L12 20l-8-4.5v-9L12 2Z" />
-              <path d="M12 11 4 6.5" />
-              <path d="m12 11 8-4.5" />
-              <path d="M12 11v9" />
-            </svg>
-          ), count: pakyawanRequests.length + activePakyawanOffers.length },
-          { id: 'delivery', label: 'Delivery', icon: (
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M2 6h12v10H2z" />
-              <path d="M14 10h4l4 4v2h-8" />
-              <circle cx="6.5" cy="18" r="1.8" />
-              <circle cx="17.5" cy="18" r="1.8" />
-            </svg>
-          ), count: deliveryRequests.length + activeDeliveryOffers.length },
+          { id: 'profile', label: 'Profile' },
+          { id: 'queue', label: 'Ride Queue' },
+          { id: 'pakyawan', label: 'Pakyawan', count: pakyawanRequests.length + activePakyawanOffers.length },
+          { id: 'delivery', label: 'Delivery', count: deliveryRequests.length + activeDeliveryOffers.length },
         ] as const).map((item) => (
           <button
             key={item.id}
@@ -4870,7 +4843,6 @@ const renderOnlineState = () => (
             onClick={() => setDriverView(item.id)}
             aria-current={driverView === item.id ? 'page' : undefined}
           >
-            {item.icon}
             {item.label}
             {'count' in item && item.count > 0 ? <span className="mini-nav-badge">{item.count}</span> : null}
           </button>
