@@ -35,6 +35,7 @@ import {
   requireSupabase,
 } from "../lib/supabase";
 import { useNotifications } from "../notifications/notifications";
+import "./RideNow.css";
 
 const RIDE_SENDER_COPY: Record<
   string,
@@ -1194,7 +1195,7 @@ export function RideNow() {
   }
 
   return (
-    <div className="container">
+    <div className="container ride-route">
       <nav aria-label="Back">
         <Link to="/" className="back-link">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1205,13 +1206,12 @@ export function RideNow() {
       </nav>
 
       <header className="form-header">
-        <p className="form-header__kicker">Transport · Ride Now</p>
-        <h1 className="form-header__title">Where to?</h1>
-        <p className="form-header__subtitle">
-          {formStep === 1
-            ? "First, tell us your route around Bislig."
-            : "Now your details — then review the fare and request."}
-        </p>
+        <h1 className="form-header__title">Where are you going?</h1>
+        {formStep === 2 ? (
+          <p className="form-header__subtitle">
+            Now your details — then review the fare and request.
+          </p>
+        ) : null}
       </header>
 
       <div className="wizard-progress" aria-label={`Step ${formStep} of 2`}>
@@ -1232,7 +1232,7 @@ export function RideNow() {
 
       <form className="booking-form" onSubmit={(e) => void handleSubmit(e)} noValidate>
         {formStep === 1 && (
-          <>
+          <div className="route-grid">
             <label className="field-block">
               <span className="field-label">Pickup</span>
               <input
@@ -1251,22 +1251,6 @@ export function RideNow() {
               )}
             </label>
 
-            <button
-              type="button"
-              className="link-button"
-              onClick={useMyLocation}
-              disabled={locating}
-            >
-              {locating
-                ? "Getting your location…"
-                : pickupCoords
-                  ? "✓ Using your current location"
-                  : "Use my current location"}
-            </button>
-            {locationError && (
-              <p className="field-note field-note--error">{locationError}</p>
-            )}
-
             <label className="field-block">
               <span className="field-label">Destination</span>
               <input
@@ -1284,6 +1268,26 @@ export function RideNow() {
                 <span className="field-error">{fieldErrors.destination}</span>
               )}
             </label>
+          </div>
+        )}
+
+        {formStep === 1 && (
+          <>
+            <button
+              type="button"
+              className="link-button"
+              onClick={useMyLocation}
+              disabled={locating}
+            >
+              {locating
+                ? "Getting your location…"
+                : pickupCoords
+                  ? "✓ Using your current location"
+                  : "Use my current location"}
+            </button>
+            {locationError && (
+              <p className="field-note field-note--error">{locationError}</p>
+            )}
           </>
         )}
 

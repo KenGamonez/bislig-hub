@@ -1,0 +1,145 @@
+/* =========================================================
+   RIDE NOW — route-entry experience (/ride, step 1)
+   Scoped to `.ride-route` (the RideNow form-phase container).
+   Presentation only: steps, fields, validation, fare, dispatch,
+   tracking and all handlers live untouched in RideNow.tsx.
+   Horizontal-first on normal widths; single column only at
+   exceptionally narrow widths (<=359px, matching .form-row).
+   ========================================================= */
+
+.ride-route {
+  max-width: 100%;
+  overflow-x: clip;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Fixed bottom nav (<768px) overlays content: reserve clearance
+   for nav height plus device safe area on this route. */
+@media (max-width: 767px) {
+  .ride-route {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---- Compact page header: back link + one heading ---- */
+.ride-route nav[aria-label="Back"] {
+  margin-top: 4px;
+}
+
+.ride-route .form-header {
+  padding: 8px 0 0;
+}
+
+.ride-route .form-header__title {
+  font-size: 22px;
+}
+
+.ride-route .form-header__subtitle {
+  margin-top: 4px;
+}
+
+/* ---- Progress: single compact row (already flex; tighten) ---- */
+.ride-route .wizard-progress {
+  margin-top: 10px;
+}
+
+/* ---- Booking form: tighter rhythm ---- */
+.ride-route .booking-form {
+  margin-top: 12px;
+  gap: 10px;
+  padding-bottom: 0;
+}
+
+.ride-route .field-block,
+.ride-route .booking-form > .link-button,
+.ride-route .field-note,
+.ride-route .form-error-message {
+  min-width: 0;
+}
+
+/* ---- Horizontal route entry: Pickup left, Destination right ---- */
+.ride-route .route-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.ride-route .route-grid .field-block {
+  min-width: 0;
+}
+
+.ride-route .route-grid .input-field {
+  width: 100%;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+/* Subtle pickup/destination distinction via label markers,
+   echoing the delivery route-dot language. No extra DOM. */
+.ride-route .route-grid .field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ride-route .route-grid .field-label::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.ride-route .route-grid .field-block:first-child .field-label::before {
+  background: var(--brand-orange);
+  box-shadow: 0 0 0 3px var(--brand-orange-soft);
+}
+
+.ride-route .route-grid .field-block:last-child .field-label::before {
+  background: var(--brand-slate);
+  box-shadow: 0 0 0 3px var(--bg-surface-muted);
+}
+
+/* Location action sits directly beneath the fields, left aligned. */
+.ride-route .booking-form > .link-button {
+  margin-top: -2px;
+}
+
+/* ---- Continue stays prominent in brand orange ---- */
+.ride-route .form-actions {
+  margin-top: 6px;
+}
+
+.ride-route .form-actions .btn--primary {
+  min-height: 52px;
+  font-size: 15px;
+}
+
+.ride-route .form-footnote {
+  margin-top: 2px;
+}
+
+/* ---- Exceptionally narrow widths: stack, keep targets big ---- */
+@media (max-width: 359px) {
+  .ride-route .route-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ride-route .form-header__title {
+    font-size: 20px;
+  }
+}
+
+/* ---- Desktop: efficient horizontal use, calm column ---- */
+@media (min-width: 900px) {
+  .ride-route .booking-form {
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ride-route .btn--primary,
+  .ride-route .btn--primary:hover {
+    transform: none;
+  }
+}
