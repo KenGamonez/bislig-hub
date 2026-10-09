@@ -1,10 +1,11 @@
 /* =========================================================
-   RIDE NOW — route-entry experience (/ride, step 1)
+   RIDE NOW — booking experience (/ride, steps 1–2)
    Scoped to `.ride-route` (the RideNow form-phase container).
    Presentation only: steps, fields, validation, fare, dispatch,
    tracking and all handlers live untouched in RideNow.tsx.
-   Side-by-side Pickup/Destination on comfortable widths;
+   Step 1: side-by-side Pickup/Destination on comfortable widths,
    single column on narrow mobile widths (<=600px).
+   Step 2: stacked details & fare, full-width pill CTA.
    ========================================================= */
 
 .ride-route {
@@ -120,7 +121,50 @@
   margin-top: 0;
 }
 
-/* ---- Continue stays prominent in brand orange ---- */
+/* ---- Step 2: stacked details & fare ---- */
+.ride-route .ride-details {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ride-route .field-group {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ride-route .section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Route recap above the CTA: divider, pin, truncated summary. */
+.ride-route .route-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.ride-route .route-summary svg {
+  flex: none;
+  color: var(--text-faint);
+}
+
+.ride-route .route-summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Continue / Request ride stays prominent in brand orange ---- */
 .ride-route .form-actions {
   margin-top: 6px;
 }
@@ -132,6 +176,7 @@
 
 .ride-route .form-footnote {
   margin-top: 2px;
+  text-align: center;
 }
 
 /* ---- Narrow mobile: stack, keep targets big ---- */

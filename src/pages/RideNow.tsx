@@ -240,7 +240,6 @@ export function RideNow() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [passengerCount, setPassengerCount] = useState(1);
   const [passengerType, setPassengerType] = useState<PassengerType>("Regular");
   const [vehicleType, setVehicleType] =
@@ -724,7 +723,9 @@ export function RideNow() {
       setCustomerAuthId(await getCustomerAuthId());
       const created = await createRide({
         customer_name: name.trim(),
-        customer_phone: phone.trim(),
+        // Phone field removed from the UI: the backend column keeps the
+        // empty-string sentinel the API already accepted for blank input.
+        customer_phone: "",
         pickup_address: pickup.trim(),
         pickup_lat: pickupCoords?.lat ?? null,
         pickup_lng: pickupCoords?.lng ?? null,
@@ -1289,7 +1290,7 @@ export function RideNow() {
         )}
 
         {formStep === 2 && (
-          <>
+          <div className="ride-details">
             <div className="fare-box" aria-live="polite">
               <span className="field-label">Estimated fare</span>
               {fareQuote ? (
@@ -1308,53 +1309,51 @@ export function RideNow() {
               )}
             </div>
 
-            <div className="form-row">
-              <label className="field-block">
-                <span className="field-label">Vehicle</span>
-                <select
-                  className="input-field"
-                  value={vehicleType}
-                  onChange={(e) => {
-                    const v = e.target.value as VehicleType;
-                    setVehicleType(v);
-                    if (v === "motorcycle") setPassengerCount(1);
-                  }}
-                >
-                  <option value="tricycle">Tricycle</option>
-                  <option value="umbak">Umbak</option>
-                  <option value="motorcycle">Motorcycle</option>
-                </select>
-              </label>
+            <label className="field-block">
+              <span className="field-label">Vehicle</span>
+              <select
+                className="input-field"
+                value={vehicleType}
+                onChange={(e) => {
+                  const v = e.target.value as VehicleType;
+                  setVehicleType(v);
+                  if (v === "motorcycle") setPassengerCount(1);
+                }}
+              >
+                <option value="tricycle">Tricycle</option>
+                <option value="umbak">Umbak</option>
+                <option value="motorcycle">Motorcycle</option>
+              </select>
+            </label>
 
-              <div className="field-block">
-                <span className="field-label" id="pax-label">
-                  Passengers
-                </span>
-                <div
-                  className="stepper"
-                  role="group"
-                  aria-labelledby="pax-label"
+            <div className="field-block">
+              <span className="field-label" id="pax-label">
+                Passengers
+              </span>
+              <div
+                className="stepper"
+                role="group"
+                aria-labelledby="pax-label"
+              >
+                <button
+                  type="button"
+                  aria-label="Fewer passengers"
+                  onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
                 >
-                  <button
-                    type="button"
-                    aria-label="Fewer passengers"
-                    onClick={() => setPassengerCount((c) => Math.max(1, c - 1))}
-                  >
-                    −
-                  </button>
-                  <output aria-live="polite">{passengerCount}</output>
-                  <button
-                    type="button"
-                    aria-label="More passengers"
-                    onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
-                  >
-                    +
-                  </button>
-                </div>
-                {fieldErrors.passengerCount && (
-                  <span className="field-error">{fieldErrors.passengerCount}</span>
-                )}
+                  −
+                </button>
+                <output aria-live="polite">{passengerCount}</output>
+                <button
+                  type="button"
+                  aria-label="More passengers"
+                  onClick={() => setPassengerCount((c) => Math.min(7, c + 1))}
+                >
+                  +
+                </button>
               </div>
+              {fieldErrors.passengerCount && (
+                <span className="field-error">{fieldErrors.passengerCount}</span>
+              )}
             </div>
 
             <label className="field-block">
@@ -1371,42 +1370,37 @@ export function RideNow() {
               </select>
             </label>
 
-            <label className="field-block">
-              <span className="field-label">Your name</span>
-              <input
-                className={`input-field${fieldErrors.name ? " has-error" : ""}`}
-                type="text"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  setFieldErrors((c) => ({ ...c, name: "" }));
-                }}
-                autoComplete="name"
-              />
-              {fieldErrors.name && (
-                <span className="field-error">{fieldErrors.name}</span>
-              )}
-            </label>
+            <div className="field-group">
+              <span className="section-label">Passenger details</span>
+              <label className="field-block">
+                <span className="field-label">Full name</span>
+                <input
+                  className={`input-field${fieldErrors.name ? " has-error" : ""}`}
+                  type="text"
+                  placeholder="e.g. Juan Dela Cruz"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setFieldErrors((c) => ({ ...c, name: "" }));
+                  }}
+                  autoComplete="name"
+                />
+                {fieldErrors.name && (
+                  <span className="field-error">{fieldErrors.name}</span>
+                )}
+              </label>
+            </div>
 
-            <label className="field-block">
-              <span className="field-label">
-                Phone number <span className="optional-tag">(optional)</span>
+            <p className="route-summary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.8" />
+              </svg>
+              <span>
+                {pickup.trim() || "Pickup"} → {destination.trim() || "Destination"}
               </span>
-              <input
-                className="input-field"
-                type="tel"
-                placeholder="09xx xxx xxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                autoComplete="tel"
-              />
-            </label>
-
-            <p className="field-note">
-              {pickup.trim() || "Pickup"} → {destination.trim() || "Destination"}
             </p>
-          </>
+          </div>
         )}
 
         {submitError && (
