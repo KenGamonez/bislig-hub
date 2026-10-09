@@ -16,6 +16,14 @@
   padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
+/* Fixed bottom nav (<768px) overlays content: reserve clearance
+   for nav height plus device safe area on this route. */
+@media (max-width: 767px) {
+  .pad-premium {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .pad-premium .flow-card,
 .pad-premium .scheduled-card,
 .pad-premium .field-block,
@@ -84,57 +92,66 @@
   padding: 0;
 }
 
-/* ---- Flow card: elevated premium surface ---- */
+/* ---- Flow card: light single surface ---- */
 .pad-premium form.flow-card {
-  padding: 20px 20px 24px;
-  border-radius: 20px;
-  box-shadow:
-    0 1px 2px rgba(7, 16, 18, 0.05),
-    0 12px 32px -12px rgba(7, 16, 18, 0.18);
+  padding: 16px 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(7, 16, 18, 0.05);
 }
 
 .pad-premium .flow-progress {
-  padding: 2px 0 16px;
+  padding: 2px 0 12px;
   gap: 8px;
 }
 
 .pad-premium .flow-step-heading {
-  gap: 14px;
-  padding-bottom: 16px;
-  margin-bottom: 20px;
+  gap: 0;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
 }
 
-/* ---- Package-type chips (same values/state as before) ---- */
+.pad-premium .flow-step-title h2 {
+  font-size: 1.12rem;
+}
+
+.pad-premium .flow-step-title p {
+  font-size: 0.8rem;
+}
+
+.pad-premium .flow-fields {
+  gap: 12px;
+}
+
+/* ---- Package-type tiles: compact 2-column grid ---- */
 .pad-premium .pad-chips {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .pad-premium .pad-chip {
   appearance: none;
-  min-height: 52px;
-  padding: 12px 14px;
+  min-height: 48px;
+  padding: 10px 12px;
   border: 1px solid var(--color-gray-200);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--color-white);
   color: var(--text-primary);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
   transition:
     border-color 160ms ease,
     background 160ms ease,
-    color 160ms ease,
     box-shadow 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .pad-premium .pad-chip:hover {
   border-color: var(--color-gray-300);
-  box-shadow: 0 2px 10px -4px rgba(7, 16, 18, 0.25);
 }
 
 .pad-premium .pad-chip:focus-visible {
@@ -143,10 +160,12 @@
 }
 
 .pad-premium .pad-chip.is-selected {
-  border-color: var(--color-black);
-  background: var(--color-black);
-  color: var(--brand-orange);
-  box-shadow: 0 6px 16px -8px rgba(7, 16, 18, 0.6);
+  border: 1.5px solid var(--brand-orange);
+  padding: 9.5px 11.5px;
+  background: var(--brand-orange-soft);
+  color: var(--text-primary);
+  font-weight: 800;
+  box-shadow: none;
 }
 
 .pad-premium .pad-chip.has-error {
@@ -188,9 +207,9 @@
 /* ---- Route timeline card ---- */
 .pad-premium .pad-route {
   gap: 0;
-  padding: 16px 16px 14px;
+  padding: 12px 12px 10px;
   border: 1px solid var(--color-gray-100);
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--color-gray-50);
 }
 
@@ -224,37 +243,83 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-/* ---- Actions: thumb-friendly, stacked ---- */
+/* ---- Actions: solid-orange Continue, quiet Back ---- */
 .pad-premium .flow-actions {
   display: grid;
-  gap: 12px;
-  margin-top: 22px;
+  gap: 4px;
+  margin-top: 16px;
 }
 
 .pad-premium .flow-actions .request-ride-action {
   width: 100%;
-  min-height: 54px;
-  border-radius: 16px;
+  min-height: 52px;
+  border: 1px solid var(--brand-orange);
+  border-radius: 14px;
+  background: var(--brand-orange);
+  color: #071012;
   font-size: 0.95rem;
+  box-shadow: none;
+}
+
+.pad-premium .flow-actions .request-ride-action::before {
+  content: none;
+}
+
+.pad-premium .flow-actions .request-ride-action:hover,
+.pad-premium .flow-actions .request-ride-action:focus-visible {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #071012;
+  box-shadow: none;
+  transform: none;
+}
+
+.pad-premium .flow-actions .request-ride-action:active {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: none;
+  box-shadow: none;
+}
+
+.pad-premium .flow-actions .request-ride-action:disabled {
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-200);
+  color: var(--text-muted);
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .pad-premium .flow-actions .flow-back {
-  justify-self: center;
+  width: 100%;
+  min-height: 48px;
   padding: 10px 16px;
-  min-height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pad-premium .flow-actions .flow-back:hover {
+  color: var(--text-primary);
+  background: var(--color-gray-50);
 }
 
 .pad-premium .flow-final-note {
   margin-top: 18px;
 }
 
-/* ---- Submitted / tracking card ---- */
+/* ---- Submitted / tracking card: same light surface ---- */
 .pad-premium .scheduled-card.scheduled-success {
-  padding: 24px 20px;
-  border-radius: 20px;
-  box-shadow:
-    0 1px 2px rgba(7, 16, 18, 0.05),
-    0 12px 32px -12px rgba(7, 16, 18, 0.18);
+  padding: 20px 16px;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(7, 16, 18, 0.05);
   overflow-wrap: anywhere;
 }
 

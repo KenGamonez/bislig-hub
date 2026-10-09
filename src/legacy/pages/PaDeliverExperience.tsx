@@ -1028,9 +1028,6 @@ export function PaDeliverExperience({ onBack }: { onBack: () => void }) {
 
           <div className="flow-step is-current" key={step}>
             <header className="flow-step-heading">
-              <span className="flow-step-number" aria-hidden="true">
-                0{step}
-              </span>
               <div className="flow-step-title">
                 <h2>{stepTitles[step].title}</h2>
                 <p>{stepTitles[step].hint}</p>
