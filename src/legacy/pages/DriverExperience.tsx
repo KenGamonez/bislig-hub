@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './driver-premium.css'
 import { CancelRideModal } from '../components/CancelRideModal'
 import { MapView } from '../components/MapView'
@@ -250,9 +250,36 @@ export function DriverExperience({
   // the refresh/subscription effect deps below for an immediate reload.
   const [foregroundTick, setForegroundTick] = useState(0)
 
+  // Foreground presence re-assert (same contract as the new driver
+  // shell): the reload above refreshes offer DATA, but a presence row
+  // gone stale while the tab was suspended keeps the backend excluding
+  // this driver from dispatch until the next 60s beat. Re-assert
+  // immediately on return instead. Best effort only — same idempotent
+  // RPC the heartbeat uses, no state changes.
+  const reassertPresence = useCallback(() => {
+    if (!driverOnline || !driverId) {
+      return
+    }
+    void (async () => {
+      try {
+        const fix = await getBestEffortPosition()
+        await setDriverPresence(
+          true,
+          driverIsAvailable,
+          driverAutoAccept,
+          fix?.latitude ?? null,
+          fix?.longitude ?? null,
+        )
+      } catch {
+        // Best effort only — the interval beat retries.
+      }
+    })()
+  }, [driverOnline, driverId, driverIsAvailable, driverAutoAccept])
+
   useEffect(() => {
     const bump = () => {
       setForegroundTick((current) => current + 1)
+      reassertPresence()
     }
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -267,7 +294,7 @@ export function DriverExperience({
       document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('online', bump)
     }
-  }, [])
+  }, [reassertPresence])
 
   // Presence heartbeat (same contract as the new driver shell): re-assert
   // presence about every 60 seconds while online so dispatch keeps

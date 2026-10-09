@@ -112,6 +112,43 @@ export function DriverPresenceProvider({ children }: { children: ReactNode }) {
     return () => window.clearInterval(timer);
   }, [online, available, autoAccept]);
 
+  // Foreground re-assert: mobile browsers throttle/suspend intervals in
+  // background tabs, so the 60s beat can lag behind a driver's return by
+  // up to a full cycle while the backend already treats the stale row as
+  // ineligible for dispatch. Re-assert immediately on return instead of
+  // waiting for the next beat. Best effort only — same idempotent RPC
+  // the heartbeat uses, no state changes, no extra polling.
+  useEffect(() => {
+    if (!online) return;
+    const reassert = () => {
+      void (async () => {
+        try {
+          const fix = await getBestEffortPosition();
+          await setDriverPresence(
+            true,
+            available,
+            autoAccept,
+            fix?.latitude ?? null,
+            fix?.longitude ?? null
+          );
+        } catch {
+          // Best effort only — the interval beat retries.
+        }
+      })();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reassert();
+    };
+    window.addEventListener("focus", reassert);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", reassert);
+    return () => {
+      window.removeEventListener("focus", reassert);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", reassert);
+    };
+  }, [online, available, autoAccept]);
+
   const setOnline = useCallback(async () => {
     if (transitioning) return;
     setTransitioning(true);
