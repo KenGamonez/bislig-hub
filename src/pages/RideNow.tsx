@@ -1233,23 +1233,40 @@ export function RideNow() {
       <form className="booking-form" onSubmit={(e) => void handleSubmit(e)} noValidate>
         {formStep === 1 && (
           <div className="route-grid">
-            <label className="field-block">
-              <span className="field-label">Pickup</span>
-              <input
-                className={`input-field${fieldErrors.pickup ? " has-error" : ""}`}
-                type="text"
-                placeholder="e.g. Mangagoy Public Market"
-                value={pickup}
-                onChange={(e) => {
-                  setPickup(e.target.value);
-                  setFieldErrors((c) => ({ ...c, pickup: "" }));
-                }}
-                autoComplete="off"
-              />
-              {fieldErrors.pickup && (
-                <span className="field-error">{fieldErrors.pickup}</span>
+            <div className="route-field">
+              <label className="field-block">
+                <span className="field-label">Pickup</span>
+                <input
+                  className={`input-field${fieldErrors.pickup ? " has-error" : ""}`}
+                  type="text"
+                  placeholder="e.g. Mangagoy Public Market"
+                  value={pickup}
+                  onChange={(e) => {
+                    setPickup(e.target.value);
+                    setFieldErrors((c) => ({ ...c, pickup: "" }));
+                  }}
+                  autoComplete="off"
+                />
+                {fieldErrors.pickup && (
+                  <span className="field-error">{fieldErrors.pickup}</span>
+                )}
+              </label>
+              <button
+                type="button"
+                className="link-button"
+                onClick={useMyLocation}
+                disabled={locating}
+              >
+                {locating
+                  ? "Getting your location…"
+                  : pickupCoords
+                    ? "✓ Using your current location"
+                    : "Use my current location"}
+              </button>
+              {locationError && (
+                <p className="field-note field-note--error">{locationError}</p>
               )}
-            </label>
+            </div>
 
             <label className="field-block">
               <span className="field-label">Destination</span>
@@ -1269,26 +1286,6 @@ export function RideNow() {
               )}
             </label>
           </div>
-        )}
-
-        {formStep === 1 && (
-          <>
-            <button
-              type="button"
-              className="link-button"
-              onClick={useMyLocation}
-              disabled={locating}
-            >
-              {locating
-                ? "Getting your location…"
-                : pickupCoords
-                  ? "✓ Using your current location"
-                  : "Use my current location"}
-            </button>
-            {locationError && (
-              <p className="field-note field-note--error">{locationError}</p>
-            )}
-          </>
         )}
 
         {formStep === 2 && (

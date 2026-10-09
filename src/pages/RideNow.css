@@ -3,8 +3,8 @@
    Scoped to `.ride-route` (the RideNow form-phase container).
    Presentation only: steps, fields, validation, fare, dispatch,
    tracking and all handlers live untouched in RideNow.tsx.
-   Horizontal-first on normal widths; single column only at
-   exceptionally narrow widths (<=359px, matching .form-row).
+   Side-by-side Pickup/Destination on comfortable widths;
+   single column on narrow mobile widths (<=600px).
    ========================================================= */
 
 .ride-route {
@@ -51,17 +51,17 @@
 }
 
 .ride-route .field-block,
-.ride-route .booking-form > .link-button,
 .ride-route .field-note,
 .ride-route .form-error-message {
   min-width: 0;
 }
 
-/* ---- Horizontal route entry: Pickup left, Destination right ---- */
+/* ---- Route entry: Pickup left, Destination right ---- */
 .ride-route .route-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
+  align-items: start;
 }
 
 .ride-route .route-grid .field-block {
@@ -72,6 +72,14 @@
   width: 100%;
   min-width: 0;
   text-overflow: ellipsis;
+}
+
+/* Pickup column stacks its field + location action. */
+.ride-route .route-field {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  align-content: start;
 }
 
 /* Subtle pickup/destination distinction via label markers,
@@ -90,19 +98,26 @@
   border-radius: 50%;
 }
 
-.ride-route .route-grid .field-block:first-child .field-label::before {
+.ride-route .route-field .field-label::before {
   background: var(--brand-orange);
   box-shadow: 0 0 0 3px var(--brand-orange-soft);
 }
 
-.ride-route .route-grid .field-block:last-child .field-label::before {
+.ride-route .route-grid > .field-block > .field-label::before {
   background: var(--brand-slate);
   box-shadow: 0 0 0 3px var(--bg-surface-muted);
 }
 
-/* Location action sits directly beneath the fields, left aligned. */
-.ride-route .booking-form > .link-button {
-  margin-top: -2px;
+/* Location action sits directly beneath the Pickup input. */
+.ride-route .route-field .link-button {
+  justify-self: start;
+  margin-top: 0;
+  padding: 4px 0;
+  min-height: 32px;
+}
+
+.ride-route .route-field .field-note {
+  margin-top: 0;
 }
 
 /* ---- Continue stays prominent in brand orange ---- */
@@ -119,12 +134,14 @@
   margin-top: 2px;
 }
 
-/* ---- Exceptionally narrow widths: stack, keep targets big ---- */
-@media (max-width: 359px) {
+/* ---- Narrow mobile: stack, keep targets big ---- */
+@media (max-width: 600px) {
   .ride-route .route-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
 
+@media (max-width: 359px) {
   .ride-route .form-header__title {
     font-size: 20px;
   }
